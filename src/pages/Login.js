@@ -1,7 +1,7 @@
 import "./login.css";
 import { Link, useHistory } from "react-router-dom";
 import { useRef } from "react";
-import { login_client } from "../client";
+import { login_client } from "../matrix-client";
 
 
 function input_valid(target, fieldName) {

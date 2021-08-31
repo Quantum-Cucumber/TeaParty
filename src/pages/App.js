@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
-import { BrowserRouter, Switch, Route } from "react-router-dom";
+import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import './root.css';
 import Login from "./Login";
-import { logged_in } from "../client";
+import Client from "./Client";
+import { logged_in } from "../matrix-client";
 
 function App() {
   // Colour theme
@@ -13,12 +14,19 @@ function App() {
     return () => {document.body.classList.remove(theme)};
   }, [theme]);
 
+    console.log(logged_in());
   return (
     <BrowserRouter>
       <Switch>
-        <Route path="/app"></Route>
-        <Route path="/register"><Login type="Register"/></Route>
-        <Route path="/login"><Login /></Route>
+        <Route path="/app">
+          {logged_in() ? <Client /> : <Redirect to="/login" />}
+        </Route>
+        <Route path="/register">
+          {logged_in() ? <Redirect to="/app" /> : <Login type="Register"/>}
+          </Route>
+        <Route path="/login">
+          {logged_in() ? <Redirect to="/app" /> : <Login />}
+        </Route>
       </Switch>
     </BrowserRouter>
   );

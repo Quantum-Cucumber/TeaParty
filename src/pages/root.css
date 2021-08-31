@@ -7,6 +7,7 @@ body.dark {
     --text: #e6e6e6;
     --text-greyed: #8d8d8d;
     --error: #ed3f3e;
+    --border: #1c1c1c;
 }
 
 body, html, #root {

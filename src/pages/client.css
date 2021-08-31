@@ -1,0 +1,29 @@
+#root {
+    display: flex;
+    flex-direction: row;
+}
+
+#root > div {
+    height: 100%;
+}
+
+#left {
+    flex: 0 0 auto;
+    width: 60px;
+    background-color: var(--bg-focus);
+    border-right: 1px solid var(--border);
+}
+#rooms {
+    flex: 0 0 auto;
+    width: 260px;
+    background-color: var(--bg-focus);
+    border-right: 1px solid var(--border);
+}
+#chat {
+    flex: 1 0 auto;
+}
+#right {
+    flex: 0 0 auto;
+    width: 260px;
+    background-color: var(--bg-focus);
+}
