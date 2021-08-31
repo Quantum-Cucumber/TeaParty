@@ -1,0 +1,115 @@
+body {
+    background-color: var(--bg);
+}
+
+#modal {
+    background-color: var(--bg-focus);
+    margin: auto;
+    border-radius: 30px;
+    width: 400px;
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    max-width: 90%;
+    padding: 5vh 0 2.5vh;
+    top: 20%;
+    position: relative;
+}
+
+@media only screen and (orientation: portrait) {
+    #modal {
+        width: 90%;
+        min-height: 20%;
+    }
+    body {
+        background-color: var(--bg-focus);
+    }
+}
+
+#label-holder {
+    flex: 1 0 auto;
+    width: 85%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+}
+
+#label-holder > p {
+    font-size: 1.5rem;
+    margin: 0 0 15px 2%;
+}
+
+#input-holder {
+    width: 85%;
+    bottom: 20%;
+    text-align: center;
+}
+
+#input-holder > input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+input {
+    border-radius: 8px;
+    font-size: 1rem;
+    padding: 4% 5%;
+    border: none;
+    color: inherit;
+    font-family: inherit;
+    background-color: var(--bg);
+    margin-bottom: 10px;
+}
+
+input::placeholder {
+    color: var(--text-greyed);
+}
+
+input:focus {
+    outline: none; 
+    box-shadow: inset 0 0 0 2px var(--primary);
+}
+
+
+.prefill::placeholder {
+    color: inherit;
+}
+
+.prefill:focus::placeholder {
+    color: var(--text-greyed);
+}
+
+.big-button {
+    padding: 15px;
+    background-color: var(--primary);
+    border: none;
+    border-radius: 12px;
+    color: var(--text);
+    width: 85%;
+    font-size: 1rem;
+    margin: 10px 0;
+}
+
+#top {
+    display: flex;
+}
+#top > input {box-sizing: border-box;}
+#username {
+    width: 100%;
+    flex: 1 1 auto;
+    border-radius: 8px 0 0 8px;
+    margin-right: 5px;
+}
+#hs {
+    border-radius: 0 8px 8px 0;
+    flex: 1 0 auto;
+    width: 33%;
+    transition: 0.15s;
+}
+#hs:focus {
+    width: 66%;
+} 
+
+#modal > a {
+    margin: 5px 0;
+}
