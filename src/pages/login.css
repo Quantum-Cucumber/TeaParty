@@ -1,5 +1,7 @@
-body {
+.modal__bg {
     background-color: var(--bg);
+    width: 100%;
+    height: 100%;
 }
 
 #modal {
@@ -17,16 +19,16 @@ body {
 }
 
 @media only screen and (orientation: portrait) {
-    #modal {
+    .modal__bg {
         width: 90%;
         min-height: 20%;
     }
-    body {
+    #page {
         background-color: var(--bg-focus);
     }
 }
 
-#label-holder {
+.modal__label-holder {
     flex: 1 0 auto;
     width: 85%;
     display: flex;
@@ -34,18 +36,18 @@ body {
     justify-content: flex-end;
 }
 
-#label-holder > p {
+.modal__label-holder > p {
     font-size: 1.5rem;
     margin: 0 0 15px 2%;
 }
 
-#input-holder {
+.modal__input-holder {
     width: 85%;
     bottom: 20%;
     text-align: center;
 }
 
-#input-holder > input {
+.modal__input-holder > input {
     width: 100%;
     box-sizing: border-box;
 }
@@ -72,15 +74,15 @@ input:focus {
 }
 
 
-.prefill::placeholder {
+.input--prefill::placeholder {
     color: inherit;
 }
 
-.prefill:focus::placeholder {
+.input--prefill:focus::placeholder {
     color: var(--text-greyed);
 }
 
-#login {
+.modal__button {
     padding: 15px;
     background-color: var(--primary);
     border: none;
@@ -91,7 +93,7 @@ input:focus {
     margin: 10px 0;
     cursor: pointer;
 }
-#login:active {
+.modal__button:active {
     opacity: 0.8;
 }
 
@@ -99,19 +101,19 @@ input:focus {
     display: flex;
 }
 #top > input {box-sizing: border-box;}
-#username {
+#username-input--split {
     width: 100%;
     flex: 1 1 auto;
     border-radius: 8px 0 0 8px;
     margin-right: 5px;
 }
-#hs {
+#hs-input--split {
     border-radius: 0 8px 8px 0;
     flex: 1 0 auto;
     width: 33%;
     transition: 0.15s;
 }
-#hs:focus {
+#hs-input--split:focus {
     width: 66%;
 } 
 
@@ -119,6 +121,6 @@ input:focus {
     margin: 5px 0;
 }
 
-.input-error {
+.input--error {
     box-shadow: inset 0 0 0 3px var(--error);
 }

@@ -8,10 +8,10 @@ function input_valid(target, fieldName) {
     console.log(fieldName);
     const value = target.value;
     if (value === "") {
-        target.classList.add("input-error");
+        target.classList.add("input--error");
         return false;
     } else {
-        target.classList.remove("input-error");
+        target.classList.remove("input--error");
         return true;
     }
 }
@@ -37,24 +37,26 @@ function Login({ type = "Login" }) {
 
     // Create the page
     return (
-        <div id="modal">
-            <div id="label-holder">
-                <p>{type}</p>
-            </div>
-            <div id="input-holder">
-                <div id="top">
-                    <input autoFocus id="username" type="text" placeholder="Username" ref={usernameRef}></input>
-                    <input id="hs" className="prefill" type="text" placeholder="matrix.org" ref={homeserverRef}></input>
+        <div className="modal__bg">
+            <div id="modal">
+                <div className="modal__label-holder">
+                    <p>{type}</p>
                 </div>
-                <input type="password" placeholder="Password" ref={passwordRef}></input>
-            </div>
+                <div className="modal__input-holder">
+                    <div id="top">
+                        <input autoFocus id="username-input--split" type="text" placeholder="Username" ref={usernameRef}></input>
+                        <input id="hs-input--split" className="input--prefill" type="text" placeholder="matrix.org" ref={homeserverRef}></input>
+                    </div>
+                    <input type="password" placeholder="Password" ref={passwordRef}></input>
+                </div>
 
-            <button id="login" onClick={buttonClicked}>{type}</button>
-            {type === "Login" ?
-                <Link to="/register">Register</Link>
-                :
-                <Link to="/login">Login</Link>
-            }
+                <button className="modal__button" onClick={buttonClicked}>{type}</button>
+                {type === "Login" ?
+                    <Link to="/register">Register</Link>
+                    :
+                    <Link to="/login">Login</Link>
+                }
+            </div>
         </div>
     );
 }
