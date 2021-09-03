@@ -1,7 +1,7 @@
 import "./login.css";
 import { Link, useHistory } from "react-router-dom";
 import { useRef } from "react";
-import { login_client } from "../matrix-client";
+import { attempt_login } from "../matrix-client";
 
 
 function input_valid(target, fieldName) {
@@ -28,9 +28,9 @@ function Login({ type = "Login" }) {
         if (type === "Login") {
             const hs = homeserverRef.current.value ? homeserverRef.current.value : homeserverRef.current.placeholder;
             if (![input_valid(usernameRef.current, "Username"), input_valid(passwordRef.current, "Password")].every(Boolean)) {return};
-            login_client(usernameRef.current.value, hs, passwordRef.current.value).then(() => {
+            attempt_login(usernameRef.current.value, hs, passwordRef.current.value).then(() => {
                 console.log("Redirecting to app");
-                history.push("/app")
+                history.push("/app");
             });
         }
     }

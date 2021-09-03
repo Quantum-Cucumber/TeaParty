@@ -7,19 +7,21 @@
 
 .column {
     height: 100%;
+    box-sizing: border-box;
 }
 
 .column--left {
     flex: 0 0 auto;
-    width: 60px;
+    width: 70px;
     background-color: var(--bg-focus);
-    border-right: 1px solid var(--border);
+    border-right: 2px solid var(--border);
 }
 .column--rooms {
     flex: 0 0 auto;
     width: 260px;
     background-color: var(--bg-focus);
-    border-right: 1px solid var(--border);
+    border-right: 2px solid var(--border);
+    position: relative;
 }
 .column--chat {
     flex: 1 0 auto;
@@ -29,4 +31,33 @@
     flex: 0 0 auto;
     width: 260px;
     background-color: var(--bg-focus);
+    border-left: 2px solid var(--border);
+}
+
+.client__user-bar {
+    position: absolute;
+    width: 100%;
+    height: 65px;
+    bottom: 0px;
+    border-top: 2px solid var(--border);
+    padding: 10px 10px;
+    box-sizing: border-box;
+    display: flex;
+}
+
+.client__user-bar__profile {
+    height: 100%;
+    flex: 1 1 auto;
+}
+.client__user-bar__options-box {
+    flex: 1 0 auto;
+    height: 100%;
+    display: table;
+    margin-left: 8px;
+}
+
+.client__user-bar__options {
+    padding: 2px;
+    display: table-cell;
+    vertical-align: middle;
 }
