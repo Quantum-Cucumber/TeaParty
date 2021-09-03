@@ -23,12 +23,12 @@
     display: flex;
     flex-direction: column;
     justify-content: space-evenly;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .user__text {
     text-overflow: ellipsis;
-    overflow: hidden;
+    overflow-x: hidden;
     user-select: none;
 }
 .user__username {
