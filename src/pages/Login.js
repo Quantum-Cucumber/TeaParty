@@ -5,7 +5,6 @@ import { attempt_login } from "../matrix-client";
 
 
 function input_valid(target, fieldName) {
-    console.log(fieldName);
     const value = target.value;
     if (value === "") {
         target.classList.add("input--error");

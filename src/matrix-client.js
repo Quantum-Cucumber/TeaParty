@@ -72,7 +72,6 @@ export async function build_matrix() {
 }
 
 export function get_username(user) {
-    console.log(user);
     /* Gets the localpart of the user ID or their displayname if set */
     const localpart = user.userId.match(localpart_regex)[1];
     return user.displayName ? user.displayName : localpart;

@@ -10,19 +10,6 @@
     box-sizing: border-box;
 }
 
-.column--left {
-    flex: 0 0 auto;
-    width: 70px;
-    background-color: var(--bg-focus);
-    border-right: 2px solid var(--border);
-}
-.column--rooms {
-    flex: 0 0 auto;
-    width: 260px;
-    background-color: var(--bg-focus);
-    border-right: 2px solid var(--border);
-    position: relative;
-}
 .column--chat {
     flex: 1 0 auto;
     background-color: var(--bg);
@@ -32,6 +19,16 @@
     width: 260px;
     background-color: var(--bg-focus);
     border-left: 2px solid var(--border);
+}
+
+
+/* Rooms/profile panel */
+.column--rooms {
+    flex: 0 0 auto;
+    width: 260px;
+    background-color: var(--bg-focus);
+    border-right: 2px solid var(--border);
+    position: relative;
 }
 
 .client__user-bar {
@@ -60,4 +57,38 @@
     padding: 2px;
     display: table-cell;
     vertical-align: middle;
+}
+
+
+/* Leftmost groups panel */
+.column--groups {
+    flex: 0 0 auto;
+    width: 70px;
+    background-color: var(--bg-focus);
+    border-right: 2px solid var(--border);
+    padding: 11px;
+}
+
+.group--default {
+    background: var(--bg);
+    border-radius: 15px;
+    padding: 5px;
+    box-sizing: border-box;
+}
+
+.group {
+    width: 100%;
+    margin-bottom: 17px;
+    aspect-ratio: 1;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.2s;
+}
+.group:hover {
+    opacity: 0.7;
+    border-radius: 10px;
+}
+
+.group--selected {
+    border-radius: 10px;
 }

@@ -39,9 +39,10 @@
 }
 
 .mdi-icon {
+    cursor: pointer;
     color: var(--text);
 }
 .mdi-icon:hover {
-    color: var(--text-greyed);
+    opacity: 0.7;
 }
 
