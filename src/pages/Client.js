@@ -4,7 +4,7 @@ import { User } from "../components/user";
 import { useEffect, useState } from "react";
 import { Button } from "../components/interface";
 import { Icon } from "@mdi/react";
-import { mdiCog, mdiHomeVariant } from "@mdi/js";
+import { mdiCog, mdiHomeVariant, mdiLoading } from "@mdi/js";
 
 function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
@@ -19,7 +19,14 @@ function Client() {
         });
     }, []);
     if (!synced) {
-        return (<span>Syncing...</span>);
+        return (
+            <div className="loading">
+                <div className="loading__holder">
+                    <Icon path={mdiLoading} color="var(--content)" size="70px" spin={1.2}/>
+                    <div className="loading__text"> Syncing...</div>
+                </div>
+            </div>
+        );
     }
 
 
