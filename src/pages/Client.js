@@ -10,7 +10,6 @@ function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
     const [synced, syncState] = useState(false);
     const [roomPanel, setRooms] = useState([]);
-    console.log("Reload", roomPanel)
     useEffect(() => {
         build_matrix().then(() => {
             global.matrix.once("sync", (state, prevState, data) => {
@@ -88,10 +87,11 @@ function GroupList({ roomSelect }) {
     var groups = [
         (<div
             className={"group group--default " + (currentGroup === "home" ? "group--selected" : "")}
-            key="home" onClick={() => { 
+            key="home" 
+            onClick={() => { 
                 selectGroup("home"); 
-                console.log(filter_orphan_rooms());
-                roomSelect(filter_orphan_rooms()) }}
+                roomSelect(filter_orphan_rooms())
+            }}
         >
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </div>)
@@ -109,7 +109,10 @@ function GroupList({ roomSelect }) {
                 <div
                     className={"group " + (currentGroup === key ? "group--selected" : "")}
                     key={key}
-                    onClick={() => { selectGroup(key); roomSelect(get_joined_space_rooms(key))}}
+                    onClick={() => { 
+                        selectGroup(key); 
+                        get_joined_space_rooms(key).then((result) => {;roomSelect(result)})}
+                    }
                 >{image}</div>
             );
         }
@@ -140,16 +143,15 @@ function filter_orphan_rooms() {
     return rooms;
 }
 
-function get_joined_space_rooms(spaceId) {
+async function get_joined_space_rooms(spaceId) {
     var rooms = [];
-    global.matrix.getRoomHierarchy(spaceId).then((result) => {
-        result.rooms.forEach((room) => {
-            const roomObj = global.matrix.getRoom(room.room_id);
-            if (global.matrix.getRoom(room.room_id)) {
-                rooms.push(roomObj)
-            }
-        })
-    })
+    const result = await global.matrix.getRoomHierarchy(spaceId)
+    result.rooms.forEach((room) => {
+        const roomObj = global.matrix.getRoom(room.room_id);
+        if (global.matrix.getRoom(room.room_id)) {
+            rooms.push(roomObj)
+        }
+    });
     return rooms;
 }
 
