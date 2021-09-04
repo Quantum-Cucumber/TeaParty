@@ -15,6 +15,7 @@ function Client() {
             global.matrix.once("sync", (state, prevState, data) => {
                 if (prevState === null && state === "PREPARED") {
                     syncState(true);
+                    setRooms(filter_orphan_rooms());
                 }
             })
         });
