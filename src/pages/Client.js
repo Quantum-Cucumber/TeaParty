@@ -9,6 +9,8 @@ import { mdiCog, mdiHomeVariant, mdiLoading } from "@mdi/js";
 function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
     const [synced, syncState] = useState(false);
+    const [roomPanel, setRooms] = useState([]);
+    console.log("Reload", roomPanel)
     useEffect(() => {
         build_matrix().then(() => {
             global.matrix.once("sync", (state, prevState, data) => {
@@ -29,15 +31,14 @@ function Client() {
         );
     }
 
-
     return (
         <div className="client">
             <div className="column column--groups">
-                <GroupList />
+                <GroupList roomSelect={setRooms} />
             </div>
             <div className="column column--rooms">
                 <div className="column--rooms__holder">
-                    <RoomList />
+                    <RoomList rooms={roomPanel} />
                 </div>
 
                 <div className="client__user-bar">
@@ -63,39 +64,40 @@ function MyUser({ user }) {
     );
 }
 
-function RoomList() {
+function RoomList({ rooms }) {
     const [currentRoom, selectRoom] = useState();
 
-    var rooms = [];
-    global.matrix.getRooms().forEach((room) => {
-        if (!room.isSpaceRoom()) {
-            const key = room.roomId;
-            rooms.push(
-                <div
-                    className={"room " + (currentRoom === key ? "room--selected" : "")}
-                    key={key}
-                    onClick={() => { selectRoom(key) }}
-                >{room.name}</div>
-            );
-        }
+    var elements = [];
+    rooms.forEach((room) => {
+        const key = room.roomId;
+        elements.push(
+            <div
+                className={"room " + (currentRoom === key ? "room--selected" : "")}
+                key={key}
+                onClick={() => { selectRoom(key) }}
+            >{room.name}</div>
+        );
     });
 
-    return rooms;
+    return elements;
 }
 
-function GroupList() {
+function GroupList({ roomSelect }) {
     const [currentGroup, selectGroup] = useState("home");
 
     var groups = [
         (<div
             className={"group group--default " + (currentGroup === "home" ? "group--selected" : "")}
-            key="home" onClick={() => { selectGroup("home") }}
+            key="home" onClick={() => { 
+                selectGroup("home"); 
+                console.log(filter_orphan_rooms());
+                roomSelect(filter_orphan_rooms()) }}
         >
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </div>)
     ];
 
-    global.matrix.getRooms().forEach((room) => {
+    global.matrix.getVisibleRooms().forEach((room) => {
         if (room.isSpaceRoom()) {
             const key = room.roomId;
             const icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
@@ -107,7 +109,7 @@ function GroupList() {
                 <div
                     className={"group " + (currentGroup === key ? "group--selected" : "")}
                     key={key}
-                    onClick={() => { selectGroup(key) }}
+                    onClick={() => { selectGroup(key); roomSelect(get_joined_space_rooms(key))}}
                 >{image}</div>
             );
         }
@@ -118,6 +120,37 @@ function GroupList() {
 
 function acronym(text, len=3) {
     return text.match(/\b([a-z0-9])/gi).slice(0, len).join("").toUpperCase()
+}
+
+
+function filter_orphan_rooms() {
+    /* Finds all rooms that are not DMs and that are not a part of a space */
+    var rooms = [];
+    global.matrix.getVisibleRooms().forEach((room) => {
+        // Check if room is a space
+        const state = room.currentState;
+        if ( room.isSpaceRoom() || 
+             state.getStateEvents("m.space.child").length !== 0 || 
+             state.getStateEvents("m.space.parent").length !== 0
+           ) {return};
+
+        // Check if a DM
+        rooms.push(room)
+    });
+    return rooms;
+}
+
+function get_joined_space_rooms(spaceId) {
+    var rooms = [];
+    global.matrix.getRoomHierarchy(spaceId).then((result) => {
+        result.rooms.forEach((room) => {
+            const roomObj = global.matrix.getRoom(room.room_id);
+            if (global.matrix.getRoom(room.room_id)) {
+                rooms.push(roomObj)
+            }
+        })
+    })
+    return rooms;
 }
 
 export default Client;
