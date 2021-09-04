@@ -14,7 +14,6 @@ function App() {
     return () => {document.body.classList.remove(theme)};
   }, [theme]);
 
-    console.log(logged_in());
   return (
     <BrowserRouter>
       <Switch>

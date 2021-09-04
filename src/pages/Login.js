@@ -30,6 +30,7 @@ function Login({ type = "Login" }) {
             attempt_login(usernameRef.current.value, hs, passwordRef.current.value).then(() => {
                 console.log("Redirecting to app");
                 history.push("/app");
+                history.go(0);
             });
         }
     }
