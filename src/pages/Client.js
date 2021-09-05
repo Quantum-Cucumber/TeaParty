@@ -10,6 +10,8 @@ function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
     const [synced, syncState] = useState(false);
     const [roomPanel, setRooms] = useState([]);
+    const [groupName, setGroupName] = useState("Home");
+
     useEffect(() => {
         build_matrix().then(() => {
             global.matrix.once("sync", (state, prevState, data) => {
@@ -40,9 +42,10 @@ function Client() {
     return (
         <div className="client">
             <div className="column column--groups">
-                <GroupList roomSelect={selectGroup} />
+                <GroupList roomSelect={selectGroup} setGroupName={setGroupName} />
             </div>
             <div className="column column--rooms">
+                <div className="column--rooms__label">{groupName}</div>
                 <div className="column--rooms__holder">
                     {roomPanel ?
                         <RoomList rooms={roomPanel} /> :
@@ -79,28 +82,39 @@ function RoomList({ rooms }) {
     var elements = [];
     rooms.forEach((room) => {
         const key = room.roomId;
+        const icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+        const image = icon ?
+            <img className="room__icon" src={icon} alt={room.name} /> :
+            <div className="room__icon">{acronym(room.name)}</div>;
+
         elements.push(
             <div
                 className={"room " + (currentRoom === key ? "room--selected" : "")}
                 key={key}
                 onClick={() => { selectRoom(key) }}
-            >{room.name}</div>
+            >
+                <div className="room__icon__crop">
+                    {image}
+                </div>
+                <div className="room__label">{room.name}</div>
+            </div>
         );
     });
 
     return elements;
 }
 
-function GroupList({ roomSelect }) {
+function GroupList({ roomSelect, setGroupName }) {
     const [currentGroup, selectGroup] = useState("home");
 
     // Placed here so we can inherit roomSelect, currentGroup and selectGroup
-    function Group({ k, roomList, children, builtin=false }) {
+    function Group({ groupName, k, roomList, children, builtin=false }) {
         return (
             <div
                 className={"group " + (builtin ? "group--default " : "") +  (currentGroup === k ? "group--selected" : "")}
                 key={k}
                 onClick={() => {
+                    setGroupName(groupName);
                     selectGroup(k);
                     roomSelect(roomList());
                 }}
@@ -111,10 +125,10 @@ function GroupList({ roomSelect }) {
     }
 
     var groups = [
-        <Group k="home" roomList={filter_orphan_rooms} builtin>
+        <Group groupName="Home" k="home" roomList={filter_orphan_rooms} builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </Group>,
-        <Group k="directs" path={mdiHomeVariant} roomList={() => get_directs(true)} builtin>
+        <Group groupName="Direct Messages" k="directs" path={mdiHomeVariant} roomList={() => get_directs(true)} builtin>
             <Icon path={mdiAccountMultiple} color="var(--text)" size="100%" />
         </Group>,
     ];
@@ -124,11 +138,12 @@ function GroupList({ roomSelect }) {
             const key = room.roomId;
             const icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
             const image = icon ?
-                <img className="group__icon" src={icon} alt={room.name} /> :
-                <div className="group__icon">{acronym(room.name)}</div>;
+                <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
+                <div className="room__icon">{acronym(room.name)}</div>;
 
             groups.push(
                 <Group 
+                    groupName={room.name}
                     k={key} 
                     roomList={() => get_joined_space_rooms(key)}
                 >
@@ -191,7 +206,7 @@ async function get_joined_space_rooms(spaceId) {
         global.matrix.getRoomHierarchy(spaceId).then((result) => {
             result.rooms.forEach((room) => {
                 const roomObj = global.matrix.getRoom(room.room_id);
-                if (global.matrix.getRoom(room.room_id)) {
+                if (global.matrix.getRoom(room.room_id) && room.room_id !== spaceId) {
                     rooms.push(roomObj)
                 }
             });
