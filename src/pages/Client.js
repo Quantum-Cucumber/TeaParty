@@ -2,9 +2,9 @@ import "./client.css";
 import { build_matrix } from "../matrix-client";
 import { User } from "../components/user";
 import { useEffect, useState } from "react";
-import { Button } from "../components/interface";
+import { Button, Loading } from "../components/interface";
 import { Icon } from "@mdi/react";
-import { mdiCog, mdiHomeVariant, mdiLoading } from "@mdi/js";
+import { mdiCog, mdiHomeVariant } from "@mdi/js";
 
 function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
@@ -24,21 +24,30 @@ function Client() {
         return (
             <div className="loading">
                 <div className="loading__holder">
-                    <Icon path={mdiLoading} color="var(--content)" size="70px" spin={1.2}/>
+                    <Loading size="70px" />
                     <div className="loading__text"> Syncing...</div>
                 </div>
             </div>
         );
     }
 
+    function selectGroup(rooms) {
+        setRooms(null);
+        Promise.resolve(rooms).then((result) => setRooms(result));
+    }
+
+
     return (
         <div className="client">
             <div className="column column--groups">
-                <GroupList roomSelect={setRooms} />
+                <GroupList roomSelect={selectGroup} />
             </div>
             <div className="column column--rooms">
                 <div className="column--rooms__holder">
-                    <RoomList rooms={roomPanel} />
+                    {roomPanel ? 
+                        <RoomList rooms={roomPanel} /> : 
+                        <div className="column--rooms__holder__loading"><Loading size="30px"/></div>
+                    }
                 </div>
 
                 <div className="client__user-bar">
@@ -112,9 +121,11 @@ function GroupList({ roomSelect }) {
                     key={key}
                     onClick={() => { 
                         selectGroup(key); 
-                        get_joined_space_rooms(key).then((result) => {;roomSelect(result)})}
+                        roomSelect(get_joined_space_rooms(key))}
                     }
-                >{image}</div>
+                >
+                    {image}
+                </div>
             );
         }
     })
@@ -145,15 +156,21 @@ function filter_orphan_rooms() {
 }
 
 async function get_joined_space_rooms(spaceId) {
-    var rooms = [];
-    const result = await global.matrix.getRoomHierarchy(spaceId)
-    result.rooms.forEach((room) => {
-        const roomObj = global.matrix.getRoom(room.room_id);
-        if (global.matrix.getRoom(room.room_id)) {
-            rooms.push(roomObj)
-        }
+    var promise = new Promise((resolve) => {
+        var rooms = [];
+        global.matrix.getRoomHierarchy(spaceId).then((result) => {
+            result.rooms.forEach((room) => {
+                const roomObj = global.matrix.getRoom(room.room_id);
+                if (global.matrix.getRoom(room.room_id)) {
+                    rooms.push(roomObj)
+                }
+            });
+    
+            resolve(rooms);
+        });
     });
-    return rooms;
+
+    return promise;
 }
 
 export default Client;
