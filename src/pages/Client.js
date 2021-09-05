@@ -118,7 +118,7 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
     function Group({ groupName, k, roomList, children, builtin=false }) {
         return (
             <div
-                className={"group " + (builtin ? "group--default " : "") +  (currentGroup === k ? "group--selected" : "")}
+                className={"group " + (builtin ? "group--default " : "") +  (currentGroup.key === k ? "group--selected" : "")}
                 key={k}
                 onClick={() => {
                     setGroup({name: groupName, key: k})
