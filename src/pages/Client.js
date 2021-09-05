@@ -4,7 +4,7 @@ import { User } from "../components/user";
 import { useEffect, useState } from "react";
 import { Button, Loading } from "../components/interface";
 import { Icon } from "@mdi/react";
-import { mdiCog, mdiHomeVariant } from "@mdi/js";
+import { mdiCog, mdiHomeVariant, mdiAccountMultiple } from "@mdi/js";
 
 function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
@@ -44,9 +44,9 @@ function Client() {
             </div>
             <div className="column column--rooms">
                 <div className="column--rooms__holder">
-                    {roomPanel ? 
-                        <RoomList rooms={roomPanel} /> : 
-                        <div className="column--rooms__holder__loading"><Loading size="30px"/></div>
+                    {roomPanel ?
+                        <RoomList rooms={roomPanel} /> :
+                        <div className="column--rooms__holder__loading"><Loading size="30px" /></div>
                     }
                 </div>
 
@@ -94,38 +94,46 @@ function RoomList({ rooms }) {
 function GroupList({ roomSelect }) {
     const [currentGroup, selectGroup] = useState("home");
 
+    // Placed here so we can inherit roomSelect, currentGroup and selectGroup
+    function Group({ k, roomList, children, builtin=false }) {
+        return (
+            <div
+                className={"group " + (builtin ? "group--default " : "") +  (currentGroup === k ? "group--selected" : "")}
+                key={k}
+                onClick={() => {
+                    selectGroup(k);
+                    roomSelect(roomList());
+                }}
+            >
+                {children}
+            </div>
+        );
+    }
+
     var groups = [
-        (<div
-            className={"group group--default " + (currentGroup === "home" ? "group--selected" : "")}
-            key="home" 
-            onClick={() => { 
-                selectGroup("home"); 
-                roomSelect(filter_orphan_rooms())
-            }}
-        >
+        <Group k="home" roomList={filter_orphan_rooms} builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
-        </div>)
+        </Group>,
+        <Group k="directs" path={mdiHomeVariant} roomList={() => get_directs(true)} builtin>
+            <Icon path={mdiAccountMultiple} color="var(--text)" size="100%" />
+        </Group>,
     ];
 
     global.matrix.getVisibleRooms().forEach((room) => {
         if (room.isSpaceRoom()) {
             const key = room.roomId;
             const icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
-            const image = icon ? 
-                <img className="group__icon" src={icon} alt={room.name} /> : 
+            const image = icon ?
+                <img className="group__icon" src={icon} alt={room.name} /> :
                 <div className="group__icon">{acronym(room.name)}</div>;
 
             groups.push(
-                <div
-                    className={"group " + (currentGroup === key ? "group--selected" : "")}
-                    key={key}
-                    onClick={() => { 
-                        selectGroup(key); 
-                        roomSelect(get_joined_space_rooms(key))}
-                    }
+                <Group 
+                    k={key} 
+                    roomList={() => get_joined_space_rooms(key)}
                 >
                     {image}
-                </div>
+                </Group>
             );
         }
     })
@@ -133,7 +141,8 @@ function GroupList({ roomSelect }) {
     return groups;
 }
 
-function acronym(text, len=3) {
+
+function acronym(text, len = 3) {
     return text.match(/\b([a-z0-9])/gi).slice(0, len).join("").toUpperCase()
 }
 
@@ -141,17 +150,38 @@ function acronym(text, len=3) {
 function filter_orphan_rooms() {
     /* Finds all rooms that are not DMs and that are not a part of a space */
     var rooms = [];
+    var directs = get_directs(false);
     global.matrix.getVisibleRooms().forEach((room) => {
         // Check if room is a space
         const state = room.currentState;
-        if ( room.isSpaceRoom() || 
-             state.getStateEvents("m.space.child").length !== 0 || 
-             state.getStateEvents("m.space.parent").length !== 0
-           ) {return};
+        if (room.isSpaceRoom() ||
+            state.getStateEvents("m.space.child").length !== 0 ||
+            state.getStateEvents("m.space.parent").length !== 0
+        ) { return };
 
         // Check if a DM
+        if (directs.includes(room.roomId)) { return }
+
         rooms.push(room)
     });
+    return rooms;
+}
+
+function get_directs(asRoomObj) {
+    // Get all direct rooms
+    var rooms = []
+    const directs = global.matrix.getAccountData("m.direct").getContent();
+    Object.values(directs).forEach((directRooms) => {
+        rooms = rooms.concat(directRooms);
+    })
+
+    // Convert to room objects
+    if (asRoomObj) {
+        rooms = rooms.map((roomId) => {
+            return global.matrix.getRoom(roomId);
+        });
+    }
+
     return rooms;
 }
 
@@ -165,7 +195,6 @@ async function get_joined_space_rooms(spaceId) {
                     rooms.push(roomObj)
                 }
             });
-    
             resolve(rooms);
         });
     });
