@@ -10,7 +10,7 @@ function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
     const [synced, syncState] = useState(false);
     const [roomPanel, setRooms] = useState([]);
-    const [groupName, setGroupName] = useState("Home");
+    const [currentGroup, setGroup] = useState({name: "Home", key: "home"});
 
     useEffect(() => {
         build_matrix().then(() => {
@@ -42,13 +42,13 @@ function Client() {
     return (
         <div className="client">
             <div className="column column--groups">
-                <GroupList roomSelect={selectGroup} setGroupName={setGroupName} />
+                <GroupList roomSelect={selectGroup} setGroup={setGroup} currentGroup={currentGroup} />
             </div>
             <div className="column column--rooms">
-                <div className="column--rooms__label">{groupName}</div>
+                <div className="column--rooms__label">{currentGroup.name}</div>
                 <div className="column--rooms__holder">
                     {roomPanel ?
-                        <RoomList rooms={roomPanel} /> :
+                        <RoomList rooms={roomPanel} currentGroup={currentGroup} /> :
                         <div className="column--rooms__holder__loading"><Loading size="30px" /></div>
                     }
                 </div>
@@ -76,15 +76,23 @@ function MyUser({ user }) {
     );
 }
 
-function RoomList({ rooms }) {
+function RoomList({ rooms, currentGroup }) {
     const [currentRoom, selectRoom] = useState();
 
     var elements = [];
     rooms.forEach((room) => {
         const key = room.roomId;
-        const icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+        var icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+
+        if (!icon && currentGroup.key === "directs") {
+            icon = global.matrix.getUser(room.guessDMUserId())?.avatarUrl;
+            if (icon) {
+                icon = global.matrix.mxcUrlToHttp(icon, 96, 96, "crop");
+            }
+        }
+
         const image = icon ?
-            <img className="room__icon" src={icon} alt={room.name} /> :
+            <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
             <div className="room__icon">{acronym(room.name)}</div>;
 
         elements.push(
@@ -104,8 +112,7 @@ function RoomList({ rooms }) {
     return elements;
 }
 
-function GroupList({ roomSelect, setGroupName }) {
-    const [currentGroup, selectGroup] = useState("home");
+function GroupList({ roomSelect, setGroup, currentGroup }) {
 
     // Placed here so we can inherit roomSelect, currentGroup and selectGroup
     function Group({ groupName, k, roomList, children, builtin=false }) {
@@ -114,8 +121,7 @@ function GroupList({ roomSelect, setGroupName }) {
                 className={"group " + (builtin ? "group--default " : "") +  (currentGroup === k ? "group--selected" : "")}
                 key={k}
                 onClick={() => {
-                    setGroupName(groupName);
-                    selectGroup(k);
+                    setGroup({name: groupName, key: k})
                     roomSelect(roomList());
                 }}
             >
