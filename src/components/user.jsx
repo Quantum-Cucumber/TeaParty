@@ -1,5 +1,5 @@
 import "./components.scss";
-import { get_username, get_homeserver } from "../matrix-client";
+import { get_username, get_homeserver } from "../utils/matrix-client";
 
 export function Avatar({ user, subClass }) {
     // Get mxc:// url 

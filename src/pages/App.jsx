@@ -3,7 +3,7 @@ import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import './root.css';
 import Login from "./Login";
 import Client from "./Client";
-import { logged_in } from "../matrix-client";
+import { logged_in } from "../utils/matrix-client";
 
 function App() {
   // Colour theme
