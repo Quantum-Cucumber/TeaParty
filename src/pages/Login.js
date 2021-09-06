@@ -1,4 +1,4 @@
-import "./login.css";
+import "./login.scss";
 import { Link, useHistory } from "react-router-dom";
 import { useRef } from "react";
 import { attempt_login } from "../matrix-client";

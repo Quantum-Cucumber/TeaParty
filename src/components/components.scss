@@ -31,18 +31,21 @@
     overflow-x: hidden;
     user-select: none;
 }
-.user__username {
+.user {
+    &__username {
     color: var(--text);
-}
-.user__homeserver {
-    color: var(--text-greyed);
+    }
+    &__homeserver {
+        color: var(--text-greyed);
+    }
 }
 
 .mdi-icon {
     cursor: pointer;
     color: var(--text);
-}
-.mdi-icon:hover {
+    
+    &:hover {
     opacity: 0.7;
+    }
 }
 

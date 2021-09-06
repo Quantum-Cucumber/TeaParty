@@ -1,5 +1,5 @@
 import Icon from '@mdi/react';
-import "./components.css";
+import "./components.scss";
 import { mdiLoading } from "@mdi/js";
 
 export function Button({ path, clickFunc, subClass, size=null }) {

@@ -1,4 +1,4 @@
-import "./client.css";
+import "./client.scss";
 import { build_matrix } from "../matrix-client";
 import { User } from "../components/user";
 import { useEffect, useState } from "react";

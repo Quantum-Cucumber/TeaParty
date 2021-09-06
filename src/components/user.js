@@ -1,4 +1,4 @@
-import "./components.css";
+import "./components.scss";
 import { get_username, get_homeserver } from "../matrix-client";
 
 export function Avatar({ user, subClass }) {

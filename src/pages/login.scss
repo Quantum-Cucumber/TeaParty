@@ -4,6 +4,16 @@
     height: 100%;
 }
 
+@media only screen and (orientation: portrait) {
+    .modal__bg {
+        width: 90%;
+        min-height: 20%;
+    }
+    #page {
+        background-color: var(--bg-focus);
+    }
+}
+
 #modal {
     background-color: var(--bg-focus);
     margin: auto;
@@ -16,15 +26,9 @@
     padding: 5vh 0 2.5vh;
     top: 20%;
     position: relative;
-}
 
-@media only screen and (orientation: portrait) {
-    .modal__bg {
-        width: 90%;
-        min-height: 20%;
-    }
-    #page {
-        background-color: var(--bg-focus);
+    a {
+        margin: 5px 0;
     }
 }
 
@@ -34,22 +38,22 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-}
-
-.modal__label-holder > p {
-    font-size: 1.5rem;
-    margin: 0 0 15px 2%;
+    
+    p {
+        font-size: 1.5rem;
+        margin: 0 0 15px 2%;
+    }
 }
 
 .modal__input-holder {
     width: 85%;
     bottom: 20%;
     text-align: center;
-}
-
-.modal__input-holder > input {
-    width: 100%;
-    box-sizing: border-box;
+    
+    input {
+        width: 100%;
+        box-sizing: border-box;
+    }
 }
 
 input {
@@ -61,16 +65,16 @@ input {
     font-family: inherit;
     background-color: var(--bg);
     margin-bottom: 10px;
-}
+    
+    &::placeholder {
+        color: var(--text-greyed);
+        opacity: 1; /* Firefox :] */
+    }
 
-input::placeholder {
-    color: var(--text-greyed);
-    opacity: 1; /* Firefox :] */
-}
-
-input:focus {
-    outline: none; 
-    box-shadow: inset 0 0 0 2px var(--primary);
+    &:focus {
+        outline: none; 
+        box-shadow: inset 0 0 0 2px var(--primary);
+    }
 }
 
 
@@ -92,15 +96,19 @@ input:focus {
     font-size: 1rem;
     margin: 10px 0;
     cursor: pointer;
-}
-.modal__button:active {
-    opacity: 0.7;
+    
+    &:active {
+        opacity: 0.7;
+    }
 }
 
 #top {
     display: flex;
+    input {
+        box-sizing: border-box;
+    }
 }
-#top > input {box-sizing: border-box;}
+
 #username-input--split {
     width: 100%;
     flex: 1 1 auto;
@@ -112,13 +120,10 @@ input:focus {
     flex: 1 0 auto;
     width: 33%;
     transition: 0.15s;
-}
-#hs-input--split:focus {
-    width: 66%;
-} 
-
-#modal > a {
-    margin: 5px 0;
+    
+    &:focus {
+        width: 66%;
+    }
 }
 
 .input--error {
