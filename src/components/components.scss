@@ -1,3 +1,4 @@
+/* User */
 .user {
     display: flex;
     flex-direction: row;
@@ -40,6 +41,8 @@
     }
 }
 
+/* Button */
+
 .mdi-icon {
     cursor: pointer;
     color: var(--text);
@@ -49,6 +52,8 @@
     opacity: 0.7;
     }
 }
+
+/* Tooltip */
 
 .tooltip {
     $offset: 10px;
@@ -123,5 +128,30 @@
             bottom: 100%;
             border-bottom-color: $color; 
         }
+    }
+}
+
+/* Selectable */
+
+.option {
+    width: 100%;
+    margin-bottom: 3px;
+    padding: 8px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    /* Vertically center children */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &:hover, &--selected {
+        background-color: var(--bg);
+    }
+
+    &__text {
+        display: inline-block;
+        margin-left: 8px;
     }
 }

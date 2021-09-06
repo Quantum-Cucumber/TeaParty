@@ -14,7 +14,13 @@
 }
 
 .settings__categories {
-    width: 200px;
+    width: 170px;
+    padding: 10px 15px;
+
+    .option {
+        border-radius: 15px;
+        margin-bottom: 5px;
+    }
 }
 
 .settings__divider {
@@ -23,5 +29,17 @@
 }
 
 .settings__panel {
-  
+  flex: 1 1 auto;
+  padding: 15px 20px;
+}
+
+.settings__panel__group {
+    width: 100%;
+    margin-bottom: 30px;
+
+    &__label {
+        width: 100%;
+        border-bottom: 2px solid var(--text);
+        font-size: 1.1rem;
+    }
 }

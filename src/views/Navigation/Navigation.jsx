@@ -2,7 +2,7 @@ import "./Navigation.scss";
 import { useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import { Button, Tooltip, Loading } from "../../components/interface";
+import { Button, Tooltip, Loading, Option } from "../../components/interface";
 import { User } from "../../components/user";
 import { filter_orphan_rooms, get_directs, get_joined_space_rooms } from "../../utils/rooms";
 
@@ -54,8 +54,10 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
                     <div
                         className={"group " + (builtin ? "group--default " : "") + (currentGroup.key === k ? "group--selected" : "")}
                         onClick={() => {
-                            setGroup({ name: groupName, key: k })
-                            roomSelect(roomList());
+                            if (k !== currentGroup.key) {
+                                setGroup({ name: groupName, key: k })
+                                roomSelect(roomList());
+                            }
                         }}
                     >
                         {children}
@@ -117,16 +119,11 @@ function RoomList({ rooms, currentGroup }) {
             <div className="room__icon">{acronym(room.name)}</div>;
 
         elements.push(
-            <div
-                className={"room " + (currentRoom === key ? "room--selected" : "")}
-                key={key}
-                onClick={() => { selectRoom(key) }}
-            >
+            <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom}>
                 <div className="room__icon__crop">
                     {image}
                 </div>
-                <div className="room__label">{room.name}</div>
-            </div>
+            </Option>
         );
     });
 

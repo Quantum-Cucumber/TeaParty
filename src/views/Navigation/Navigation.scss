@@ -1,0 +1,130 @@
+$border: 2px solid var(--border);
+
+/* Rooms/profile panel */
+.column--rooms {
+    flex: 0 0 auto;
+    width: 260px;
+    background-color: var(--bg-focus);
+    border-right: $border;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+
+    &__label {
+        flex: none;
+        border-bottom: $border;
+        padding: 15px 18px;
+        font-size: 1.1rem;
+    }
+
+    &__holder {
+        flex: 1 1 auto;
+        width: 100%;
+        padding: 5px 10px;
+        overflow-y: auto;
+        box-sizing: border-box;
+        font-size: 0.9rem;
+
+        &__loading {
+            display: flex;
+            width: 100%;
+            justify-content: center;
+            
+        }
+    }
+}
+
+.room__icon__crop {
+    width: 1.5rem;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 35%;
+
+    & > .room__icon {
+        font-size: 0.6rem;
+    }
+}
+
+
+.room__icon {
+    height: 100%;
+    width: 100%;
+    background-color: var(--bg);
+    /* To center text */
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+.room__label {
+    display: inline-block;
+}
+
+
+/* User bar */
+.client__user-bar {
+    width: 100%;
+    height: 55px;
+    border-top: $border;
+    padding: 5px 10px;
+    box-sizing: border-box;
+    display: flex;
+    flex: 0 0 auto;
+    font-size: 0.9rem;
+
+    &__profile {
+        height: 100%;
+        flex: 1 1 auto;
+    }
+
+    &__options-box {
+        flex: 0 1 auto;
+        height: 100%;
+        margin-left: 8px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    &__options {
+        padding: 2px;
+        position: relative; /* For tooltip */
+    }
+}
+
+
+/* Leftmost groups panel */
+.column--groups {
+    flex: 0 0 auto;
+    width: 70px;
+    background-color: var(--bg-focus);
+    border-right: $border;
+    padding: 15px 11px;
+}
+
+.group {
+    width: 100%;
+    margin-bottom: 12px;
+    aspect-ratio: 1;
+    overflow: hidden;
+    cursor: pointer;
+    transition: 0.2s;
+    border-radius: 20px;
+
+    &--default {
+        background: var(--bg);
+        padding: 5px;
+        box-sizing: border-box;
+    }
+
+    &--selected {
+        border-radius: 10px;
+    }
+
+    &:hover {
+        opacity: 0.7;
+        border-radius: 10px;
+    }
+}
