@@ -1,7 +1,7 @@
-import "./login.scss";
+import "./Login.scss";
 import { Link, useHistory } from "react-router-dom";
 import { useRef } from "react";
-import { attempt_login } from "../utils/matrix-client";
+import { attempt_login } from "../../utils/matrix-client";
 
 
 function input_valid(target, fieldName) {

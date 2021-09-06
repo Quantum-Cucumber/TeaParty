@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import './root.css';
-import Login from "./Login";
-import Client from "./Client";
+import Login from "./Login/Login";
+import Client from "./Client/Client";
 import { logged_in } from "../utils/matrix-client";
 
 function App() {

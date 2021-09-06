@@ -1,9 +1,9 @@
-import "./client.scss";
+import "./Client.scss";
 import { useEffect, useState } from "react";
-import { build_matrix } from "../utils/matrix-client";
-import { Loading } from "../components/interface";
-import Navigation from "../views/navigation/navigation";
-import { filter_orphan_rooms } from "../utils/rooms";
+import { build_matrix } from "../../utils/matrix-client";
+import { Loading } from "../../components/interface";
+import Navigation from "../../views/navigation/navigation";
+import { filter_orphan_rooms } from "../../utils/rooms";
 
 function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
