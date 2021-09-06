@@ -151,14 +151,15 @@ $border: 2px solid var(--border);
     &__options-box {
         flex: 0 1 auto;
         height: 100%;
-        display: table;
         margin-left: 8px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
     }
 
     &__options {
         padding: 2px;
-        display: table-cell;
-        vertical-align: middle;
+        position: relative; /* For tooltip */
     }
 }
 

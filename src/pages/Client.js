@@ -2,7 +2,7 @@ import "./client.scss";
 import { build_matrix } from "../matrix-client";
 import { User } from "../components/user";
 import { useEffect, useState } from "react";
-import { Button, Loading } from "../components/interface";
+import { Button, Loading, Tooltip } from "../components/interface";
 import { Icon } from "@mdi/react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple } from "@mdi/js";
 
@@ -56,7 +56,7 @@ function Client() {
                 <div className="client__user-bar">
                     <MyUser user={global.matrix.getUser(global.matrix.getUserId())} />
                     <div className="client__user-bar__options-box">
-                        <Button path={mdiCog} clickFunc={() => { }} subClass="client__user-bar__options" size="24px" />
+                        <Button path={mdiCog} clickFunc={() => { }} subClass="client__user-bar__options" size="24px" tipDir="top" tipText="Settings" />
                     </div>
                 </div>
             </div>
@@ -117,24 +117,27 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
     // Placed here so we can inherit roomSelect, currentGroup and selectGroup
     function Group({ groupName, k, roomList, children, builtin=false }) {
         return (
-            <div
-                className={"group " + (builtin ? "group--default " : "") +  (currentGroup.key === k ? "group--selected" : "")}
-                key={k}
-                onClick={() => {
-                    setGroup({name: groupName, key: k})
-                    roomSelect(roomList());
-                }}
-            >
-                {children}
+            <div style={{position: "relative"}} key={k}>
+            <Tooltip text={groupName} dir="right">
+                <div
+                    className={"group " + (builtin ? "group--default " : "") +  (currentGroup.key === k ? "group--selected" : "")}
+                    onClick={() => {
+                        setGroup({name: groupName, key: k})
+                        roomSelect(roomList());
+                    }}
+                >
+                    {children}
+                </div>
+            </Tooltip>
             </div>
         );
     }
 
     var groups = [
-        <Group groupName="Home" k="home" roomList={filter_orphan_rooms} builtin>
+        <Group groupName="Home" key="home" k="home" roomList={filter_orphan_rooms} builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </Group>,
-        <Group groupName="Direct Messages" k="directs" path={mdiHomeVariant} roomList={() => get_directs(true)} builtin>
+        <Group groupName="Direct Messages" key="directs" k="directs" path={mdiHomeVariant} roomList={() => get_directs(true)} builtin>
             <Icon path={mdiAccountMultiple} color="var(--text)" size="100%" />
         </Group>,
     ];
@@ -150,7 +153,7 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
             groups.push(
                 <Group 
                     groupName={room.name}
-                    k={key} 
+                    key={key} k={key}
                     roomList={() => get_joined_space_rooms(key)}
                 >
                     {image}

@@ -43,9 +43,85 @@
 .mdi-icon {
     cursor: pointer;
     color: var(--text);
+    display: block;
     
     &:hover {
     opacity: 0.7;
     }
 }
 
+.tooltip {
+    $offset: 10px;
+    $arrow-size: 5px;
+    $color: var(--border);
+
+    user-select: none;
+    background-color: $color;
+    padding: 8px 13px;
+    border-radius: 10px;
+    z-index: 10;
+    position: absolute;
+    width: max-content;
+
+    /* Visibility */
+    transition: opacity 0.1s, visibility 0.1s;
+    opacity: 0;
+    visibility: hidden;
+    &--visible {
+        opacity: 100%;
+        visibility: visible;
+    }
+
+    /* Arrow */
+    &::before{
+        content: "";
+        border: #{$arrow-size} solid transparent;
+        position: absolute
+    }
+
+    /* Direction variants */
+    &--right {
+        left: calc(100% + #{$offset});
+        transform: translate(0, -50%);
+        top: 50%;
+
+        &::before {
+            top: calc(50% - #{$arrow-size});
+            right: 100%;
+            border-right-color: $color; 
+        }
+    }
+    &--top {
+        bottom: calc(100% + #{$offset});
+        transform: translate(-50%, 0);
+        left: 50%;
+
+        &::before {
+            left: calc(50% - #{$arrow-size});
+            top: 100%;
+            border-top-color: $color; 
+        }
+    }
+    &--left {
+        right: calc(100% + #{$offset});
+        transform: translate(0, -50%);
+        top: 50%;
+
+        &::before {
+            top: calc(50% - #{$arrow-size});
+            left: 100%;
+            border-left-color: $color; 
+        }
+    }
+    &--bottom {
+        top: calc(100% + #{$offset});
+        transform: translate(-50%, 0);
+        left: 50%;
+
+        &::before {
+            left: calc(50% - #{$arrow-size});
+            bottom: 100%;
+            border-bottom-color: $color; 
+        }
+    }
+}
