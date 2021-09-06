@@ -1,0 +1,27 @@
+.page--settings {
+    width: 100%;
+    height: 100%;
+    background-color: var(--bg-focus);
+    padding: 50px 15%;
+    box-sizing: border-box;
+}
+
+.settings__holder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.settings__categories {
+    width: 200px;
+}
+
+.settings__divider {
+    width: 2px;
+    background-color: var(--bg);
+}
+
+.settings__panel {
+  
+}

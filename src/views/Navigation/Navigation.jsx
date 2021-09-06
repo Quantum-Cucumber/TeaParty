@@ -1,4 +1,4 @@
-import "./navigation.scss";
+import "./Navigation.scss";
 import { useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple } from "@mdi/js";
 import { Icon } from "@mdi/react";
@@ -6,7 +6,7 @@ import { Button, Tooltip, Loading } from "../../components/interface";
 import { User } from "../../components/user";
 import { filter_orphan_rooms, get_directs, get_joined_space_rooms } from "../../utils/rooms";
 
-function Navigation({ setRooms, roomPanel }) {
+function Navigation({ setRooms, roomPanel, setPage }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
 
     function selectGroup(rooms) {
@@ -31,7 +31,7 @@ function Navigation({ setRooms, roomPanel }) {
                 <div className="client__user-bar">
                     <MyUser user={global.matrix.getUser(global.matrix.getUserId())} />
                     <div className="client__user-bar__options-box">
-                        <Button path={mdiCog} clickFunc={() => { }} subClass="client__user-bar__options" size="24px" tipDir="top" tipText="Settings" />
+                        <Button path={mdiCog} clickFunc={() => {setPage("settings")}} subClass="client__user-bar__options" size="24px" tipDir="top" tipText="Settings" />
                     </div>
                 </div>
             </div>
