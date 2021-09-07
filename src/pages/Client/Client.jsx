@@ -5,6 +5,7 @@ import { Loading } from "../../components/interface";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
 import { filter_orphan_rooms } from "../../utils/rooms";
+import Chat from "../../views/Chat/Chat";
 
 function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
@@ -40,7 +41,9 @@ function Client() {
     return (
         <div className="client">
             <Navigation roomPanel={roomPanel} setRooms={setRooms} setPage={setPage} />
-            <div className="column column--chat"></div>
+            <div className="column column--chat">
+                <Chat />
+            </div>
             <div className="column column--right"></div>
         </div>
     );
