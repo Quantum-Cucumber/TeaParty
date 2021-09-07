@@ -4,6 +4,7 @@ import { Option } from "../../components/interface";
 import { mdiClose, mdiBrush } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import { setTheme, getSetting } from "../../utils/settings";
+import { logoutMatrix } from "../../utils/matrix-client";
 
 
 function SettingsPage({ setPage }) {
@@ -70,6 +71,8 @@ function SettingsPage({ setPage }) {
             <div className="settings__holder">
                 <div className="settings__categories">
                     {tabs}
+                    <div className="options-divider"></div>
+                    <Option danger text="Log Out" k="logout" select={logoutMatrix}/>
                 </div>
                 <div className="settings__divider"></div>
                 <div className="settings__panel">

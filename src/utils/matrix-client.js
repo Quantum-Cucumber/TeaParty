@@ -92,4 +92,6 @@ export async function logoutMatrix() {
 
     // Clear storage
     localStorage.clear();
+
+    window.location.reload();
 }

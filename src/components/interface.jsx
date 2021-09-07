@@ -42,9 +42,13 @@ export function Tooltip({ text, dir, children }) {
     );
 }
 
-export function Option({ k, text, selected, select, children }) {
+export function Option({ k, text, selected, select, danger, children }) {
+    const className = "option" + 
+                      (selected === k ? " option--selected" : "") +
+                      (danger ? " option--danger" : "")
+
     return (
-        <div className={"option" + (selected === k ? " option--selected" : "")} onClick={() => select(k)}>
+        <div className={className} onClick={() => select(k)}>
             {children}
             <div className="option__text">{text}</div>
         </div>
