@@ -1,14 +1,12 @@
 import "./Client.scss";
 import { useEffect, useState } from "react";
-import { buildMatrix, logoutMatrix } from "../../utils/matrix-client";
+import { buildMatrix } from "../../utils/matrix-client";
 import { Loading } from "../../components/interface";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
 import { filter_orphan_rooms } from "../../utils/rooms";
-import { useHistory } from "react-router";
 
 function Client() {
-    let history = useHistory();
     // On first load, start syncing. Once synced, change state to reload as client
     const [synced, syncState] = useState(false);
     const [roomPanel, setRooms] = useState([]);
@@ -22,13 +20,7 @@ function Client() {
                     setRooms(filter_orphan_rooms());
                 }
             })
-        }).catch(() => {
-            // An error occured either signing in with stored creds or accessing the homeserver
-            // Either way, log the user out to retry
-            logoutMatrix();
-            history.push("/login");
-            history.go(0);
-        });
+        })
     }, []);
     if (!synced) {
         return (

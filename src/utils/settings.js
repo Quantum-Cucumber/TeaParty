@@ -1,3 +1,8 @@
+const default_settings = {
+    theme: "dark",
+}
+
+
 function loadSettings() {
     const settings = localStorage.getItem("settings");
     if (!settings) { return {} }
@@ -21,6 +26,7 @@ export function setTheme(theme = null) {
         updateSettings("theme", theme);
     } else {
         theme = getSetting("theme");
+        if (theme === undefined) {theme = default_settings["theme"]};
     }
 
     // Just hope we don't need to apply any other classes to the root ig

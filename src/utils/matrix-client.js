@@ -70,7 +70,7 @@ export async function buildMatrix() {
     global.matrix = matrixsdk.createClient({
         accessToken: token, userId: user_id, baseUrl: base_url, store: store
     })
-    await global.matrix.startClient();
+    await global.matrix.startClient().catch((err) => {alert("fuck");throw err});
 }
 
 export function get_username(user) {
@@ -83,11 +83,11 @@ export function get_homeserver(user) {
     return user.userId.split(/:(.+)/)[1];
 }
 
-export function logoutMatrix() {
+export async function logoutMatrix() {
     // Stop client if started
     if (global.matrix !== undefined) {
         global.matrix.stopClient();
-        global.matrix.clearStores()
+        await global.matrix.clearStores()
     }
 
     // Clear storage

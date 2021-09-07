@@ -18,7 +18,7 @@ function input_valid(target, fieldName) {
 
 function Login({ type = "Login" }) {
     const [errorMsg, showError] = useState(null);
-    let history = useHistory();
+    const history = useHistory();
     // Collect state for form fields
     const usernameRef = useRef(null);
     const homeserverRef = useRef(null);
