@@ -30,12 +30,12 @@ async function discover_base_url(homeserver) {
     }
 }
 
-export async function attempt_login(username, homeserver, password) {
+export async function attemptLogin(username, homeserver, password) {
     /* Connect to the homeserver base_url and login with username/password*/
 
-    console.log("Attempting log in...")
+    console.info("Attempting log in...")
     const base_url = await discover_base_url(homeserver);
-    console.log("Found base url: " + base_url);
+    console.info("Found base url: " + base_url);
 
     const client = matrixsdk.createClient(base_url)
     const response = await client.loginWithPassword(username, password);
@@ -49,26 +49,28 @@ export async function attempt_login(username, homeserver, password) {
     }
     localStorage.setItem("user_id", response.user_id);
 
-    console.log("Logged in as: " + response.user_id);
+    console.info("Logged in as: " + response.user_id);
 }
 
-export async function build_matrix() {
+export async function buildMatrix() {
     /* Build the matrix client via the localStorage components and assign to global variable */
 
     const token = localStorage.getItem("token");
+    if (!token) {throw new Error("No token was saved")}
     const user_id = localStorage.getItem("user_id");
+    if (!token) {throw new Error("No user ID was saved")}
     const base_url = localStorage.getItem("base_url");
-    console.log(token, user_id, base_url);
+    if (!token) {throw new Error("No homeserver url was saved")}
 
     let opts = { indexedDB: window.indexedDB, localStorage: window.localStorage };
     let store = new matrixsdk.IndexedDBStore(opts);
     await store.startup()
-    console.log("Started IndexedDB");
+    console.info("Started IndexedDB");
 
     global.matrix = matrixsdk.createClient({
         accessToken: token, userId: user_id, baseUrl: base_url, store: store
     })
-    global.matrix.startClient();
+    await global.matrix.startClient();
 }
 
 export function get_username(user) {
@@ -79,4 +81,15 @@ export function get_username(user) {
 export function get_homeserver(user) {
     /* Split user ID at first : to get homeserver portion */
     return user.userId.split(/:(.+)/)[1];
+}
+
+export function logoutMatrix() {
+    // Stop client if started
+    if (global.matrix !== undefined) {
+        global.matrix.stopClient();
+        global.matrix.clearStores()
+    }
+
+    // Clear storage
+    localStorage.clear();
 }

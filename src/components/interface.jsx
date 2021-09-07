@@ -15,7 +15,7 @@ export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }
 
 export function Loading({ size }) {
     return (
-        <Icon path={mdiLoading} color="var(--text)" size={size} spin={1.2}/>
+        <Icon path={mdiLoading} color="var(--primary)" size={size} spin={1.2}/>
     );
 }
 

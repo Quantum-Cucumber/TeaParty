@@ -1,7 +1,7 @@
 import "./Login.scss";
 import { Link, useHistory } from "react-router-dom";
-import { useRef } from "react";
-import { attempt_login } from "../../utils/matrix-client";
+import { useRef, useState } from "react";
+import { attemptLogin } from "../../utils/matrix-client";
 
 
 function input_valid(target, fieldName) {
@@ -17,6 +17,7 @@ function input_valid(target, fieldName) {
 
 
 function Login({ type = "Login" }) {
+    const [errorMsg, showError] = useState(null);
     let history = useHistory();
     // Collect state for form fields
     const usernameRef = useRef(null);
@@ -24,13 +25,26 @@ function Login({ type = "Login" }) {
     const passwordRef = useRef(null);
 
     function buttonClicked() {
+        showError(null);
+
         if (type === "Login") {
             const hs = homeserverRef.current.value ? homeserverRef.current.value : homeserverRef.current.placeholder;
             if (![input_valid(usernameRef.current, "Username"), input_valid(passwordRef.current, "Password")].every(Boolean)) {return};
-            attempt_login(usernameRef.current.value, hs, passwordRef.current.value).then(() => {
-                console.log("Redirecting to app");
+            attemptLogin(usernameRef.current.value, hs, passwordRef.current.value).then(() => {
+                console.info("Redirecting to app");
                 history.push("/app");
                 history.go(0);
+            }).catch((err) => {
+                var errText;
+                if (typeof err.json === "function") {
+                    err.json().then((errJSON) => {
+                        console.log(errJSON)
+                        errText = errJSON.error;
+                    });
+                } else {
+                    errText = err.toString()  // Not too user friendly
+                }
+                showError(errText ? errText : "An unknown error occured");
             });
         }
     }
@@ -38,14 +52,15 @@ function Login({ type = "Login" }) {
     // Create the page
     return (
         <div className="modal__bg">
-            <div id="modal">
+            <div className="modal">
                 <div className="modal__label-holder">
                     <p>{type}</p>
                 </div>
+                {errorMsg && <div className="modal__error">{errorMsg}</div>}
                 <div className="modal__input-holder">
-                    <div id="top">
-                        <input autoFocus id="username-input--split" type="text" placeholder="Username" ref={usernameRef}></input>
-                        <input id="hs-input--split" className="input--prefill" type="text" placeholder="matrix.org" ref={homeserverRef}></input>
+                    <div className="input-split__holder">
+                        <input autoFocus className="input-split--username" type="text" placeholder="Username" ref={usernameRef}></input>
+                        <input className="input-split--hs input--prefill" type="text" placeholder="matrix.org" ref={homeserverRef}></input>
                     </div>
                     <input type="password" placeholder="Password" ref={passwordRef}></input>
                 </div>

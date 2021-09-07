@@ -12,12 +12,12 @@
 
 .light {
     color-scheme: light;
-    --primary: #d15ec5;
+    --primary: #df79d4;
     --bg: #efefef;
-    --bg-focus: #e3e3e3;
+    --bg-focus: #e1e1e1;
     --text: #343434;
     --text-greyed: #6c6c6c;
-    --error: #ed3f3e;
+    --error: #e55757;
     --border: #bebebe;
 }
 
