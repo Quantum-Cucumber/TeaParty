@@ -1,4 +1,5 @@
-body.dark {
+/* Colour themes */
+.dark {
     color-scheme: dark;
     --primary: #5e72d1;
     --bg: #494a51;
@@ -9,6 +10,19 @@ body.dark {
     --border: #1c1c1c;
 }
 
+.light {
+    color-scheme: light;
+    --primary: #d15ec5;
+    --bg: #efefef;
+    --bg-focus: #e3e3e3;
+    --text: #343434;
+    --text-greyed: #6c6c6c;
+    --error: #ed3f3e;
+    --border: #bebebe;
+}
+
+
+/* Universal styles */
 body, html, #root {
     font-family: Arial, Helvetica, sans-serif;
     color: var(--text);
