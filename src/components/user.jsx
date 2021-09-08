@@ -14,7 +14,7 @@ export function Avatar({ user, subClass }) {
         icon = <img alt="Avatar" className="avatar" src={url} />;
     } else {
         icon = (
-            <div className="avatar" style={{"background-color": getUserColour(user.userId)}}>
+            <div className="avatar" style={{"backgroundColor": getUserColour(user.userId)}}>
                 {acronym(user.displayName, 1)}
             </div>
         );
