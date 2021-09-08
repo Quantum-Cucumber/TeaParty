@@ -6,7 +6,7 @@ import { Button, Tooltip, Loading, Option } from "../../components/interface";
 import { User } from "../../components/user";
 import { filter_orphan_rooms, get_directs, get_joined_space_rooms } from "../../utils/rooms";
 
-function Navigation({ setRooms, roomPanel, setPage }) {
+function Navigation({ setRooms, roomPanel, setPage, currentRoom, selectRoom }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
 
     function selectGroup(rooms) {
@@ -23,7 +23,7 @@ function Navigation({ setRooms, roomPanel, setPage }) {
                 <div className="column--rooms__label">{currentGroup.name}</div>
                 <div className="column--rooms__holder">
                     {roomPanel ?
-                        <RoomList rooms={roomPanel} currentGroup={currentGroup} /> :
+                        <RoomList rooms={roomPanel} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> :
                         <div className="column--rooms__holder__loading"><Loading size="30px" /></div>
                     }
                 </div>
@@ -99,8 +99,7 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
     return groups;
 }
 
-function RoomList({ rooms, currentGroup }) {
-    const [currentRoom, selectRoom] = useState();
+function RoomList({ rooms, currentGroup,currentRoom, selectRoom }) {
 
     var elements = [];
     rooms.forEach((room) => {

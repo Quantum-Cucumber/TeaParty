@@ -111,7 +111,7 @@ $border: 2px solid var(--border);
     overflow: hidden;
     cursor: pointer;
     transition: 0.2s;
-    border-radius: 20px;
+    border-radius: 45%;
 
     &--default {
         background: var(--bg);
@@ -119,12 +119,11 @@ $border: 2px solid var(--border);
         box-sizing: border-box;
     }
 
-    &--selected {
-        border-radius: 10px;
+    &--selected, &:hover {
+        border-radius: 30%;
     }
 
     &:hover {
         opacity: 0.7;
-        border-radius: 10px;
     }
 }

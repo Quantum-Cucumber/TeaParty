@@ -12,6 +12,7 @@ function Client() {
     const [synced, syncState] = useState(false);
     const [roomPanel, setRooms] = useState([]);
     const [page, setPage] = useState();  // Used to set full screen pages
+    const [currentRoom, selectRoom] = useState();
 
     useEffect(() => {
         buildMatrix().then(() => {
@@ -40,9 +41,11 @@ function Client() {
 
     return (
         <div className="client">
-            <Navigation roomPanel={roomPanel} setRooms={setRooms} setPage={setPage} />
+            <Navigation roomPanel={roomPanel} setRooms={setRooms} setPage={setPage} 
+             currentRoom={currentRoom} selectRoom={selectRoom} 
+            />
             <div className="column column--chat">
-                <Chat />
+                <Chat currentRoom={currentRoom} />
             </div>
             <div className="column column--right"></div>
         </div>
