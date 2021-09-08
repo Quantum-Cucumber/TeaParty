@@ -54,3 +54,8 @@ body, html, #root {
 a {
     color: var(--primary);
 }
+
+*::selection {
+    background-color: var(--primary);
+    color: var(--bg-focus)
+}

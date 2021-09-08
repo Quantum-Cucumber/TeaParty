@@ -41,7 +41,7 @@ function Chat({ currentRoom }) {
 
     const messages = messageTimeline.map((event, index) => {
         // Determine whether last message was by same user
-        if (messageTimeline[index + 1] &&  messageTimeline[index + 1].getSender() == event.getSender()) {
+        if (messageTimeline[index + 1] &&  messageTimeline[index + 1].getSender() === event.getSender()) {
             return (
                 <PartialMessage event={event} key={event.getId()}/>
             )
