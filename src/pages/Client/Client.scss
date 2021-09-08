@@ -41,7 +41,7 @@ $border: 2px solid var(--border);
 .column--chat {
     flex: 1 0 auto;
     background-color: var(--bg);
-    overflow: hidden auto;
+    position: relative;
 }
 .column--right {
     flex: 0 0 auto;

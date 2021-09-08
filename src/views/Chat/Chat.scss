@@ -1,9 +1,17 @@
 .chat {
     display: flex;
-    flex-direction: column;
+    flex-direction: column-reverse;
     justify-content: flex-end;
 }
 
-.message {
+.chat-scroll {
+    position: absolute;
+    bottom: 0;
     width: 100%;
+    max-height: 100%;
+    overflow: hidden auto; /* Only vertical scroll */
+}
+
+.message {
+    flex: none;
 }

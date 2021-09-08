@@ -2,8 +2,10 @@ import "./Chat.scss";
 
 function Chat({ room }) {
     return (
-        <div className="chat">
-            <Message />
+        <div className="chat-scroll">
+            <div className="chat">
+                <Message />
+            </div>
         </div>
     );
 }
