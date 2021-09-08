@@ -6,7 +6,7 @@
 
 .chat-scroll {
     position: absolute;
-    bottom: 0;
+    bottom: 15px;
     width: 100%;
     max-height: 100%;
     overflow: hidden auto; /* Only vertical scroll */
@@ -16,13 +16,17 @@
     flex: none;
     padding: 0 15px;
     box-sizing: border-box;
-    margin-bottom: 20px;
+    margin-top: 20px;
     display: flex;
     flex-direction: row;
 
+    &:hover {
+        background-color: var(--bg-focus);
+    }
+
     &__avatar__crop {
-        width: 45px;
-        height: 45px;
+        width: 40px;
+        height: 40px;
         flex: none;
         margin-right: 15px;
         cursor: pointer;
@@ -39,13 +43,16 @@
 
     &__text {
         flex: 1 1 auto;
+        overflow: hidden;
     }
 
     &__author {
-        width: fit-content;
         font-weight: 600;
         cursor: pointer;
-        margin: 2px 0;
+        margin-bottom: 2px;
+        width: 100%;
+        text-overflow: ellipsis;
+        overflow: hidden;
         
         &:hover {
             text-decoration: underline;
@@ -53,5 +60,22 @@
     }
     &__content {
         width: 100%;
+    }
+}
+
+.message--partial {
+    padding: 0 15px;
+    flex: none;
+    display: flex;
+    flex-direction: row;
+
+    &:hover {
+        background-color: var(--bg-focus);
+    }
+
+    &__offset {
+        /* Offset avatar + margin */
+        width: 55px;
+        flex: none;
     }
 }

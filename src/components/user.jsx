@@ -1,15 +1,28 @@
 import "./components.scss";
 import { get_username, get_homeserver } from "../utils/matrix-client";
+import { getUserColour, acronym } from "../utils/utils";
 
 export function Avatar({ user, subClass }) {
     // Get mxc:// url 
     const mxc = user.avatarUrl;
     // Convert mxc url to https if it exists
-    const url = mxc !== null ? global.matrix.mxcUrlToHttp(mxc, 96, 96, "crop") : "";
+    const url = mxc !== null ? global.matrix.mxcUrlToHttp(mxc, 96, 96, "crop") : null;
+
+    // Use a placeholder if need be
+    var icon;
+    if (url) {
+        icon = <img alt="Avatar" className="avatar" src={url} />;
+    } else {
+        icon = (
+            <div className="avatar" style={{"background-color": getUserColour(user.userId)}}>
+                {acronym(user.displayName, 1)}
+            </div>
+        );
+    }
 
     return (
         <div className={"avatar__crop " + subClass}>
-            <img alt="Avatar" className="avatar" src={url}></img>
+            {icon}
         </div>
     );
 }

@@ -3,8 +3,9 @@ import { useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import { Button, Tooltip, Loading, Option } from "../../components/interface";
-import { User } from "../../components/user";
+import { Avatar, User } from "../../components/user";
 import { filter_orphan_rooms, get_directs, get_joined_space_rooms } from "../../utils/rooms";
+import { acronym } from "../../utils/utils";
 
 function Navigation({ setRooms, roomPanel, setPage, currentRoom, selectRoom }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
@@ -37,11 +38,6 @@ function Navigation({ setRooms, roomPanel, setPage, currentRoom, selectRoom }) {
             </div>
         </>
     );
-}
-
-
-function acronym(text, len = 3) {
-    return text.match(/\b([a-z0-9])/gi).slice(0, len).join("").toUpperCase()
 }
 
 function GroupList({ roomSelect, setGroup, currentGroup }) {
@@ -107,20 +103,19 @@ function RoomList({ rooms, currentGroup,currentRoom, selectRoom }) {
         var icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
 
         if (!icon && currentGroup.key === "directs") {
-            icon = global.matrix.getUser(room.guessDMUserId())?.avatarUrl;
-            if (icon) {
-                icon = global.matrix.mxcUrlToHttp(icon, 96, 96, "crop");
-            }
+            const user = global.matrix.getUser(room.guessDMUserId());
+            icon = <Avatar subClass="room__icon" user={user} />
+        } else {
+            icon = icon ?
+                   <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
+                   <div className="room__icon">{acronym(room.name)}</div>;
         }
 
-        const image = icon ?
-            <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
-            <div className="room__icon">{acronym(room.name)}</div>;
 
         elements.push(
             <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom}>
                 <div className="room__icon__crop">
-                    {image}
+                    {icon}
                 </div>
             </Option>
         );
