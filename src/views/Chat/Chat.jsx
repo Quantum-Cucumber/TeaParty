@@ -44,8 +44,8 @@ function Chat({ currentRoom }) {
 
         // Fetch enough messages to have 30 in the chat
         const remainder = 30 - messageTimeline.length;
-        if (remainder > 0 && false) {
-            console.log(remainder)
+        console.log(remainder)
+        if (remainder > 0) {
             global.matrix.scrollback(getRoomObj(), remainder).then(() => {
                 timelineFromStore();
             });
@@ -85,20 +85,58 @@ function Chat({ currentRoom }) {
 
 function ChatScroll({ children, loadNewMessages }) {
     const [loading, setLoading] = useState(false);
+    const atBottom = useRef(true);
+    const atTop = useRef(false);
     const scrollRef = useRef();
 
-    function scrollTop() {
+    // Whenever component rerenders, if we were at the bottom, stay there
+    useEffect(() => {
+        if (atBottom.current) {
+            scrollToBottom();
+        } 
+    });
+
+    // Only preserve height if at the top and new children (messages) are added
+    useEffect(() => {
+        if (atTop.current !== false) {
+            // Calculate where scrollTop should be based on last distance to bottom
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight - atTop.current;
+        }
+    }, [children]);
+
+    // When the loading wheel is rendered, save the scroll height to jump to when the children load
+    useEffect(() => {
+        if (loading) {
+            scrollToTop();
+
+            // Since we scroll to the top after loading the wheel, scrollTop is 0 so we ignore it
+            atTop.current = scrollRef.current.scrollHeight;
+        }
+    }, [loading]);
+
+    function scrollToTop() {
         if (scrollRef) {
             scrollRef.current.scrollTop = 0;
         }
     }
+    function scrollToBottom() {
+        if (scrollRef) {
+            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+        }
+    }
 
+    // Determine position when we scroll and set flags accordingly
     function onScroll(e) {
-        if (e.target.scrollTop === 0) {
-            console.log("Loading")
+        atBottom.current = false;
+        atTop.current = false;
+        // When scrolled to the top, show the loading wheel and load new messages
+        if (e.target.scrollTop === 0 && !loading && !atBottom.current) {
             setLoading(true);
-            scrollTop()
-            //loadNewMessages().then(setLoading(false));
+            loadNewMessages().then(() => setLoading(false));
+        } 
+        // Scrolled to bottom
+        else if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
+            atBottom.current = true;
         }
     }
 
