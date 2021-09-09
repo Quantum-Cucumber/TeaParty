@@ -1,11 +1,11 @@
 import "./Chat.scss";
 import { Avatar } from "../../components/user";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { getUserColour } from "../../utils/utils";
 import { Loading } from "../../components/interface";
 
 function Chat({ currentRoom }) {
-    const getRoomObj = () => {return global.matrix.getRoom(currentRoom)};
+    const getRoomObj = useCallback(() => {return global.matrix.getRoom(currentRoom)}, [currentRoom]);
     // Store events
     const [messageTimeline, setTimeline] = useState([]);
     function appendEvent(event) {
@@ -13,20 +13,20 @@ function Chat({ currentRoom }) {
         setTimeline((messageTimeline) => {return [event].concat(messageTimeline)});
     }
 
-    function timelineFromStore() {
+    const timelineFromStore = useCallback(() => {
         var timeline = []
         getRoomObj().timeline.forEach((event) => {
             if (event.getType() !== "m.room.message") {return}
             timeline.unshift(event)  // Add to front of array
         });
         setTimeline(timeline);
-    }
+    }, [setTimeline, getRoomObj]);
 
     // Add event listener when room is changed
     useEffect(() => {
         // No listener when no selected room
         if (!currentRoom) {return};
-        console.log("Room: ", currentRoom)
+        console.info("Load room: ", currentRoom)
 
         function onEvent(event, eventRoom, toStartOfTimeline) {
             // Ignore pagination
@@ -43,17 +43,30 @@ function Chat({ currentRoom }) {
         timelineFromStore();
 
         // Fetch enough messages to have 30 in the chat
-        const remainder = 30 - messageTimeline.length;
-        console.log(remainder)
-        if (remainder > 0) {
-            global.matrix.scrollback(getRoomObj(), remainder).then(() => {
-                timelineFromStore();
+        // Use a function so we can fetch another batch (if needed) but only AFTER the current batch returns
+        async function getPadding() {
+            // Determine the number of messages currently in the timeline
+            var timelineCount = 0;
+            getRoomObj().timeline.forEach((event) => {
+                if (event.getType() === "m.room.message") {
+                    timelineCount++;
+                }
             });
+            console.log(timelineCount, "messages in chat")
+
+            // If we have less than 30 messages, and there are still messages to retrieve
+            if (timelineCount < 30 && getRoomObj().oldState.paginationToken !== null) {
+                await global.matrix.scrollback(getRoomObj(), 15)
+                await getPadding();
+            }
         }
+        getPadding().then(() => {
+            timelineFromStore();
+        });
 
         // Remove listener on unmount (room change)
         return () => {global.matrix.removeListener("Room.timeline", onEvent)};
-    }, [currentRoom]);
+    }, [currentRoom, getRoomObj, timelineFromStore]);
 
     // Convert message events into message components
     const messages = messageTimeline.map((event, index) => {
@@ -70,8 +83,10 @@ function Chat({ currentRoom }) {
     });
 
     async function loadNewMessages() {
-        await global.matrix.scrollback(getRoomObj());
-        timelineFromStore();
+        if (getRoomObj().oldState.paginationToken !== null) {
+            await global.matrix.scrollback(getRoomObj());
+            timelineFromStore();
+        } else {console.log("Last message in room")}
     }
 
     return (
