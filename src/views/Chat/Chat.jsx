@@ -119,37 +119,37 @@ function ChatScroll({ children, loadNewMessages }) {
     useEffect(() => {
         if (atTop.current !== false) {
             // Calculate where scrollTop should be based on last distance to bottom
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight - atTop.current;
+            restoreScrollPos();
+            atTop.current = false;
         }
     }, [children]);
 
-    // When the loading wheel is rendered, save the scroll height to jump to when the children load
     useEffect(() => {
         if (loading) {
-            scrollToTop();
-
-            // Since we scroll to the top after loading the wheel, scrollTop is 0 so we ignore it
-            atTop.current = scrollRef.current.scrollHeight;
+            restoreScrollPos();
         }
     }, [loading]);
 
-    function scrollToTop() {
-        if (scrollRef) {
-            scrollRef.current.scrollTop = 0;
-        }
-    }
     function scrollToBottom() {
         if (scrollRef) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }
+    function saveScrollPos() {
+        atTop.current = scrollRef.current.scrollHeight - scrollRef.current.scrollTop;
+    }
+    function restoreScrollPos() {
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight - atTop.current;
+    }
 
     // Determine position when we scroll and set flags accordingly
     function onScroll(e) {
         atBottom.current = false;
-        atTop.current = false;
+
+        if (atTop.current !== false) {saveScrollPos()};
         // When scrolled to the top, show the loading wheel and load new messages
         if (e.target.scrollTop === 0 && !loading && !atBottom.current) {
+            saveScrollPos();
             setLoading(true);
             loadNewMessages().then(() => setLoading(false));
         } 
