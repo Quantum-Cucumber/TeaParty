@@ -56,7 +56,8 @@ export default class messageTimeline {
         map.set(refId, event);
     }
 
-    async padTimeline() {
+    // Probably deprecated but keep for now
+    async _padTimeline() {
         do {
             await this.getMore()
             var messages = this.getMessages();

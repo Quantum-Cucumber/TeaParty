@@ -46,9 +46,6 @@ function Chat({ currentRoom }) {
         global.matrix.on("Room.timeline", onEvent);
 
         updateMessageList();
-        // Ensure we start off with enough messages
-        // Use a function so we can fetch another batch (if needed) but only AFTER the current batch returns
-        timeline.current.padTimeline().then((result) => setMessageList(result));
 
         // Remove listener on unmount (room change)
         return () => {global.matrix.removeListener("Room.timeline", onEvent)};
@@ -68,6 +65,7 @@ function Chat({ currentRoom }) {
         }
     });
 
+    if (!currentRoom || !timeline.current) {return null}
     return (
         <ChatScroll timeline={timeline} updateMessageList={updateMessageList}>
             <div className="chat">
@@ -83,6 +81,14 @@ function ChatScroll({ children, timeline, updateMessageList }) {
     const atTop = useRef(false);
     const scrollRef = useRef();
 
+    const loadMore = useCallback(() => {
+        setLoading(true);
+        timeline.current.getMore().then(() => {
+            updateMessageList();
+            setLoading(false);
+        });
+    }, [timeline, updateMessageList]);
+
     // Whenever component rerenders, if we were at the bottom, stay there
     useEffect(() => {
         if (atBottom.current) {
@@ -97,7 +103,13 @@ function ChatScroll({ children, timeline, updateMessageList }) {
             restoreScrollPos();
             atTop.current = false;
         }
-    }, [children]);
+
+        // If screen isn't full and messages can be loaded, do that :)
+        if (scrollRef.current.offsetHeight === scrollRef.current.scrollHeight && timeline.current.canScroll) {
+            atBottom.current = true;
+            loadMore();
+        }
+    }, [children, timeline, loadMore]);
 
     useEffect(() => {
         // Don't move page when loading wheel is rendered
@@ -126,11 +138,7 @@ function ChatScroll({ children, timeline, updateMessageList }) {
         // When scrolled to the top, show the loading wheel and load new messages
         if (e.target.scrollTop === 0 && !loading && !atBottom.current && timeline.current.canScroll) {
             saveScrollPos();
-            setLoading(true);
-            timeline.current.getMore().then(() => {
-                updateMessageList();
-                setLoading(false);
-            });
+            loadMore();
         } 
         // Scrolled to bottom
         else if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
