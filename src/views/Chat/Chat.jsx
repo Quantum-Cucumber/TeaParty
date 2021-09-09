@@ -3,98 +3,72 @@ import { Avatar } from "../../components/user";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { getUserColour } from "../../utils/utils";
 import { Loading } from "../../components/interface";
+import messageTimeline from "./messageTimeline";
 
-function filterMessages(timeline) {
-    let messages = [];
-    //let edits = {};
-    timeline.forEach((event) => {
-        if (event.getType() !== "m.room.message") {return}
-        if (event.isRedacted()) {return}      
-        
-        messages.unshift(event); // Add to front of array - [0]
 
-    });
-
-    return messages;
+function nextShouldBePartial(thisMsg, lastMsg) {
+    // No message above current
+    if (!lastMsg) {return false}
+    // Different senders
+    if (thisMsg.getSender() !== lastMsg.getSender()) {return false}
+    // Within 30 min of each other
+    if ((thisMsg.getDate() - lastMsg.getDate()) > (30 * 60 * 1000)) {return false}
+    // All others passed
+    return true
 }
 
 
 function Chat({ currentRoom }) {
-    const getRoomObj = useCallback(() => {return global.matrix.getRoom(currentRoom)}, [currentRoom]);
-    // Store events
-    const [messageTimeline, setTimeline] = useState([]);
-    function appendEvent(event) {
-        setTimeline((messageTimeline) => {return [event].concat(messageTimeline)});
-    }
+    const timeline = useRef();
+    const [messageList, setMessageList] = useState([]);
 
-    const timelineFromStore = useCallback(() => {
-        const timeline = filterMessages(getRoomObj().timeline);
-        setTimeline(timeline);
-    }, [setTimeline, getRoomObj]);
+    const updateMessageList = useCallback(() => {
+        setMessageList(timeline.current.getMessages());
+    }, [setMessageList])
 
     // Add event listener when room is changed
     useEffect(() => {
         // No listener when no selected room
         if (!currentRoom) {return};
         console.info("Load room: ", currentRoom)
+        timeline.current = new messageTimeline(currentRoom);
 
+        // Set up timeline event handler
         function onEvent(event, eventRoom, toStartOfTimeline) {
-            // Ignore pagination
+            // Ignore pagination (not too sure what this is lol)
             if (toStartOfTimeline) {return}
-            // Filter for just messages
-            if (event.getType() !== "m.room.message") {return}
-            // Filter for just this room
-            if (currentRoom !== eventRoom.roomId) {return}
-            appendEvent(event);
+            
+            // Pass event to timeline handler and update message list
+            timeline.current.onEvent(event);
+            updateMessageList();
         }
         global.matrix.on("Room.timeline", onEvent);
-        
-        // Create timeline from store events
-        timelineFromStore();
 
-        // Fetch enough messages to have 30 in the chat
+        updateMessageList();
+        // Ensure we start off with enough messages
         // Use a function so we can fetch another batch (if needed) but only AFTER the current batch returns
-        async function getPadding() {
-            // Determine the number of messages currently in the timeline
-            const timeline = filterMessages(getRoomObj().timeline);
-
-            // If we have less than 30 messages, and there are still messages to retrieve
-            if (timeline.length < 30 && getRoomObj().oldState.paginationToken !== null) {
-                await global.matrix.scrollback(getRoomObj(), 15)
-                await getPadding();
-            }
-        }
-        getPadding().then(() => {
-            timelineFromStore();
-        });
+        timeline.current.padTimeline().then((result) => setMessageList(result));
 
         // Remove listener on unmount (room change)
         return () => {global.matrix.removeListener("Room.timeline", onEvent)};
-    }, [currentRoom, getRoomObj, timelineFromStore]);
+    }, [currentRoom, updateMessageList]);
 
     // Convert message events into message components
-    const messages = messageTimeline.map((event, index) => {
+    const messages = messageList.map((event, index) => {
         // Determine whether last message was by same user
-        if (messageTimeline[index + 1] &&  messageTimeline[index + 1].getSender() === event.getSender()) {
+        if (nextShouldBePartial(event, messageList[index + 1])) {
             return (
-                <PartialMessage event={event} key={event.getId()}/>
+                <PartialMessage event={event} timeline={timeline} key={event.getId()}/>
             );
         } else {
             return (
-                <Message event={event} key={event.getId()}/>
+                <Message event={event} timeline={timeline} key={event.getId()}/>
             );
         }
     });
 
-    async function loadNewMessages() {
-        if (getRoomObj().oldState.paginationToken !== null) {
-            await global.matrix.scrollback(getRoomObj());
-            timelineFromStore();
-        } else {console.log("Last message in room")}
-    }
-
     return (
-        <ChatScroll loadNewMessages={loadNewMessages}>
+        <ChatScroll timeline={timeline} updateMessageList={updateMessageList}>
             <div className="chat">
                 {messages}
             </div>
@@ -102,7 +76,7 @@ function Chat({ currentRoom }) {
     );
 }
 
-function ChatScroll({ children, loadNewMessages }) {
+function ChatScroll({ children, timeline, updateMessageList }) {
     const [loading, setLoading] = useState(false);
     const atBottom = useRef(true);
     const atTop = useRef(false);
@@ -125,7 +99,8 @@ function ChatScroll({ children, loadNewMessages }) {
     }, [children]);
 
     useEffect(() => {
-        if (loading) {
+        // Don't move page when loading wheel is rendered
+        if (loading && atTop.current !== false) {
             restoreScrollPos();
         }
     }, [loading]);
@@ -148,10 +123,13 @@ function ChatScroll({ children, loadNewMessages }) {
 
         if (atTop.current !== false) {saveScrollPos()};
         // When scrolled to the top, show the loading wheel and load new messages
-        if (e.target.scrollTop === 0 && !loading && !atBottom.current) {
+        if (e.target.scrollTop === 0 && !loading && !atBottom.current && timeline.current.canScroll) {
             saveScrollPos();
             setLoading(true);
-            loadNewMessages().then(() => setLoading(false));
+            timeline.current.getMore().then(() => {
+                updateMessageList();
+                setLoading(false);
+            });
         } 
         // Scrolled to bottom
         else if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
@@ -168,25 +146,38 @@ function ChatScroll({ children, loadNewMessages }) {
 }
 
 
-function Message({ event }) {
+function Message({ event, timeline }) {
     const author = global.matrix.getUser(event.getSender());
+    const edited = timeline.current.edits.get(event.getId());
+    console.log(edited)
+    const content = edited ? edited.getContent()["m.new_content"].body : event.getContent().body;
+
     return (
         <div className="message">
             <Avatar user={author} subClass="message__avatar__crop" />
             <div className="message__text">
                 <div className="message__author" style={{color: getUserColour(author.userId)}}>{author.displayName}</div>
-                <div className="message__content">{event.getContent().body}</div>
+                <div className="message__content">
+                    {content}
+                    {edited && <div className="message__content__edited">(edited)</div>}
+                </div>
             </div>
         </div>
     );
 }
 
-function PartialMessage({ event }) {
+function PartialMessage({ event, timeline }) {
+    const edited = timeline.current.edits.get(event.getId());
+    const content = edited ? edited.getContent()["m.new_content"].body : event.getContent().body;
+
     return (
         <div className="message--partial">
             <div className="message--partial__offset"></div>
             <div className="message__text">
-                <div className="message__content">{event.getContent().body}</div>
+                <div className="message__content">
+                    {content}
+                    {edited && <div className="message__content__edited">(edited)</div>}
+                </div>
             </div>
         </div>
     )

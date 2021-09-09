@@ -70,6 +70,14 @@
     }
     &__content {
         width: 100%;
+
+        &__edited {
+            color: var(--text-greyed);
+            font-size: 0.6rem;
+            display: inline-block;
+            margin-left: 0.4rem;
+            user-select: none;
+        }
     }
 }
 
