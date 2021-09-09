@@ -59,9 +59,10 @@
         font-weight: 600;
         cursor: pointer;
         margin-bottom: 2px;
-        width: 100%;
         text-overflow: ellipsis;
         overflow: hidden;
+        max-width: min-content;
+        white-space: nowrap;
         
         &:hover {
             text-decoration: underline;
