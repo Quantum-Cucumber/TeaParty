@@ -31,11 +31,11 @@ export default class messageTimeline {
 
     onEvent(event) {
         // Only process messages for current room
-        if (event.roomId !== this.roomId) {return}
+        if (event.getRoomId() !== this.roomId) {return}
 
         // If edited message
         if (this._isEdit(event)) {
-            this._addRelationToMap(event);
+            this._addRelationToMap(this.edits, event);
         }
     }
 

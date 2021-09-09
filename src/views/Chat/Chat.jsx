@@ -37,6 +37,7 @@ function Chat({ currentRoom }) {
         function onEvent(event, eventRoom, toStartOfTimeline) {
             // Ignore pagination (not too sure what this is lol)
             if (toStartOfTimeline) {return}
+            if (eventRoom.roomId !== currentRoom) {return}
             
             // Pass event to timeline handler and update message list
             timeline.current.onEvent(event);
@@ -149,7 +150,6 @@ function ChatScroll({ children, timeline, updateMessageList }) {
 function Message({ event, timeline }) {
     const author = global.matrix.getUser(event.getSender());
     const edited = timeline.current.edits.get(event.getId());
-    console.log(edited)
     const content = edited ? edited.getContent()["m.new_content"].body : event.getContent().body;
 
     return (
