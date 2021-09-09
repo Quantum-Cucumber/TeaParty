@@ -4,21 +4,31 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { getUserColour } from "../../utils/utils";
 import { Loading } from "../../components/interface";
 
+function filterMessages(timeline) {
+    let messages = [];
+    //let edits = {};
+    timeline.forEach((event) => {
+        if (event.getType() !== "m.room.message") {return}
+        if (event.isRedacted()) {return}      
+        
+        messages.unshift(event); // Add to front of array - [0]
+
+    });
+
+    return messages;
+}
+
+
 function Chat({ currentRoom }) {
     const getRoomObj = useCallback(() => {return global.matrix.getRoom(currentRoom)}, [currentRoom]);
     // Store events
     const [messageTimeline, setTimeline] = useState([]);
     function appendEvent(event) {
-        console.log("append", event)
         setTimeline((messageTimeline) => {return [event].concat(messageTimeline)});
     }
 
     const timelineFromStore = useCallback(() => {
-        var timeline = []
-        getRoomObj().timeline.forEach((event) => {
-            if (event.getType() !== "m.room.message") {return}
-            timeline.unshift(event)  // Add to front of array
-        });
+        const timeline = filterMessages(getRoomObj().timeline);
         setTimeline(timeline);
     }, [setTimeline, getRoomObj]);
 
@@ -46,16 +56,10 @@ function Chat({ currentRoom }) {
         // Use a function so we can fetch another batch (if needed) but only AFTER the current batch returns
         async function getPadding() {
             // Determine the number of messages currently in the timeline
-            var timelineCount = 0;
-            getRoomObj().timeline.forEach((event) => {
-                if (event.getType() === "m.room.message") {
-                    timelineCount++;
-                }
-            });
-            console.log(timelineCount, "messages in chat")
+            const timeline = filterMessages(getRoomObj().timeline);
 
             // If we have less than 30 messages, and there are still messages to retrieve
-            if (timelineCount < 30 && getRoomObj().oldState.paginationToken !== null) {
+            if (timeline.length < 30 && getRoomObj().oldState.paginationToken !== null) {
                 await global.matrix.scrollback(getRoomObj(), 15)
                 await getPadding();
             }
