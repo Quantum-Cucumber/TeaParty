@@ -23,7 +23,7 @@
 
 .message {
     flex: none;
-    padding: 5px 15px;
+    padding: 0 15px;
     box-sizing: border-box;
     margin-top: 10px;
     display: flex;
@@ -55,10 +55,14 @@
         overflow: hidden;
     }
 
+    &__info {
+        margin-bottom: 2px;
+        overflow: hidden;
+    }
+
     &__author {
         font-weight: 600;
         cursor: pointer;
-        margin-bottom: 2px;
         text-overflow: ellipsis;
         overflow: hidden;
         max-width: min-content;
@@ -87,13 +91,55 @@
     display: flex;
     flex-direction: row;
 
+    .message-timestamp {
+        display: none;
+        flex: 0;
+        margin: 0;
+    }
+
     &:hover {
         background-color: var(--bg-focus);
+
+        .message-timestamp {
+            display: block;
+        }
     }
 
     &__offset {
         /* Offset avatar + margin */
-        width: 55px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 40px;
+        margin-right: 15px;
         flex: none;
+    }
+}
+.message-timestamp {
+    color: var(--text-greyed);
+    width: inherit;
+    margin-bottom: 2px;
+    margin-left: 0.5rem;
+    font-size: 0.8rem;
+}
+
+
+.chat__day-border {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin: 15px 25px 5px 25px;
+
+    &__line {
+        height: 1px;
+        flex: 1 1 auto;
+        background-color: var(--text-greyed);
+    }
+
+    &__day {
+        color: var(--text-greyed);
+        margin: 0 10px;
+        user-select: none;
+        font-size: 0.9rem;
     }
 }

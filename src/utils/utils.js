@@ -22,5 +22,8 @@ export function getUserColour(user_id) {
 
 
 export function acronym(text, len = 3) {
-    return text.match(/\b([a-z0-9])/gi).slice(0, len).join("").toUpperCase()
+    if(!text) {return ""};
+    const chars = text.match(/\b([a-z0-9])/gi);
+    if (!chars) {return text[0]};
+    return chars.slice(0, len).join("").toUpperCase()
 }

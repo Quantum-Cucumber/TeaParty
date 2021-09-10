@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { getUserColour } from "../../utils/utils";
 import { Loading } from "../../components/interface";
 import messageTimeline from "./messageTimeline";
+import { dtToTime, dayBorder, dtToDate } from "../../utils/datetime";
 
 
 function nextShouldBePartial(thisMsg, lastMsg) {
@@ -11,8 +12,8 @@ function nextShouldBePartial(thisMsg, lastMsg) {
     if (!lastMsg) {return false}
     // Different senders
     if (thisMsg.getSender() !== lastMsg.getSender()) {return false}
-    // Within 30 min of each other
-    if ((thisMsg.getDate() - lastMsg.getDate()) > (30 * 60 * 1000)) {return false}
+    // Within 10 min of each other
+    if ((thisMsg.getDate() - lastMsg.getDate()) > (10 * 60 * 1000)) {return false}
     // All others passed
     return true
 }
@@ -52,20 +53,40 @@ function Chat({ currentRoom }) {
     }, [currentRoom, updateMessageList]);
 
     // Convert message events into message components
-    const messages = messageList.map((event, index) => {
+    // Messages are in order of youngest (top) to oldest (bottom)
+    var messages = [];
+    messageList.forEach((event, index) => {
+        const prevEvent = messageList[index + 1]; 
+
+        const border = dayBorder(event, prevEvent);
+        
         // Determine whether last message was by same user
-        if (nextShouldBePartial(event, messageList[index + 1])) {
-            return (
+        if (border === null && nextShouldBePartial(event, prevEvent)) {
+            messages.push(
                 <PartialMessage event={event} timeline={timeline} key={event.getId()}/>
             );
         } else {
-            return (
+            messages.push(
                 <Message event={event} timeline={timeline} key={event.getId()}/>
             );
         }
-    });
 
-    if (!currentRoom || !timeline.current) {return null}
+        if (border !== null) {
+            messages.push(
+                <DayBorder text={border} key={border} />
+            );
+        }
+    });
+    // If rendered last message in channel, add a day border and
+    if (timeline.current && messageList.length !== 0 && !timeline.current.canScroll) {
+        const text = dtToDate(messageList[messageList.length - 1].getDate());
+        messages.push(
+            <DayBorder text={text} key={text}/>,
+            <div style={{height: "30vh"}}></div>
+        );
+    }
+
+    if (!timeline.current) {return null}
     return (
         <ChatScroll timeline={timeline} updateMessageList={updateMessageList}>
             <div className="chat">
@@ -164,7 +185,10 @@ function Message({ event, timeline }) {
         <div className="message">
             <Avatar user={author} subClass="message__avatar__crop" />
             <div className="message__text">
-                <div className="message__author" style={{color: getUserColour(author.userId)}}>{author.displayName}</div>
+                <div className="message__info">
+                    <span className="message__author" style={{color: getUserColour(author.userId)}}>{author.displayName}</span>
+                    <span className="message-timestamp">{dtToTime(event.getDate())}</span>
+                </div>
                 <div className="message__content">
                     {content}
                     {edited && <div className="message__content__edited">(edited)</div>}
@@ -180,7 +204,9 @@ function PartialMessage({ event, timeline }) {
 
     return (
         <div className="message--partial">
-            <div className="message--partial__offset"></div>
+            <div className="message--partial__offset">
+                <span className="message-timestamp">{dtToTime(event.getDate())}</span>
+            </div>
             <div className="message__text">
                 <div className="message__content">
                     {content}
@@ -189,6 +215,18 @@ function PartialMessage({ event, timeline }) {
             </div>
         </div>
     )
+}
+
+function DayBorder({ text }) {
+    return (
+        <div className="chat__day-border">
+            <div className="chat__day-border__line"></div>
+            <div className="chat__day-border__day">
+                {text}
+            </div>
+            <div className="chat__day-border__line"></div>
+        </div>
+    );
 }
 
 export default Chat;
