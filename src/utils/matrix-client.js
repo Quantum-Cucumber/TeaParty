@@ -79,7 +79,7 @@ export async function buildMatrix() {
     global.matrix = matrixsdk.createClient({
         accessToken: token, userId: user_id, baseUrl: base_url, store: store, deviceId: device_id,
     })
-    await global.matrix.startClient().catch((err) => {alert("fuck");throw err});
+    await global.matrix.startClient();
 }
 
 export function get_username(user) {
