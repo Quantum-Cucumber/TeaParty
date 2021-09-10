@@ -1,4 +1,8 @@
-export function filter_orphan_rooms() {
+function _is_joined(room) {
+    return room?.getMyMembership() == "join";
+}
+
+export function get_orphan_rooms() {
     /* Finds all rooms that are not DMs and that are not a part of a space */
     var rooms = [];
     var directs = get_directs(false);
@@ -13,7 +17,9 @@ export function filter_orphan_rooms() {
         // Check if a DM
         if (directs.includes(room.roomId)) { return }
 
-        rooms.push(room)
+        if (_is_joined(room)) {
+            rooms.push(room)
+        }
     });
     return rooms;
 }
@@ -23,15 +29,11 @@ export function get_directs(asRoomObj) {
     var rooms = []
     const directs = global.matrix.getAccountData("m.direct").getContent();
     Object.values(directs).forEach((directRooms) => {
-        rooms = rooms.concat(directRooms);
+        const roomObj = global.matrix.getRoom(directRooms);
+        if (_is_joined(roomObj)) {
+            rooms = rooms.concat(asRoomObj? roomObj : directRooms);
+        }
     })
-
-    // Convert to room objects
-    if (asRoomObj) {
-        rooms = rooms.map((roomId) => {
-            return global.matrix.getRoom(roomId);
-        });
-    }
 
     return rooms;
 }
@@ -42,7 +44,7 @@ export async function get_joined_space_rooms(spaceId) {
         global.matrix.getRoomHierarchy(spaceId).then((result) => {
             result.rooms.forEach((room) => {
                 const roomObj = global.matrix.getRoom(room.room_id);
-                if (global.matrix.getRoom(room.room_id) && room.room_id !== spaceId) {
+                if (global.matrix.getRoom(room.room_id) && room.room_id !== spaceId && _is_joined(roomObj)) {
                     rooms.push(roomObj)
                 }
             });

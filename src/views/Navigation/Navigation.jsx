@@ -4,7 +4,7 @@ import { mdiCog, mdiHomeVariant, mdiAccountMultiple } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import { Button, Tooltip, Loading, Option } from "../../components/interface";
 import { Avatar, User } from "../../components/user";
-import { filter_orphan_rooms, get_directs, get_joined_space_rooms } from "../../utils/rooms";
+import { get_orphan_rooms, get_directs, get_joined_space_rooms } from "../../utils/rooms";
 import { acronym } from "../../utils/utils";
 
 function Navigation({ setRooms, roomPanel, setPage, currentRoom, selectRoom }) {
@@ -64,7 +64,7 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
     }
 
     var groups = [
-        <Group groupName="Home" key="home" k="home" roomList={filter_orphan_rooms} builtin>
+        <Group groupName="Home" key="home" k="home" roomList={get_orphan_rooms} builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </Group>,
         <Group groupName="Direct Messages" key="directs" k="directs" path={mdiHomeVariant} roomList={() => get_directs(true)} builtin>

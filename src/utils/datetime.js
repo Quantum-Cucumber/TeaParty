@@ -3,7 +3,7 @@ import { DateTime } from "luxon";
 export function dtToTime(date) {
     // Convert to luxon dt
     const dt = DateTime.fromJSDate(date, "UTC").toLocal();
-    return dt.toLocaleString(DateTime.TIME_SIMPLE);
+    return dt.toLocaleString(DateTime.TIME_24_SIMPLE);
 }
 
 export function dtToWeekdayDate(date) {

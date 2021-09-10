@@ -77,12 +77,12 @@ function Chat({ currentRoom }) {
             );
         }
     });
-    // If rendered last message in channel, add a day border and
+    // If rendered last message in channel, add a day border and 30vh of padding
     if (timeline.current && messageList.length !== 0 && !timeline.current.canScroll) {
         const text = dtToDate(messageList[messageList.length - 1].getDate());
         messages.push(
             <DayBorder text={text} key={text}/>,
-            <div style={{height: "30vh"}}></div>
+            <div style={{height: "30vh"}} key="padding"></div>
         );
     }
 

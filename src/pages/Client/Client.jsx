@@ -4,7 +4,7 @@ import { buildMatrix } from "../../utils/matrix-client";
 import { Loading } from "../../components/interface";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
-import { filter_orphan_rooms } from "../../utils/rooms";
+import { get_orphan_rooms } from "../../utils/rooms";
 import Chat from "../../views/Chat/Chat";
 
 function Client() {
@@ -19,7 +19,7 @@ function Client() {
             global.matrix.once("sync", (state, oldState) => {
                 if (oldState === null && state === "PREPARED") {
                     syncState(true);
-                    setRooms(filter_orphan_rooms());
+                    setRooms(get_orphan_rooms());
                 }
             })
         })
