@@ -1,5 +1,5 @@
 function _is_joined(room) {
-    return room?.getMyMembership() == "join";
+    return room?.getMyMembership() === "join";
 }
 
 export function get_orphan_rooms() {

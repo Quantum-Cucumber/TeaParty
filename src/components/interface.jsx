@@ -54,3 +54,13 @@ export function Option({ k, text, selected, select, danger, children }) {
         </div>
     );
 }
+
+export function Overlay({ children }) {
+    return (
+        <div className="overlay__fade">
+            <div className="overlay__modal">
+                {children}
+            </div>
+        </div>
+    )
+}

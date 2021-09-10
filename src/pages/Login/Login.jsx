@@ -2,6 +2,7 @@ import "./Login.scss";
 import { Link, useHistory } from "react-router-dom";
 import { useRef, useState } from "react";
 import { attemptLogin } from "../../utils/matrix-client";
+import { Loading, Overlay } from "../../components/interface";
 
 
 function input_valid(target, fieldName) {
@@ -18,6 +19,7 @@ function input_valid(target, fieldName) {
 
 function Login({ type = "Login" }) {
     const [errorMsg, showError] = useState(null);
+    const [overlay, showOverlay] = useState(false);
     const history = useHistory();
     // Collect state for form fields
     const usernameRef = useRef(null);
@@ -30,11 +32,13 @@ function Login({ type = "Login" }) {
         if (type === "Login") {
             const hs = homeserverRef.current.value ? homeserverRef.current.value : homeserverRef.current.placeholder;
             if (![input_valid(usernameRef.current, "Username"), input_valid(passwordRef.current, "Password")].every(Boolean)) {return};
+            showOverlay(true);
             attemptLogin(usernameRef.current.value, hs, passwordRef.current.value).then(() => {
                 console.info("Redirecting to app");
                 history.push("/app");
                 history.go(0);
             }).catch((err) => {
+                showOverlay(false);
                 var errText;
                 if (typeof err.json === "function") {
                     err.json().then((errJSON) => {
@@ -52,6 +56,7 @@ function Login({ type = "Login" }) {
     // Create the page
     return (
         <div className="modal__bg">
+            {overlay && <Overlay><Loading size="70px" /></Overlay>}
             <div className="modal">
                 <div className="modal__label-holder">
                     <p>{type}</p>
