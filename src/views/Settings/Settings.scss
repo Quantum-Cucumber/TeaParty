@@ -47,6 +47,13 @@
     }
 }
 
+.options-divider {
+    width: calc(100% - 15px);
+    height: 2px;
+    background-color: var(--bg);
+    margin: 15px 0px;
+}
+
 .settings__divider {
     width: 2px;
     background-color: var(--bg);
@@ -71,6 +78,9 @@
         padding: 15px 10px;
     }
 }
+
+
+/* Appearance */
 
 .theme {
     display: inline-block;
@@ -116,9 +126,47 @@
     }
 }
 
-.options-divider {
-    width: calc(100% - 15px);
-    height: 2px;
-    background-color: var(--bg);
-    margin: 15px 0px;
+
+/* Security section */
+
+.device-table {
+    border-collapse: collapse;
+    width: 100%;
+
+    th, td {
+        border: none;
+    }
+
+    th {
+        border-bottom: 2px solid var(--text-greyed);
+        text-align: left;
+        padding: 10px 10px 5px;
+    }
+
+    &__loading {
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+    }
+
+    tr{
+        td {
+            padding: 10px;
+        }
+
+        &:nth-child(even) {
+            background-color: var(--bg);
+        }
+    }
+
+    &--current {
+        border-left: 3px solid var(--primary);
+
+        td:first-child::after {
+            content: "(Current)";
+            color: var(--text-greyed);
+            font-size: 0.8rem;
+            margin-left: 0.25rem;
+        }
+    }
 }

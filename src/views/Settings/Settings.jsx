@@ -1,10 +1,11 @@
 import "./Settings.scss";
 import { useEffect, useState } from "react";
-import { Option } from "../../components/interface";
-import { mdiClose, mdiBrush } from "@mdi/js";
+import { Loading, Option } from "../../components/interface";
+import { mdiClose, mdiBrush, mdiLock } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import { setTheme, getSetting } from "../../utils/settings";
 import { logoutMatrix } from "../../utils/matrix-client";
+import { msToDate } from "../../utils/datetime";
 
 
 function SettingsPage({ setPage }) {
@@ -22,6 +23,15 @@ function SettingsPage({ setPage }) {
                 </Section>
             ),
         },
+        {
+            label: "Security",
+            path: mdiLock,
+            page: (
+                <Section name="Devices">
+                    <DeviceTable />
+                </Section>
+            ),
+        }
     ];
 
     const [tab, setTab] = useState(settings_pages[0].label);
@@ -112,7 +122,6 @@ function ThemeSelect({ initial, setter, themeList }) {
         );
     }
 
-    
     themeList = themeList.map((theme) => {
         return (
             <Theme label={theme.label} name={theme.theme} key={theme.theme}/>
@@ -121,6 +130,70 @@ function ThemeSelect({ initial, setter, themeList }) {
 
     return (
         themeList
+    );
+}
+
+function DeviceTable() {
+    const [deviceList, setDeviceList] = useState();
+
+    useEffect(() => {
+        global.matrix.getDevices()
+        .then((result) => {
+            setDeviceList(result.devices);
+        });
+    }, [setDeviceList]);
+
+
+    function Table({ children }) {
+        return (
+            <table className="device-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Device ID</th>
+                        <th>Last Seen</th>
+                        <th>Last IP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {children}
+                </tbody>
+            </table>
+        );
+    }
+    
+    if (!deviceList) {
+        return (
+            <Table>
+                <tr><td colSpan="4">
+                        <div className="device-table__loading">
+                            <Loading size="60px"></Loading>
+                        </div>
+                </td></tr>
+            </Table>
+        );
+    }
+
+    // Sort most recent session to the top
+    deviceList.sort((a, b) => {return b.last_seen_ts - a.last_seen_ts});
+    const devices = deviceList.map((device) => {
+        const { display_name, device_id, last_seen_ts, last_seen_ip } = device;
+        const current = device_id === global.matrix.getDeviceId();
+
+        return (
+            <tr key={device_id} className={current ? "device-table--current" : ""}>
+                <td>{display_name}</td>
+                <td>{device_id}</td>
+                <td>{msToDate(last_seen_ts)}</td>
+                <td>{last_seen_ip}</td>
+            </tr>
+        );
+    });
+
+    return (
+        <Table>
+            {devices}
+        </Table>
     );
 }
 

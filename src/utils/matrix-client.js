@@ -38,7 +38,14 @@ export async function attemptLogin(username, homeserver, password) {
     console.info("Found base url: " + base_url);
 
     const client = matrixsdk.createClient(base_url)
-    const response = await client.loginWithPassword(username, password);
+    const response = await client.login("m.login.password", {
+        identifier: {
+            type: "m.id.user",
+            user: username
+        },
+        password: password,
+        initial_device_display_name: "TeaParty Web",
+    });
 
     localStorage.setItem("token", response.access_token);
     localStorage.setItem("device_id", response.device_id);
@@ -61,6 +68,8 @@ export async function buildMatrix() {
     if (!token) {throw new Error("No user ID was saved")}
     const base_url = localStorage.getItem("base_url");
     if (!token) {throw new Error("No homeserver url was saved")}
+    const device_id = localStorage.getItem("device_id");
+    if (!token) {throw new Error("No homeserver url was saved")}
 
     let opts = { indexedDB: window.indexedDB, localStorage: window.localStorage };
     let store = new matrixsdk.IndexedDBStore(opts);
@@ -68,7 +77,7 @@ export async function buildMatrix() {
     console.info("Started IndexedDB");
 
     global.matrix = matrixsdk.createClient({
-        accessToken: token, userId: user_id, baseUrl: base_url, store: store
+        accessToken: token, userId: user_id, baseUrl: base_url, store: store, deviceId: device_id,
     })
     await global.matrix.startClient().catch((err) => {alert("fuck");throw err});
 }

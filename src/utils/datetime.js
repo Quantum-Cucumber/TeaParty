@@ -42,3 +42,16 @@ export function dayBorder(nextMsg, lastMsg) {
         return null
     }
 }
+
+export function msToDate(ms) {
+    if (!ms) {return ""};
+
+    const dt = DateTime.fromMillis(ms, {locale: "UTC"}).toLocal();
+    const now = DateTime.local();
+
+    if (dt.hasSame(now, "day")) {
+        return dt.toLocaleString(DateTime.TIME_24_SIMPLE);
+    } else {
+        return dt.toLocaleString(DateTime.DATE_FULL);
+    }
+}
