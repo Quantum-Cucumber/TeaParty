@@ -45,9 +45,9 @@ function Navigation({ setRooms, roomPanel, setPage, currentRoom, selectRoom }) {
 function GroupList({ roomSelect, setGroup, currentGroup }) {
 
     // Placed here so we can inherit roomSelect, currentGroup and selectGroup
-    function Group({ groupName, k, roomList, children, builtin = false }) {
+    function Group({ groupName, k, roomList, children, builtin = false, notification = null, unread = false }) {
         return (
-            <div style={{ position: "relative" }}>
+            <div className="group__holder">
                 <Tooltip text={groupName} dir="right">
                     <div
                         className={"group " + (builtin ? "group--default " : "") + (currentGroup.key === k ? "group--selected" : "")}
@@ -59,8 +59,10 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
                         }}
                     >
                         {children}
+                        {notification !== null && <div className="group__notification">{notification}</div>}
                     </div>
                 </Tooltip>
+                <div className="group__unread" style={{display: unread ? "block" : "none"}}></div>
             </div>
         );
     }
@@ -144,6 +146,7 @@ function MyUser({ user }) {
 
 function InvitesIcon({ setInvites }) {
     const [showModal, setShowModal] = useState(false);
+    const invitedRooms = getInvitedRooms();
 
     useEffect(() => {
         if (!showModal) {
@@ -152,20 +155,19 @@ function InvitesIcon({ setInvites }) {
     }, [showModal, setInvites])
 
     return (
-        <div style={{position: "relative"}}>
+        <div className="group__holder">
             <Tooltip text="Invites" dir="right">
                 <div className="group group--default" onClick={() => setShowModal(true)}>
                     <Icon path={mdiEmail} color="var(--text)" size="100%" />
+                    <div className="group__notification">{invitedRooms.length}</div>
                 </div> 
             </Tooltip>
-            {showModal && <Invites setShowModal={setShowModal}/>}
+            {showModal && <Invites setShowModal={setShowModal} invitedRooms={invitedRooms}/>}
         </div>
     );    
 }
 
-function Invites({ setShowModal }) {
-    const invitedRooms = getInvitedRooms();
-
+function Invites({ setShowModal, invitedRooms }) {
     if (invitedRooms.length === 0) {setShowModal(false)}
 
     /* Listen for escape key to close menu */

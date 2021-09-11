@@ -1,6 +1,6 @@
 $border: 2px solid var(--border);
 
-/* Rooms/profile panel */
+/* Rooms panel */
 .column--rooms {
     flex: 0 0 auto;
     width: 260px;
@@ -46,20 +46,46 @@ $border: 2px solid var(--border);
 }
 
 
-.room__icon {
-    height: 100%;
-    width: 100%;
-    background-color: var(--bg);
-    /* To center text */
-    user-select: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
+.room {
+    &__icon {
+        height: 100%;
+        width: 100%;
+        background-color: var(--bg);
+        /* To center text */
+        user-select: none;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-weight: bold;
+    }
+
+    &__label {
+        display: inline-block;
+    }
+
+    &__notification {
+        flex: none;
+        background-color: var(--primary);
+        border-radius: 0.6rem;
+        padding: 2px;
+        height: 1.3rem;
+        line-height: 1.3rem;
+    }
+
+    &__unread {
+        flex: none;
+        height: 8px;
+        width: 8px;
+        background-color: var(--primary);
+        margin-right: 5px;
+        border-radius: 50%;
+    }
 }
 
-.room__label {
-    display: inline-block;
+.option--selected, .option:hover {
+    .room__unread, .room__notification {
+        display: none;
+    }
 }
 
 
@@ -96,17 +122,23 @@ $border: 2px solid var(--border);
 
 
 /* Leftmost groups panel */
+$group-padding: 11px;
+
 .column--groups {
     flex: 0 0 auto;
     width: 70px;
     background-color: var(--bg-focus);
     border-right: $border;
-    padding: 15px 11px;
+    padding: 15px 0;
+}
+
+.group__holder {
+    position: relative;
+    margin: 0 $group-padding 12px $group-padding;
 }
 
 .group {
     width: 100%;
-    margin-bottom: 12px;
     aspect-ratio: 1;
     overflow: hidden;
     cursor: pointer;
@@ -125,6 +157,37 @@ $border: 2px solid var(--border);
 
     &:hover {
         opacity: 0.7;
+    }
+
+    &__unread {
+        /* This value is actually double the width so we can be lazy */
+        --width: 8px;
+        width: var(--width);
+        height: var(--width);
+        position: absolute;
+        top: calc( 50% - (var(--width) / 2));
+        left: calc(-#{$group-padding} - (var(--width) / 2));
+        background-color: var(--text);
+        border-radius: calc(var(--width) / 2);
+    }
+    &--selected ~ &__unread {
+        height: 80%;
+        top: 10%;
+        display: block !important;
+    }
+
+    &__notification {
+        height: 20px;
+        width: 20px;
+        background-color: var(--primary);
+        border-radius: 50%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        position: absolute;
+        bottom: -2px;
+        right: -2px;
+        font-size: 0.9rem;
     }
 }
 
@@ -165,7 +228,7 @@ $border: 2px solid var(--border);
     &__icon {
         height: 2.5rem;
         aspect-ratio: 1;
-        font-size: 0.75rem;
+        font-size: 0.9rem;
         display: inline-block;
         margin-right: 10px;
         overflow: hidden;
