@@ -1,14 +1,15 @@
 import "./Navigation.scss";
-import { useState } from "react";
-import { mdiCog, mdiHomeVariant, mdiAccountMultiple } from "@mdi/js";
+import { useState, useEffect } from "react";
+import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import { Button, Tooltip, Loading, Option } from "../../components/interface";
+import { Button, Tooltip, Loading, Option, Overlay } from "../../components/interface";
 import { Avatar, User } from "../../components/user";
-import { get_orphan_rooms, get_directs, get_joined_space_rooms } from "../../utils/rooms";
+import { get_orphan_rooms, get_directs, get_joined_space_rooms, getInvitedRooms } from "../../utils/rooms";
 import { acronym } from "../../utils/utils";
 
 function Navigation({ setRooms, roomPanel, setPage, currentRoom, selectRoom }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
+    const [invites, setInvites] = useState(getInvitedRooms());
 
     function selectGroup(rooms) {
         setRooms(null);
@@ -18,6 +19,7 @@ function Navigation({ setRooms, roomPanel, setPage, currentRoom, selectRoom }) {
     return (
         <>
             <div className="column column--groups">
+                {invites?.length !== 0 && <InvitesIcon setInvites={setInvites} />}
                 <GroupList roomSelect={selectGroup} setGroup={setGroup} currentGroup={currentGroup} />
             </div>
             <div className="column column--rooms">
@@ -45,7 +47,7 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
     // Placed here so we can inherit roomSelect, currentGroup and selectGroup
     function Group({ groupName, k, roomList, children, builtin = false }) {
         return (
-            <div style={{ position: "relative" }} key={k}>
+            <div style={{ position: "relative" }}>
                 <Tooltip text={groupName} dir="right">
                     <div
                         className={"group " + (builtin ? "group--default " : "") + (currentGroup.key === k ? "group--selected" : "")}
@@ -95,21 +97,27 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
     return groups;
 }
 
-function RoomList({ rooms, currentGroup,currentRoom, selectRoom }) {
+function getRoomIcon(room, isDm = false) {
+    var icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+
+    if (!icon && isDm) {
+        const user = global.matrix.getUser(room.guessDMUserId());
+        icon = <Avatar subClass="room__icon" user={user} />
+    } else {
+        icon = icon ?
+               <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
+               <div className="room__icon">{acronym(room.name)}</div>;
+    }
+
+    return icon;
+}
+
+function RoomList({ rooms, currentGroup, currentRoom, selectRoom }) {
 
     var elements = [];
     rooms.forEach((room) => {
         const key = room.roomId;
-        var icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
-
-        if (!icon && currentGroup.key === "directs") {
-            const user = global.matrix.getUser(room.guessDMUserId());
-            icon = <Avatar subClass="room__icon" user={user} />
-        } else {
-            icon = icon ?
-                   <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
-                   <div className="room__icon">{acronym(room.name)}</div>;
-        }
+        const icon = getRoomIcon(room, currentGroup.key === "directs");
 
 
         elements.push(
@@ -132,6 +140,120 @@ function MyUser({ user }) {
     return (
         <User user={user} subClass="client__user-bar__profile" clickFunc={click} />
     );
+}
+
+function InvitesIcon({ setInvites }) {
+    const [showModal, setShowModal] = useState(false);
+
+    useEffect(() => {
+        if (!showModal) {
+            setInvites(getInvitedRooms());
+        }
+    }, [showModal, setInvites])
+
+    return (
+        <div style={{position: "relative"}}>
+            <Tooltip text="Invites" dir="right">
+                <div className="group group--default" onClick={() => setShowModal(true)}>
+                    <Icon path={mdiEmail} color="var(--text)" size="100%" />
+                </div> 
+            </Tooltip>
+            {showModal && <Invites setShowModal={setShowModal}/>}
+        </div>
+    );    
+}
+
+function Invites({ setShowModal }) {
+    const invitedRooms = getInvitedRooms();
+
+    if (invitedRooms.length === 0) {setShowModal(false)}
+
+    /* Listen for escape key to close menu */
+    useEffect(() => {
+        document.addEventListener("keydown", keyPress);
+
+        return () => {
+            document.removeEventListener("keydown", keyPress);
+        };
+    });
+    function keyPress(e) {
+        if (e.key === "Escape") {
+            setShowModal(false);
+        }
+    }
+
+    const invites = invitedRooms.map((invite) => {
+        return (
+            <InviteEntry room={invite} key={invite.roomId} />
+        );
+    })
+
+    return (
+        <Overlay opacity="60%" click={() => setShowModal(false)}>
+            <div className="invites__modal">
+                <div className="invites__modal__label">
+                    Room Invites:
+
+                    <Icon className="invites__modal__close" 
+                        path={mdiClose} 
+                        size="20px" 
+                        color="var(--text-greyed)" 
+                        onClick={() => setShowModal(false)}
+                    />
+                </div>
+                <div className="invites__modal__holder">
+                    {invites}
+                </div>
+            </div>
+        </Overlay>
+    )
+}
+
+function InviteEntry({ room }) {
+    const [status, setStatus] = useState(null);
+
+    const icon = getRoomIcon(room);
+    const inviter = "inviter";
+
+    function acceptInvite() {
+        setStatus(<Loading size="1.5rem"/>);
+        global.matrix.joinRoom(room.roomId).then(() => {
+            setStatus("Joined");
+        }).catch(() => {
+            setStatus("Error")
+        });
+    }
+
+    function declineInvite() {
+        setStatus(<Loading size="1.5rem"/>);
+        global.matrix.leave(room.roomId).then(() => {
+            setStatus("Declined");
+        }).catch(() => {
+            setStatus("Error")
+        });
+    }
+
+    return (
+        <div className="invite-entry">
+            <div className="invite-entry__icon">{icon}</div>
+            <div className="invite-entry__label">
+                <div className="invite-entry__label--name">{room.name}</div>
+                <div className="invite-entry__label--inviter">{inviter}</div>
+            </div>
+            { status === null ?
+                <div className="invite-entry__buttons">
+                    <div style={{"--button": "var(--error)"}} onClick={declineInvite}>
+                        <Icon path={mdiClose} size="100%" />
+                    </div>
+                    <div style={{"--button": "var(--success)"}} onClick={acceptInvite}>
+                        <Icon path={mdiCheck} size="100%" />
+                    </div>
+                </div>
+            :
+            <div className="invite-entry__status">{status}</div>
+            }
+        </div>
+    )
 }
 
 

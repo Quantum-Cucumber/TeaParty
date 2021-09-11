@@ -160,7 +160,7 @@
     }
 
     &--current {
-        border-left: 3px solid var(--primary);
+        box-shadow: inset 3px 0px 0px 0px var(--primary);
 
         td:first-child::after {
             content: "(Current)";

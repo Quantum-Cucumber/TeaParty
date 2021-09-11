@@ -178,6 +178,7 @@ function ChatScroll({ children, timeline, updateMessageList }) {
 
 function Message({ event, timeline }) {
     const author = global.matrix.getUser(event.getSender());
+    if (!author) {console.log(event.getSender(), author);return;}
     const edited = timeline.current.edits.get(event.getId());
     const content = edited ? edited.getContent()["m.new_content"].body : event.getContent().body;
 

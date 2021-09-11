@@ -54,3 +54,9 @@ export async function get_joined_space_rooms(spaceId) {
 
     return promise;
 }
+
+export function getInvitedRooms() {
+    return global.matrix.getVisibleRooms().filter((room) => {
+        return room.getMyMembership() === "invite";
+    });
+}

@@ -55,12 +55,13 @@ export function Option({ k, text, selected, select, danger, children }) {
     );
 }
 
-export function Overlay({ children }) {
+export function Overlay({ children, opacity="90%", click }) {
     return (
-        <div className="overlay__fade">
+        <div className="overlay">
             <div className="overlay__modal">
                 {children}
             </div>
+            <div className="overlay__fade" style={{opacity: opacity}} onClick={click}></div>
         </div>
     )
 }
