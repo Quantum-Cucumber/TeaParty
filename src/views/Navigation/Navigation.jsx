@@ -4,23 +4,18 @@ import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClos
 import { Icon } from "@mdi/react";
 import { Button, Tooltip, Loading, Option, Overlay } from "../../components/interface";
 import { Avatar, User } from "../../components/user";
-import { get_orphan_rooms, get_directs, get_joined_space_rooms, getInvitedRooms } from "../../utils/rooms";
+import { getInvitedRooms } from "../../utils/rooms";
 import { acronym } from "../../utils/utils";
 
-function Navigation({ setRooms, roomPanel, setPage, currentRoom, selectRoom }) {
+function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, roomNav }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
     const [invites, setInvites] = useState(getInvitedRooms());
-
-    function selectGroup(rooms) {
-        setRooms(null);
-        Promise.resolve(rooms).then((result) => setRooms(result));
-    }
 
     return (
         <>
             <div className="column column--groups">
                 {invites?.length !== 0 && <InvitesIcon setInvites={setInvites} />}
-                <GroupList roomSelect={selectGroup} setGroup={setGroup} currentGroup={currentGroup} />
+                <GroupList roomNav={roomNav} setGroup={setGroup} groupList={groupList} currentGroup={currentGroup} />
             </div>
             <div className="column column--rooms">
                 <div className="column--rooms__label">{currentGroup.name}</div>
@@ -42,10 +37,10 @@ function Navigation({ setRooms, roomPanel, setPage, currentRoom, selectRoom }) {
     );
 }
 
-function GroupList({ roomSelect, setGroup, currentGroup }) {
+function GroupList({ roomNav, setGroup, currentGroup, groupList }) {
 
-    // Placed here so we can inherit roomSelect, currentGroup and selectGroup
-    function Group({ groupName, k, roomList, children, builtin = false, notification = null, unread = false }) {
+    // Placed here so we can inherit roomNav, currentGroup and selectGroup
+    function Group({ groupName, k, children, builtin = false, notification = null, unread = false }) {
         return (
             <div className="group__holder">
                 <Tooltip text={groupName} dir="right">
@@ -54,7 +49,7 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
                         onClick={() => {
                             if (k !== currentGroup.key) {
                                 setGroup({ name: groupName, key: k })
-                                roomSelect(roomList());
+                                roomNav.current.groupSelected(k);
                             }
                         }}
                     >
@@ -68,32 +63,29 @@ function GroupList({ roomSelect, setGroup, currentGroup }) {
     }
 
     var groups = [
-        <Group groupName="Home" key="home" k="home" roomList={get_orphan_rooms} builtin>
+        <Group groupName="Home" key="home" k="home" builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </Group>,
-        <Group groupName="Direct Messages" key="directs" k="directs" path={mdiHomeVariant} roomList={() => get_directs(true)} builtin>
+        <Group groupName="Direct Messages" key="directs" k="directs" path={mdiHomeVariant} builtin>
             <Icon path={mdiAccountMultiple} color="var(--text)" size="100%" />
         </Group>,
     ];
 
-    global.matrix.getVisibleRooms().forEach((room) => {
-        if (room.isSpaceRoom()) {
-            const key = room.roomId;
-            const icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
-            const image = icon ?
-                <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
-                <div className="room__icon">{acronym(room.name)}</div>;
+    groupList.forEach((room) => {
+        const key = room.roomId;
+        const icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+        const image = icon ?
+            <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
+            <div className="room__icon">{acronym(room.name)}</div>;
 
-            groups.push(
-                <Group
-                    groupName={room.name}
-                    key={key} k={key}
-                    roomList={() => get_joined_space_rooms(key)}
-                >
-                    {image}
-                </Group>
-            );
-        }
+        groups.push(
+            <Group
+                groupName={room.name}
+                key={key} k={key}
+            >
+                {image}
+            </Group>
+        );
     })
 
     return groups;
@@ -115,9 +107,9 @@ function getRoomIcon(room, isDm = false) {
 }
 
 function RoomList({ rooms, currentGroup, currentRoom, selectRoom }) {
-
     var elements = [];
-    rooms.forEach((room) => {
+    rooms.forEach((element) => {
+        const room = element.room;
         const key = room.roomId;
         const icon = getRoomIcon(room, currentGroup.key === "directs");
 

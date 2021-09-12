@@ -39,6 +39,7 @@ $border: 2px solid var(--border);
     aspect-ratio: 1;
     overflow: hidden;
     border-radius: 35%;
+    flex: none;
 
     & > .room__icon {
         font-size: 0.6rem;
