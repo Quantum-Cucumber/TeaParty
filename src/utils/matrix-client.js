@@ -104,3 +104,14 @@ export async function logoutMatrix() {
 
     window.location.reload();
 }
+
+export function tryGetUser(userId) {
+    /* Sometimes the user mightn't be cached, so make a pretend user object */
+
+    var user = global.matrix.getUser(userId);
+    if (!user) {
+        user = {displayName: userId, userId: userId};
+    }
+
+    return user;
+}

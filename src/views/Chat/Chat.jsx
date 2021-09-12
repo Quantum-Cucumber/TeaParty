@@ -1,10 +1,11 @@
 import "./Chat.scss";
 import { Avatar } from "../../components/user";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { getUserColour } from "../../utils/utils";
 import { Loading } from "../../components/interface";
 import messageTimeline from "./messageTimeline";
+import { getUserColour } from "../../utils/utils";
 import { dtToTime, dayBorder, dtToDate } from "../../utils/datetime";
+import { tryGetUser } from "../../utils/matrix-client";
 
 
 function nextShouldBePartial(thisMsg, lastMsg) {
@@ -177,7 +178,7 @@ function ChatScroll({ children, timeline, updateMessageList }) {
 
 
 function Message({ event, timeline }) {
-    const author = global.matrix.getUser(event.getSender());
+    const author = tryGetUser(event.getSender());
     if (!author) {console.log(event.getSender(), author);return;}
     const edited = timeline.current.edits.get(event.getId());
     const content = edited ? edited.getContent()["m.new_content"].body : event.getContent().body;
