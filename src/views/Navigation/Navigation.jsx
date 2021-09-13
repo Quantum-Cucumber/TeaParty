@@ -8,13 +8,15 @@ import { acronym } from "../../utils/utils";
 
 function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, roomNav, invites }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
+    // Get the total length of all the value arrays
+    const invLen = Object.values(invites).reduce((x, invs) => {return x + invs.length}, 0);
 
     return (
         <>
             <div className="column column--groups">
-                {invites?.length !== 0 && 
+                {invLen !== 0 && 
                     <>
-                    <InvitesIcon invites={invites} />
+                    <InvitesIcon invites={invites} invLen={invLen} />
                     <div className="group__seperator"></div>
                     </>
                 }
@@ -139,7 +141,7 @@ function MyUser({ user }) {
     );
 }
 
-function InvitesIcon({ invites }) {
+function InvitesIcon({ invLen, invites }) {
     const [showModal, setShowModal] = useState(false);
 
     return (
@@ -147,7 +149,7 @@ function InvitesIcon({ invites }) {
             <Tooltip text="Invites" dir="right">
                 <div className="group group--default" onClick={() => setShowModal(true)}>
                     <Icon path={mdiEmail} color="var(--text)" size="100%" />
-                    <div className="group__notification">{invites.length}</div>
+                    <div className="group__notification">{invLen}</div>
                 </div> 
             </Tooltip>
             {showModal && <Invites setShowModal={setShowModal} invitedRooms={invites}/>}
@@ -172,17 +174,28 @@ function Invites({ setShowModal, invitedRooms }) {
         }
     }
 
-    const invites = invitedRooms.map((invite) => {
-        return (
-            <InviteEntry invite={invite} key={invite.roomId} />
-        );
-    })
+    // Make a holder for each invite type and populate with its values
+    const holders = Object.keys(invitedRooms).reduce((holders, name) => {
+        if (invitedRooms[name].length === 0) {return holders}
+        const invites = invitedRooms[name].map((invite) => {
+            return (
+                <InviteEntry invite={invite} key={invite.roomId} />
+            );
+        })
+
+        return holders.concat([
+            <div className="invites__modal__holder" key={name}>
+                {name}
+                {invites}
+            </div>
+        ]);
+    }, []);
 
     return (
         <Overlay opacity="60%" click={() => setShowModal(false)}>
             <div className="invites__modal">
                 <div className="invites__modal__label">
-                    Room Invites:
+                    Invites:
 
                     <Icon className="invites__modal__close" 
                         path={mdiClose} 
@@ -191,9 +204,7 @@ function Invites({ setShowModal, invitedRooms }) {
                         onClick={() => setShowModal(false)}
                     />
                 </div>
-                <div className="invites__modal__holder">
-                    {invites}
-                </div>
+                {holders}
             </div>
         </Overlay>
     )
@@ -201,7 +212,7 @@ function Invites({ setShowModal, invitedRooms }) {
 
 function InviteEntry({ invite }) {
     const [status, setStatus] = useState(null);
-    const { inviter, type, room } = invite;
+    const { inviter, room } = invite;
 
     const icon = getRoomIcon(room);
 
