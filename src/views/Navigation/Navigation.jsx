@@ -4,17 +4,20 @@ import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClos
 import { Icon } from "@mdi/react";
 import { Button, Tooltip, Loading, Option, Overlay } from "../../components/interface";
 import { Avatar, User } from "../../components/user";
-import { getInvitedRooms } from "../../utils/rooms";
 import { acronym } from "../../utils/utils";
 
-function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, roomNav }) {
+function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, roomNav, invites }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
-    const [invites, setInvites] = useState(getInvitedRooms());
 
     return (
         <>
             <div className="column column--groups">
-                {invites?.length !== 0 && <InvitesIcon setInvites={setInvites} />}
+                {invites?.length !== 0 && 
+                    <>
+                    <InvitesIcon invites={invites} />
+                    <div className="group__seperator"></div>
+                    </>
+                }
                 <GroupList roomNav={roomNav} setGroup={setGroup} groupList={groupList} currentGroup={currentGroup} />
             </div>
             <div className="column column--rooms">
@@ -136,25 +139,18 @@ function MyUser({ user }) {
     );
 }
 
-function InvitesIcon({ setInvites }) {
+function InvitesIcon({ invites }) {
     const [showModal, setShowModal] = useState(false);
-    const invitedRooms = getInvitedRooms();
-
-    useEffect(() => {
-        if (!showModal) {
-            setInvites(getInvitedRooms());
-        }
-    }, [showModal, setInvites])
 
     return (
         <div className="group__holder">
             <Tooltip text="Invites" dir="right">
                 <div className="group group--default" onClick={() => setShowModal(true)}>
                     <Icon path={mdiEmail} color="var(--text)" size="100%" />
-                    <div className="group__notification">{invitedRooms.length}</div>
+                    <div className="group__notification">{invites.length}</div>
                 </div> 
             </Tooltip>
-            {showModal && <Invites setShowModal={setShowModal} invitedRooms={invitedRooms}/>}
+            {showModal && <Invites setShowModal={setShowModal} invitedRooms={invites}/>}
         </div>
     );    
 }
@@ -178,7 +174,7 @@ function Invites({ setShowModal, invitedRooms }) {
 
     const invites = invitedRooms.map((invite) => {
         return (
-            <InviteEntry room={invite} key={invite.roomId} />
+            <InviteEntry invite={invite} key={invite.roomId} />
         );
     })
 
@@ -203,11 +199,11 @@ function Invites({ setShowModal, invitedRooms }) {
     )
 }
 
-function InviteEntry({ room }) {
+function InviteEntry({ invite }) {
     const [status, setStatus] = useState(null);
+    const { inviter, type, room } = invite;
 
     const icon = getRoomIcon(room);
-    const inviter = "inviter";
 
     function acceptInvite() {
         setStatus(<Loading size="1.5rem"/>);

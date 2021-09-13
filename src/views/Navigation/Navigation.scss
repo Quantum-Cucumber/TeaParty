@@ -138,6 +138,13 @@ $group-padding: 11px;
     margin: 0 $group-padding 12px $group-padding;
 }
 
+.group__seperator {
+    margin: 0 $group-padding 12px $group-padding;
+    box-sizing: border-box;
+    height: 2px;
+    background-color: var(--bg);
+}
+
 .group {
     width: 100%;
     aspect-ratio: 1;

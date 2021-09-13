@@ -15,12 +15,13 @@ function Client() {
     const [page, setPage] = useState();  // Used to set full screen pages
     const [currentRoom, selectRoom] = useState();  // The currently selected room
     const roomNav = useRef(null);  // Handles populating the groups and room list
+    const [invites, setInvites] = useState([]);  // Passed into 
 
     useEffect(() => {
         buildMatrix().then(() => {
             global.matrix.once("sync", (state, oldState) => {
                 if (oldState === null && state === "PREPARED") {
-                    roomNav.current = new navManager(setGroups, setRooms);
+                    roomNav.current = new navManager(setGroups, setRooms, setInvites);
                     syncState(true);
                 }
             })
@@ -46,7 +47,7 @@ function Client() {
     return (
         <div className="client">
             <Navigation groupList={groupList} roomPanel={roomPanel} setPage={setPage} 
-             currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav}
+             currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav} invites={invites}
             />
             <div className="column column--chat">
                 <Chat currentRoom={currentRoom} />

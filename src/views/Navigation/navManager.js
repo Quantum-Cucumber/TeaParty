@@ -11,9 +11,10 @@ function copyRooms(rooms) {
 
 
 export default class navManager {
-    constructor(setGroups, setRooms) {
+    constructor(setGroups, setRooms, setInvites) {
         this.setGroups = setGroups;
         this.setRooms = setRooms;
+        this.setInvites = setInvites;
 
         this.roomToGroup = new Map();  // room => group
         this.currentGroup = null;
@@ -26,9 +27,9 @@ export default class navManager {
             this._getSpaceChildren(group.roomId);
         });
 
-
         this._startListeners();
-        this.setGroups(groups); 
+        this.setGroups(groups);
+        this.setInvites(this._getInvitedRooms());
         // When initialised, go to home by default
         this.groupSelected("home");
     }
@@ -65,7 +66,6 @@ export default class navManager {
     groupSelected(groupKey) {
         this.currentGroup = groupKey;
         const rooms = this.getRoomsFromGroup(groupKey);
-        console.log("selected rooms", rooms)
         this.setRooms(copyRooms(rooms));
         this.currentRooms = rooms;
     }
@@ -75,7 +75,6 @@ export default class navManager {
 
     _listeners = {
         "Room.myMembership": this._membershipChange.bind(this),
-        "Room": this._newRoom.bind(this), 
         "accountData": this._accountData.bind(this), 
         "Room.name": this._roomRenamed.bind(this),
     }
@@ -95,7 +94,7 @@ export default class navManager {
     _membershipChange(room, state, oldState) {
         console.log("Membership change", oldState, state, room);
 
-        // Room left
+        // Left room
         if (oldState === "join" && state === "leave") {
             if (room.isSpaceRoom()) {
                 // Left space, update group list
@@ -111,11 +110,10 @@ export default class navManager {
             }
         }
 
-    }
-
-    // New room added via join or invite
-    _newRoom(room) {
-        console.log("Joined room", room);
+        // Invited to room
+        if (oldState === null && state === "invite") {
+            this.setInvites(this._getInvitedRooms());
+        }
     }
 
     // DM room info
@@ -125,11 +123,6 @@ export default class navManager {
         if (event.getType() !== "m.direct") {return};
         if (!this.groups.has("directs")) {return};
 
-        // Update mapping and refresh current room list if needed
-        this.groups.set("directs", this.getDirects(true))
-        if (this.currentGroup === "directs") {
-            this.groupSelected("directs");
-        }
     }
 
     // Room name updated
@@ -168,5 +161,30 @@ export default class navManager {
         return global.matrix.getVisibleRooms().filter((room) => {
             return _isJoined(room) && room.isSpaceRoom();
         });
+    }
+
+    _getInvitedRooms() {
+        var invites = [];
+        global.matrix.getVisibleRooms().forEach((room) => {
+            if (room.getMyMembership() === "invite") {
+                //m.room.member event for logged in user
+                const memberEvent = room.getMember(global.matrix.getUserId()).events.member;
+                const inviter = memberEvent.event.sender;
+                let type = "Room";
+
+                // Identify if invite is to a DM
+                if (memberEvent?.getContent()?.is_direct) {
+                    type = "Direct";
+                }
+                // If space room
+                else if (room.isSpaceRoom()) {
+                    type = "Space";
+                }
+                
+                invites.push({type: type, inviter: inviter, room: room});
+            }
+        });
+
+        return invites;
     }
 }
