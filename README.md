@@ -13,3 +13,6 @@ npm install
 ```
 npm start
 ```
+
+### Acknowledgements:
+Huge credit to the [Cinny](https://github.com/ajbura/cinny) developers for lots of inspiration.
