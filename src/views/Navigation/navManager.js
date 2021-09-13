@@ -20,15 +20,10 @@ export default class navManager {
         this.currentGroup = null;
         this.currentRooms = []
 
-        // Initialise room mapping
-        this._getDirects();
-        const groups = this._getGroups();
-        groups.forEach((group) => {
-            this._getSpaceChildren(group.roomId);
-        });
+        this._initRoomMap();
 
         this._startListeners();
-        this.setGroups(groups);
+        this.setGroups(this._getGroups());
         this.setInvites(this._getInvitedRooms());
         // When initialised, go to home by default
         this.groupSelected("home");
@@ -95,7 +90,7 @@ export default class navManager {
         console.log("Membership change", oldState, state, room);
 
         // Left room
-        if (oldState === "join" && state === "leave") {
+        if (state === "leave" || state === "ban") {
             if (room.isSpaceRoom()) {
                 // Left space, update group list
                 this.setGroups(this.getGroups());
@@ -110,18 +105,40 @@ export default class navManager {
             }
         }
 
-        // Invited to room
-        if (oldState === null && state === "invite") {
+        // New invite to a room, or invite has changed (joined room etc)
+        if (state === "invite" || oldState === "invite") {
             this.setInvites(this._getInvitedRooms());
+        }
+
+        // Joined room 
+        if (state === "join") {
+            if (room.isSpaceRoom()) {
+                this.setGroups(this._getGroups());
+            } else {
+                // We don't know which group this belongs to, so reinitialise all the groups
+                this._initRoomMap();
+
+                // Check if the current group was updated, if so, refresh it
+                if (this.getRoomsFromGroup(this.currentGroup).includes(room)) {
+                    this.groupSelected(this.currentGroup);
+                }
+            }
         }
     }
 
     // DM room info
     _accountData(event) {
         console.log("Account data", event)
-        return;
-        if (event.getType() !== "m.direct") {return};
-        if (!this.groups.has("directs")) {return};
+
+        // If m.directs list updated, refresh the dms list
+        if (event.getType() !== "m.direct") {
+            this._getDirects();  // This updates the room mapping with new values
+
+            // If currently in the directs group, update the room list
+            if (this.currentGroup === "directs") {
+                this.groupSelected("directs");
+            }
+        };
 
     }
 
@@ -135,15 +152,23 @@ export default class navManager {
     
     /* Initial population of groups */
 
+    _initRoomMap() {
+        // Reset current map
+        this.roomToGroup.clear();
+
+        // Get room maps
+        this._getDirects();
+        const groups = this._getGroups();
+        groups.forEach((group) => {
+            this._getSpaceChildren(group.roomId);
+        });}
+
     _getDirects() {
         /* Get all direct rooms and add to mapping */
         const directs = global.matrix.getAccountData("m.direct").getContent();
         Object.values(directs).forEach((rooms) => {
             rooms.forEach((directRoom) => {
-                const roomObj = global.matrix.getRoom(directRoom);
-                if (_isJoined(roomObj)) {
-                    this.roomToGroup.set(directRoom, "directs")
-                }
+                this.roomToGroup.set(directRoom, "directs")
             })
         });
     }
@@ -164,27 +189,30 @@ export default class navManager {
     }
 
     _getInvitedRooms() {
-        var invites = [];
+        var rooms = [];
+        var directs = [];
+        var spaces = [];
         global.matrix.getVisibleRooms().forEach((room) => {
             if (room.getMyMembership() === "invite") {
                 //m.room.member event for logged in user
                 const memberEvent = room.getMember(global.matrix.getUserId()).events.member;
                 const inviter = memberEvent.event.sender;
-                let type = "Room";
 
                 // Identify if invite is to a DM
                 if (memberEvent?.getContent()?.is_direct) {
-                    type = "Direct";
+                    directs.push({inviter: inviter, room: room});
                 }
                 // If space room
                 else if (room.isSpaceRoom()) {
-                    type = "Space";
+                    spaces.push({inviter: inviter, room: room});
+                }
+                else {
+                    rooms.push({inviter: inviter, room: room});
                 }
                 
-                invites.push({type: type, inviter: inviter, room: room});
             }
         });
 
-        return invites;
+        return {Rooms: rooms, "Direct messages": directs, Spaces: spaces};
     }
 }
