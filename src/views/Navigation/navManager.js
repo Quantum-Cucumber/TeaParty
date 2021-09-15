@@ -2,10 +2,29 @@ function _isJoined(room) {
     return room?.getMyMembership() === "join";
 }
 
-function copyRooms(rooms) {
+function roomStates(rooms) {
     /* Create a bare bones copy of a room object, enough to differentiate it from other instances*/
     return rooms.map((room) => {
-        return {roomId: room.roomId, name: room.name, room: room};
+        const events = room.getLiveTimeline().events;
+        events.reverse();  // Get events youngest to oldest
+        const lastRead = room.getEventReadUpTo(global.matrix.getUserId());
+        var read = true;
+        for (const event of events) {
+            // If reached read event, all events are read, so quit the for/of
+            if (event.getId() === lastRead) {break}
+            // If event is a message (and we havent reached the read event), this event is unread
+            if (event.getType() === "m.room.message") {
+                read = false;
+                break;
+            }
+        }
+        
+        const notifications = room.getUnreadNotificationCount("total");
+
+        return {
+            roomId: room.roomId, name: room.name, room: room, 
+            read: read, notifications: notifications
+        };
     });
 }
 
@@ -61,7 +80,7 @@ export default class navManager {
     groupSelected(groupKey) {
         this.currentGroup = groupKey;
         const rooms = this.getRoomsFromGroup(groupKey);
-        this.setRooms(copyRooms(rooms));
+        this.setRooms(roomStates(rooms));
         this.currentRooms = rooms;
     }
 
@@ -145,7 +164,7 @@ export default class navManager {
     // Room name updated
     _roomRenamed(room) {
         if (this.currentRooms.includes(room)) {
-            this.setRooms(copyRooms(this.currentRooms));
+            this.setRooms(roomStates(this.currentRooms));
         }
     }
 

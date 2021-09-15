@@ -117,10 +117,13 @@ function RoomList({ rooms, currentGroup, currentRoom, selectRoom }) {
         const room = element.room;
         const key = room.roomId;
         const icon = getRoomIcon(room, currentGroup.key === "directs");
+        const notifications = element.notifications;
+        const unreadDot = !element.read || notifications > 0;
 
 
         elements.push(
-            <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom}>
+            <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom} 
+                    unread={unreadDot} notification={notifications}>
                 <div className="room__icon__crop">
                     {icon}
                 </div>

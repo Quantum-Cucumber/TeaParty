@@ -42,15 +42,23 @@ export function Tooltip({ text, dir, children }) {
     );
 }
 
-export function Option({ k, text, selected, select, danger, children }) {
+export function Option({ k, text, selected, select, danger, unread=false, notification=0, children }) {
     const className = "option" + 
                       (selected === k ? " option--selected" : "") +
-                      (danger ? " option--danger" : "")
+                      (danger ? " option--danger" : "");
+
+    var indicator = null;
+    if (notification > 0) {
+        indicator = (<div className="option__notification">{notification}</div>);
+    } else if (unread) {
+        indicator = (<div className="option__unread"></div>);
+    }
 
     return (
         <div className={className} onClick={() => select(k)}>
             {children}
             <div className="option__text">{text}</div>
+            {indicator}
         </div>
     );
 }

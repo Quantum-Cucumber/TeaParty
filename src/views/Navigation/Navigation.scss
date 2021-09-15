@@ -63,24 +63,6 @@ $border: 2px solid var(--border);
     &__label {
         display: inline-block;
     }
-
-    &__notification {
-        flex: none;
-        background-color: var(--primary);
-        border-radius: 0.6rem;
-        padding: 2px;
-        height: 1.3rem;
-        line-height: 1.3rem;
-    }
-
-    &__unread {
-        flex: none;
-        height: 8px;
-        width: 8px;
-        background-color: var(--primary);
-        margin-right: 5px;
-        border-radius: 50%;
-    }
 }
 
 .option--selected, .option:hover {

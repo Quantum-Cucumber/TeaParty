@@ -4,7 +4,7 @@ export default class messageTimeline {
     constructor(roomId) {
         this.roomId = roomId;
         this.room = global.matrix.getRoom(this.roomId);
-        this.timeline = this.room?.timeline;
+        this.timeline = this.room?.getLiveTimeline().events;
 
         this.edits = new Map();
         this.timeline.forEach((event) => {
