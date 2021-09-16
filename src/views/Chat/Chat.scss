@@ -58,6 +58,9 @@
     &__info {
         margin-bottom: 2px;
         overflow: hidden;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-end;
     }
 
     &__author {
@@ -65,13 +68,18 @@
         cursor: pointer;
         text-overflow: ellipsis;
         overflow: hidden;
-        max-width: min-content;
         white-space: nowrap;
+        flex: 0 1 auto;
         
         &:hover {
             text-decoration: underline;
         }
     }
+    &-timestamp {
+        margin-left: 0.5rem;
+        flex: none;
+    }
+
     &__content {
         width: 100%;
 
@@ -81,6 +89,7 @@
             display: inline-block;
             margin-left: 0.4rem;
             user-select: none;
+            display: inline;
         }
     }
 }
@@ -117,9 +126,6 @@
 }
 .message-timestamp {
     color: var(--text-greyed);
-    width: inherit;
-    margin-bottom: 2px;
-    margin-left: 0.5rem;
     font-size: 0.8rem;
 }
 

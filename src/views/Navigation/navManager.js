@@ -5,15 +5,17 @@ function _isJoined(room) {
 function roomStates(rooms) {
     /* Create a bare bones copy of a room object, enough to differentiate it from other instances*/
     return rooms.map((room) => {
+        const userId = global.matrix.getUserId();
         const events = room.getLiveTimeline().events;
         events.reverse();  // Get events youngest to oldest
-        const lastRead = room.getEventReadUpTo(global.matrix.getUserId());
+        const lastRead = room.getEventReadUpTo(userId);
         var read = true;
         for (const event of events) {
             // If reached read event, all events are read, so quit the for/of
             if (event.getId() === lastRead) {break}
             // If event is a message (and we havent reached the read event), this event is unread
-            if (event.getType() === "m.room.message") {
+            // Ignore messages from the logged in user since those will be read anyway
+            if (event.getType() === "m.room.message" && event.getSender() !== userId) {
                 read = false;
                 break;
             }

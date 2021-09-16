@@ -4,7 +4,7 @@ import { useEffect, useState, useRef, useCallback } from "react";
 import { Loading } from "../../components/interface";
 import messageTimeline from "./messageTimeline";
 import { getUserColour } from "../../utils/utils";
-import { dtToTime, dayBorder, dtToDate } from "../../utils/datetime";
+import { dateToTime, dayBorder, dateToDateStr, messageTimestamp } from "../../utils/datetime";
 import { tryGetUser } from "../../utils/matrix-client";
 
 
@@ -80,7 +80,7 @@ function Chat({ currentRoom }) {
     });
     // If rendered last message in channel, add a day border and 30vh of padding
     if (timeline.current && messageList.length !== 0 && !timeline.current.canScroll) {
-        const text = dtToDate(messageList[messageList.length - 1].getDate());
+        const text = dateToDateStr(messageList[messageList.length - 1].getDate());
         messages.push(
             <DayBorder text={text} key={text}/>,
             <div style={{height: "30vh"}} key="padding"></div>
@@ -189,11 +189,11 @@ function Message({ event, timeline }) {
             <div className="message__text">
                 <div className="message__info">
                     <span className="message__author" style={{color: getUserColour(author.userId)}}>{author.displayName}</span>
-                    <span className="message-timestamp">{dtToTime(event.getDate())}</span>
+                    <span className="message-timestamp">{messageTimestamp(event.getDate())}</span>
                 </div>
                 <div className="message__content">
                     {content}
-                    {edited && <div className="message__content__edited">(edited)</div>}
+                    {edited && <div className="message__content__edited">&nbsp;(edited)</div>}
                 </div>
             </div>
         </div>
@@ -207,7 +207,7 @@ function PartialMessage({ event, timeline }) {
     return (
         <div className="message--partial">
             <div className="message--partial__offset">
-                <span className="message-timestamp">{dtToTime(event.getDate())}</span>
+                <span className="message-timestamp">{dateToTime(event.getDate())}</span>
             </div>
             <div className="message__text">
                 <div className="message__content">
