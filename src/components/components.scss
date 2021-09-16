@@ -156,6 +156,10 @@
 
     &:hover, &--selected {
         background-color: var(--primary);
+
+        .option__notification, .option__unread {
+            display: none;
+        }
     }
 
     &__text {
