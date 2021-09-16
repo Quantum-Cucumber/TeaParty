@@ -97,6 +97,8 @@ export default class navManager {
         "Room.myMembership": this._membershipChange.bind(this),
         "accountData": this._accountData.bind(this), 
         "Room.name": this._roomRenamed.bind(this),
+        "Room.timeline": this._roomEvent.bind(this),
+        "Room.receipt": this._readReceipt.bind(this),
     }
     _startListeners() {
         Object.keys(this._listeners).forEach((type) => {
@@ -172,6 +174,29 @@ export default class navManager {
         if (this.currentRooms.includes(room)) {
             this.setRooms(roomStates(this.currentRooms));
         }
+    }
+
+    // Message event
+    _roomEvent(event, room, toStartOfTimeline, removed) {
+        if (removed) {return};
+        if (event.getType() !== "m.room.message") {return};
+
+        // If event's room is in current roomlist, refresh (to add indicators)
+        if (this.currentRooms.includes(room)) {
+            this.groupSelected(this.currentGroup);
+        }
+    }
+
+    // Read receipt
+    _readReceipt(event, room) {
+        // Check if read receipt was the signed in user, then update the unread indicators if so
+        const userId = Object.keys(Object.values(event.getContent())[0]["m.read"])[0];
+        if (userId === global.matrix.getUserId()) {
+            // If event's room is in current roomlist, refresh (to add indicators)
+            if (this.currentRooms.includes(room)) {
+                this.groupSelected(this.currentGroup);
+            }
+        }        
     }
 
     
