@@ -17,11 +17,18 @@ function Client() {
     const roomNav = useRef(null);  // Handles populating the groups and room list
     const [invites, setInvites] = useState([]);  // Passed into 
 
+
+    useEffect(() => {
+        if (roomNav.current) {
+            roomNav.current.roomSelected(currentRoom);
+        }
+    }, [currentRoom])
+
     useEffect(() => {
         buildMatrix().then(() => {
             global.matrix.once("sync", (state, oldState) => {
                 if (oldState === null && state === "PREPARED") {
-                    roomNav.current = new navManager(setGroups, setRooms, setInvites);
+                    roomNav.current = new navManager(setGroups, setRooms, setInvites, selectRoom);
                     syncState(true);
                 }
             })

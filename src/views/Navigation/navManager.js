@@ -31,14 +31,17 @@ function roomStates(rooms) {
 
 
 export default class navManager {
-    constructor(setGroups, setRooms, setInvites) {
+    constructor(setGroups, setRooms, setInvites, selectRoom) {
         this.setGroups = setGroups;
         this.setRooms = setRooms;
         this.setInvites = setInvites;
+        this.selectRoom = selectRoom;
 
         this.roomToGroup = new Map();  // room => group
+        this.groupBreadcrumbs = new Map();  // group => selected room
         this.currentGroup = null;
-        this.currentRooms = []
+        this.currentRooms = [];
+        this.selectedRoom = null;
 
         this._initRoomMap();
 
@@ -83,6 +86,8 @@ export default class navManager {
         const rooms = this.getRoomsFromGroup(groupKey);
         this.setRooms(roomStates(rooms));
         this.currentRooms = rooms;
+
+        this.selectRoom(this.groupBreadcrumbs.get(this.currentGroup) || null);
     }
 
 
@@ -234,5 +239,10 @@ export default class navManager {
         });
 
         return {Rooms: rooms, "Direct messages": directs, Spaces: spaces};
+    }
+
+    /* Room breadcrumbs */
+    roomSelected(room) {
+        this.groupBreadcrumbs.set(this.currentGroup, room);
     }
 }
