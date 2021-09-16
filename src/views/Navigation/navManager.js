@@ -1,3 +1,5 @@
+import { getSetting, updateSettings } from "../../utils/settings";
+
 function _isJoined(room) {
     return room?.getMyMembership() === "join";
 }
@@ -32,7 +34,8 @@ export default class navManager {
         this.selectRoom = selectRoom;
 
         this.roomToGroup = new Map();  // room => group
-        this.groupBreadcrumbs = new Map();  // group => selected room
+        // Create map from saved breadcrumbs object
+        this.groupBreadcrumbs = new Map(Object.entries(getSetting("groupBreadcrumbs")));  // group => selected room
         this.currentGroup = null;
         this.currentRooms = [];
         this.selectedRoom = null;
@@ -298,5 +301,8 @@ export default class navManager {
     /* Room breadcrumbs */
     roomSelected(room) {
         this.groupBreadcrumbs.set(this.currentGroup, room);
+        // Convert map to object to be saved
+        const crumbObj = Object.fromEntries(this.groupBreadcrumbs);
+        updateSettings("groupBreadcrumbs", crumbObj);
     }
 }

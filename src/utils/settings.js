@@ -1,5 +1,6 @@
 const default_settings = {
     theme: "dark",
+    groupBreadcrumbs: {},
 }
 
 
@@ -10,7 +11,7 @@ function loadSettings() {
 }
 
 export function getSetting(key) {
-    return loadSettings()[key];
+    return loadSettings()[key] || default_settings[key];
 }
 
 export function updateSettings(key, value) {
