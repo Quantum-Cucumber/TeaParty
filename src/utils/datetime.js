@@ -5,7 +5,7 @@ function _jsDateToLocal(date) {
     return DateTime.fromJSDate(date, "UTC").toLocal();
 }
 
-function _relativeDate(date) {
+function _relativeDate(date, format = DateTime.DATE_SHORT) {
     /* Return today/yesterday/a date string by comparing to the current date */
     // Check if the next message is today
     const now = DateTime.local();
@@ -18,7 +18,7 @@ function _relativeDate(date) {
     }
     // Return just the date
     else {
-        return date.toLocaleString(DateTime.DATE_MED);
+        return date.toLocaleString(format);
     }}
 
 
@@ -32,10 +32,10 @@ export function messageTimestamp(date) {
     const dateStr = _relativeDate(dt);
     const timeStr = dateToTime(date);
     
-    if (dateStr === "Today") {
-        return timeStr;
+    if (dateStr === "Today" || dateStr === "Yesterday") {
+        return `${dateStr} at ${timeStr}`;
     } else {
-        return `${dateStr} ${timeStr}`;
+        return dateStr;
     }
 }
 
@@ -57,7 +57,7 @@ export function dayBorder(nextMsg, lastMsg) {
     const lastLocal = _jsDateToLocal(lastMsg.getDate());
     // Check whether dates are the same
     if (nextLocal.day !== lastLocal.day) {
-        return _relativeDate(nextLocal);
+        return _relativeDate(nextLocal, DateTime.DATE_FULL);
     } else {
         return null
     }

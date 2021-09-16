@@ -81,7 +81,7 @@ export default class navManager {
         this.setRooms(this._roomStates(rooms));
         this.currentRooms = rooms;
 
-        this.selectRoom(this.groupBreadcrumbs.get(this.currentGroup) || null);
+        this.selectRoom(this.groupBreadcrumbs.get(this.currentGroup) || this.currentRooms[0].roomId);
     }
 
     _roomStates(rooms) {
