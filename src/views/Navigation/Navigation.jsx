@@ -45,7 +45,10 @@ function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, ro
 function GroupList({ roomNav, setGroup, currentGroup, groupList }) {
 
     // Placed here so we can inherit roomNav, currentGroup and selectGroup
-    function Group({ groupName, k, children, builtin = false, notification = null, unread = false }) {
+    function Group({ groupName, k, children, builtin = false }) {
+        const roomState = roomNav.current.groupUnreads(k);
+        const {read, notifications} = roomState;
+
         return (
             <div className="group__holder">
                 <Tooltip text={groupName} dir="right">
@@ -59,10 +62,10 @@ function GroupList({ roomNav, setGroup, currentGroup, groupList }) {
                         }}
                     >
                         {children}
-                        {notification !== null && <div className="group__notification">{notification}</div>}
+                        {notifications > 0 && <div className="group__notification">{notifications}</div>}
                     </div>
                 </Tooltip>
-                <div className="group__unread" style={{display: unread ? "block" : "none"}}></div>
+                <div className="group__unread" style={{display: read ? "none" : "block"}}></div>
             </div>
         );
     }
@@ -113,12 +116,12 @@ function getRoomIcon(room, isDm = false) {
 
 function RoomList({ rooms, currentGroup, currentRoom, selectRoom }) {
     var elements = [];
-    rooms.forEach((element) => {
-        const room = element.room;
+    rooms.forEach((roomState) => {
+        const room = roomState.room;
         const key = room.roomId;
         const icon = getRoomIcon(room, currentGroup.key === "directs");
-        const notifications = element.notifications;
-        const unreadDot = !element.read || notifications > 0;
+        const notifications = roomState.notifications;
+        const unreadDot = !roomState.read || notifications > 0;
 
 
         elements.push(

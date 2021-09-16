@@ -2,31 +2,25 @@ function _isJoined(room) {
     return room?.getMyMembership() === "join";
 }
 
-function roomStates(rooms) {
-    /* Create a bare bones copy of a room object, enough to differentiate it from other instances*/
-    return rooms.map((room) => {
-        const userId = global.matrix.getUserId();
-        const events = room.getLiveTimeline().events.slice().reverse();  // Get events youngest to oldest
-        const lastRead = room.getEventReadUpTo(userId);
-        var read = true;
-        for (const event of events) {
-            // If reached read event, all events are read, so quit the for/of
-            if (event.getId() === lastRead) {break}
-            // If event is a message (and we havent reached the read event), this event is unread
-            // Ignore messages from the logged in user since those will be read anyway
-            if (event.getType() === "m.room.message" && event.getSender() !== userId) {
-                read = false;
-                break;
-            }
+function _getUnreads(room) {
+    /* Determine if there are unread events or notifications */
+    const userId = global.matrix.getUserId();
+    const events = room.getLiveTimeline().events.slice().reverse();  // Get events youngest to oldest
+    const lastRead = room.getEventReadUpTo(userId);
+    var read = true;
+    for (const event of events) {
+        // If reached read event, all events are read, so quit the for/of
+        if (event.getId() === lastRead) {break}
+        // If event is a message (and we havent reached the read event), this event is unread
+        // Ignore messages from the logged in user since those will be read anyway
+        if (event.getType() === "m.room.message" && event.getSender() !== userId) {
+            read = false;
+            break;
         }
-        
-        const notifications = room.getUnreadNotificationCount("total");
-
-        return {
-            roomId: room.roomId, name: room.name, room: room, 
-            read: read, notifications: notifications
-        };
-    });
+    }
+    
+    const notifications = room.getUnreadNotificationCount("total");
+    return {read: read, notifications: notifications}
 }
 
 
@@ -84,10 +78,41 @@ export default class navManager {
     groupSelected(groupKey) {
         this.currentGroup = groupKey;
         const rooms = this.getRoomsFromGroup(groupKey);
-        this.setRooms(roomStates(rooms));
+        this.setRooms(this._roomStates(rooms));
         this.currentRooms = rooms;
 
         this.selectRoom(this.groupBreadcrumbs.get(this.currentGroup) || null);
+    }
+
+    _roomStates(rooms) {
+        /* Create a bare bones copy of a room object, enough to differentiate it from other instances*/
+        return rooms.map((room) => {
+            let unreads;
+            if (room.isSpaceRoom()) {
+                unreads = this.groupUnreads(room.roomId);
+            } else {
+                unreads = _getUnreads(room);
+            }
+
+            return {
+                roomId: room.roomId, name: room.name, room: room, 
+                read: unreads.read, notifications: unreads.notifications
+            };
+        });
+    }
+
+    groupUnreads(groupKey) {
+        // Get unreads for all children
+        let children = this.getRoomsFromGroup(groupKey).map((child) => {
+            return _getUnreads(child);
+        });
+        // In case space has no joined children
+        if (children.length === 0) {children = [{read: true, notifications: 0}]}
+
+        // Merge all unread states
+        const unread = children.some((state) => {return !state.read});  // If any are unread
+        const notifications = children.reduce((count, state) => {return count + state.notifications}, 0);  // Get sum
+        return {read: !unread, notifications: notifications};
     }
 
 
@@ -120,7 +145,7 @@ export default class navManager {
         if (state === "leave" || state === "ban") {
             if (room.isSpaceRoom()) {
                 // Left space, update group list
-                this.setGroups(this.getGroups());
+                this.setGroups(this._roomStates(this.getGroups()));
                 return;
             }
 
@@ -172,7 +197,7 @@ export default class navManager {
     // Room name updated
     _roomRenamed(room) {
         if (this.currentRooms.includes(room)) {
-            this.setRooms(roomStates(this.currentRooms));
+            this.setRooms(this._roomStates(this.currentRooms));
         }
     }
 
@@ -185,6 +210,8 @@ export default class navManager {
         if (this.currentRooms.includes(room)) {
             this.groupSelected(this.currentGroup);
         }
+        // Update group list
+        this.setGroups(this._getGroups());
     }
 
     // Read receipt
@@ -196,6 +223,8 @@ export default class navManager {
             if (this.currentRooms.includes(room)) {
                 this.groupSelected(this.currentGroup);
             }
+            // Update group list
+            this.setGroups(this._getGroups());
         }        
     }
 
