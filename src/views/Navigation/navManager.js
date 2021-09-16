@@ -6,8 +6,7 @@ function roomStates(rooms) {
     /* Create a bare bones copy of a room object, enough to differentiate it from other instances*/
     return rooms.map((room) => {
         const userId = global.matrix.getUserId();
-        const events = room.getLiveTimeline().events;
-        events.reverse();  // Get events youngest to oldest
+        const events = room.getLiveTimeline().events.slice().reverse();  // Get events youngest to oldest
         const lastRead = room.getEventReadUpTo(userId);
         var read = true;
         for (const event of events) {
