@@ -36,12 +36,10 @@ function Chat({ currentRoom }) {
         timeline.current = new messageTimeline(currentRoom);
 
         // Set up timeline event handler
-        function onEvent(event, eventRoom, toStartOfTimeline) {
-            // Ignore pagination (not too sure what this is lol)
-            if (toStartOfTimeline) {return}
+        function onEvent(event, eventRoom) {
             if (eventRoom.roomId !== currentRoom) {return}
             
-            // Pass event to timeline handler and update message list
+            // Pass event to timeline handler and refresh message list
             timeline.current.onEvent(event);
             updateMessageList();
         }
@@ -123,7 +121,7 @@ function ChatScroll({ children, timeline, updateMessageList }) {
         if (atTop.current !== false) {
             // Calculate where scrollTop should be based on last distance to bottom
             restoreScrollPos();
-            atTop.current = false;
+            //atTop.current = false;
         }
 
         // If screen isn't full and messages can be loaded, do that :)
@@ -155,16 +153,17 @@ function ChatScroll({ children, timeline, updateMessageList }) {
     // Determine position when we scroll and set flags accordingly
     function onScroll(e) {
         atBottom.current = false;
+        saveScrollPos();  // Save scroll position in case it will be restored
 
-        if (atTop.current !== false) {saveScrollPos()};
         // When scrolled to the top, show the loading wheel and load new messages
-        if (e.target.scrollTop === 0 && !loading && !atBottom.current && timeline.current.canScroll) {
+        if (e.target.scrollTop === 0 && !atBottom.current && timeline.current.canScroll) {
             saveScrollPos();
             loadMore();
         } 
         // Scrolled to bottom
         else if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
             atBottom.current = true;
+            atTop.current = false;
         }
     }
 
