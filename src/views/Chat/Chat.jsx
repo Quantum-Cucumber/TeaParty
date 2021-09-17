@@ -53,14 +53,22 @@ function Chat({ currentRoom }) {
 
     // Convert message events into message components
     var messages = [];
+    const lastRead = global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId())
+    console.log(lastRead)
     messageList.forEach((event, index) => {
         const prevEvent = messageList[index - 1]; 
 
+        if (prevEvent?.getId() === lastRead) {
+            console.log("a")
+            messages.push(
+                <MessageBorder text="New Messages" color="var(--error)" key="unread"/>
+            );
+        }
+
         const border = dayBorder(event, prevEvent);
-        
         if (border !== null) {
             messages.push(
-                <DayBorder text={border} key={border} />
+                <MessageBorder text={border} color="var(--text-greyed)" key={border}/>
             );
         }
         
@@ -81,7 +89,7 @@ function Chat({ currentRoom }) {
         const text = dateToDateStr(messageList[messageList.length - 1].getDate());
         messages.unshift(
             <div style={{height: "30vh"}} key="padding"></div>,
-            <DayBorder text={text} key={text}/>,
+            <MessageBorder text={text} color="var(--text-greyed)" key={text}/>
         );
     }
 
@@ -218,14 +226,14 @@ function PartialMessage({ event, timeline }) {
     )
 }
 
-function DayBorder({ text }) {
+function MessageBorder({ text, color }) {
     return (
-        <div className="chat__day-border">
-            <div className="chat__day-border__line"></div>
-            <div className="chat__day-border__day">
+        <div className="chat__border" style={{"--color": color}}>
+            <div className="chat__border__line"></div>
+            <div className="chat__border__text">
                 {text}
             </div>
-            <div className="chat__day-border__line"></div>
+            <div className="chat__border__line"></div>
         </div>
     );
 }

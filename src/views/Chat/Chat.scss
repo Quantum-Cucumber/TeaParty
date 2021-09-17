@@ -131,7 +131,7 @@
 }
 
 
-.chat__day-border {
+.chat__border {
     display: flex;
     flex-direction: row;
     align-items: center;
@@ -140,11 +140,11 @@
     &__line {
         height: 1px;
         flex: 1 1 auto;
-        background-color: var(--text-greyed);
+        background-color: var(--color);
     }
 
-    &__day {
-        color: var(--text-greyed);
+    &__text {
+        color: var(--color);
         margin: 0 10px;
         user-select: none;
         font-size: 0.9rem;
