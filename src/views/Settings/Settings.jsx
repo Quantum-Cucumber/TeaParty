@@ -141,7 +141,6 @@ function DeviceTable() {
                         <th>Name</th>
                         <th>Device ID</th>
                         <th>Last Seen</th>
-                        <th>Last IP</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -173,8 +172,7 @@ function DeviceTable() {
             <tr key={device_id} className={current ? "device-table--current" : ""}>
                 <td>{display_name}</td>
                 <td>{device_id}</td>
-                <td>{msToDate(last_seen_ts)}</td>
-                <td>{last_seen_ip}</td>
+                <td>{msToDate(last_seen_ts)}<br />{last_seen_ip}</td>
             </tr>
         );
     });
