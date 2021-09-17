@@ -54,12 +54,10 @@ function Chat({ currentRoom }) {
     // Convert message events into message components
     var messages = [];
     const lastRead = global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId())
-    console.log(lastRead)
     messageList.forEach((event, index) => {
         const prevEvent = messageList[index - 1]; 
 
         if (prevEvent?.getId() === lastRead) {
-            console.log("a")
             messages.push(
                 <MessageBorder text="New Messages" color="var(--error)" key="unread"/>
             );
