@@ -138,7 +138,8 @@
         background-color: var(--primary);
 
         .option__notification, .option__unread {
-            display: none;
+            background-color: var(--text);
+            color: var(--primary);
         }
     }
 

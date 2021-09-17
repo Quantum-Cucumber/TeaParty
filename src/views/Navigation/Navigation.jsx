@@ -1,10 +1,10 @@
 import "./Navigation.scss";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import { Button, Tooltip, Loading, Option, Overlay } from "../../components/interface";
 import { Avatar, User } from "../../components/user";
-import { acronym } from "../../utils/utils";
+import { acronym, useBindEscape } from "../../utils/utils";
 
 function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, roomNav, invites }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
@@ -165,20 +165,7 @@ function InvitesIcon({ invLen, invites }) {
 
 function Invites({ setShowModal, invitedRooms }) {
     if (invitedRooms.length === 0) {setShowModal(false)}
-
-    /* Listen for escape key to close menu */
-    useEffect(() => {
-        document.addEventListener("keydown", keyPress);
-
-        return () => {
-            document.removeEventListener("keydown", keyPress);
-        };
-    });
-    function keyPress(e) {
-        if (e.key === "Escape") {
-            setShowModal(false);
-        }
-    }
+    useBindEscape(setShowModal, false);
 
     // Make a holder for each invite type and populate with its values
     const holders = Object.keys(invitedRooms).reduce((holders, name) => {

@@ -2,6 +2,7 @@ import Icon from '@mdi/react';
 import "./components.scss";
 import { mdiLoading } from "@mdi/js";
 import { useState, cloneElement, useRef } from 'react';
+import { useEffect } from 'react/cjs/react.development';
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
     return (
@@ -67,6 +68,10 @@ export function Tooltip({ text, dir, children, delay = 0 }) {
         clearTimeout(timer.current);
         setVisible(false);
     }
+
+    useEffect(() => {
+        return () => {clearTimeout(timer.current)};
+    }, [])
 
     // Can only have a single child
     if (Array.isArray(children)) {

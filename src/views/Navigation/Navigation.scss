@@ -65,12 +65,6 @@ $border: 2px solid var(--border);
     }
 }
 
-.option--selected, .option:hover {
-    .room__unread, .room__notification {
-        display: none;
-    }
-}
-
 
 /* User bar */
 .client__user-bar {

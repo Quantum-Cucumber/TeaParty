@@ -14,6 +14,7 @@ export default class messageTimeline {
         });
     }
     canScroll = true;
+    read = false;
 
     async getMore() {
         // Only get scrollback if there are messages still to get
@@ -36,6 +37,10 @@ export default class messageTimeline {
         // If edited message
         if (this._isEdit(event)) {
             this._addRelationToMap(this.edits, event);
+        } 
+        // Mark timeline as unread if a message is sent
+        if (this._isMessage(event)) {
+            this.read = false;
         }
     }
 
@@ -64,4 +69,16 @@ export default class messageTimeline {
         return messages;
     }
 
+    async markAsRead() {
+        if (!this.read) {
+            const messages = this.getMessages()
+            if (messages.length === 0) {return}
+
+            const event = messages[messages.length - 1];
+            // Spec says not to send read receipts for own events
+            if (event.getSender() === global.matrix.getUserId()) {return}
+
+            await global.matrix.sendReadReceipt(event);
+        }
+    }
 }

@@ -3,7 +3,7 @@ import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Loading, Tooltip } from "../../components/interface";
 import messageTimeline from "./messageTimeline";
-import { getUserColour } from "../../utils/utils";
+import { getUserColour, useBindEscape } from "../../utils/utils";
 import { dateToTime, dayBorder, dateToDateStr, messageTimestamp, messageTimestampFull } from "../../utils/datetime";
 import { tryGetUser } from "../../utils/matrix-client";
 
@@ -53,13 +53,13 @@ function Chat({ currentRoom }) {
 
     // Convert message events into message components
     var messages = [];
-    const lastRead = global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId())
+    const lastRead = global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId());
     messageList.forEach((event, index) => {
         const prevEvent = messageList[index - 1]; 
 
-        if (prevEvent?.getId() === lastRead) {
+        if (lastRead && prevEvent?.getId() === lastRead) {
             messages.push(
-                <MessageBorder text="New Messages" color="var(--error)" key="unread"/>
+                <UnreadBorder key="unread"/>
             );
         }
 
@@ -106,6 +106,12 @@ function ChatScroll({ children, timeline, updateMessageList }) {
     const atBottom = useRef(true);
     const atTop = useRef(false);
     const scrollRef = useRef();
+
+    function markAsRead() {
+        timeline.current.markAsRead();
+        scrollToBottom();
+    }
+    useBindEscape(() => markAsRead(), null);
 
     const loadMore = useCallback(() => {
         setLoading(true);
@@ -170,6 +176,10 @@ function ChatScroll({ children, timeline, updateMessageList }) {
         else if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
             atBottom.current = true;
             atTop.current = false;
+
+            if (document.hasFocus()) {
+                markAsRead()
+            }
         }
     }
 
@@ -238,6 +248,18 @@ function MessageBorder({ text, color }) {
             </div>
             <div className="chat__border__line"></div>
         </div>
+    );
+}
+
+function UnreadBorder() {
+    const [visible, setVisible] = useState(true);
+    useBindEscape(setVisible, false);
+
+
+    return (
+        <>
+        {visible && <MessageBorder text="New Messages" color="var(--error)"/>}
+        </>
     );
 }
 

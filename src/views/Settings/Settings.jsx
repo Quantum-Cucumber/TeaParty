@@ -6,6 +6,7 @@ import { Icon } from "@mdi/react";
 import { setTheme, getSetting } from "../../utils/settings";
 import { logoutMatrix } from "../../utils/matrix-client";
 import { msToDate } from "../../utils/datetime";
+import { useBindEscape } from "../../utils/utils";
 
 
 function SettingsPage({ setPage }) {
@@ -58,20 +59,8 @@ function SettingsPage({ setPage }) {
             </SettingsTab>
         );
     });
-
-    /* Listen for escape key to close menu */
-    useEffect(() => {
-        document.addEventListener("keydown", keyPress);
-
-        return () => {
-            document.removeEventListener("keydown", keyPress);
-        };
-    });
-    function keyPress(e) {
-        if (e.key === "Escape") {
-            setPage(null);
-        }
-    }
+    
+    useBindEscape(setPage, null);
 
     return (
         <div className="page--settings">
