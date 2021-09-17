@@ -1,10 +1,10 @@
 import { Avatar } from "../../components/user";
 import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Loading } from "../../components/interface";
+import { Loading, Tooltip } from "../../components/interface";
 import messageTimeline from "./messageTimeline";
 import { getUserColour } from "../../utils/utils";
-import { dateToTime, dayBorder, dateToDateStr, messageTimestamp } from "../../utils/datetime";
+import { dateToTime, dayBorder, dateToDateStr, messageTimestamp, messageTimestampFull } from "../../utils/datetime";
 import { tryGetUser } from "../../utils/matrix-client";
 
 
@@ -194,7 +194,10 @@ function Message({ event, timeline }) {
             <div className="message__text">
                 <div className="message__info">
                     <span className="message__author" style={{color: getUserColour(author.userId)}}>{author.displayName}</span>
-                    <span className="message-timestamp">{messageTimestamp(event.getDate())}</span>
+
+                    <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
+                        <span className="message-timestamp">{messageTimestamp(event.getDate())}</span>
+                    </Tooltip>
                 </div>
                 <div className="message__content">
                     {content}
@@ -212,7 +215,9 @@ function PartialMessage({ event, timeline }) {
     return (
         <div className="message--partial">
             <div className="message--partial__offset">
-                <span className="message-timestamp">{dateToTime(event.getDate())}</span>
+                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
+                    <span className="message-timestamp">{dateToTime(event.getDate())}</span>
+                </Tooltip>
             </div>
             <div className="message__text">
                 <div className="message__content">

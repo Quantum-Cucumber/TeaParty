@@ -1,7 +1,7 @@
 import Icon from '@mdi/react';
 import "./components.scss";
 import { mdiLoading } from "@mdi/js";
-import { useState, cloneElement } from 'react';
+import { useState, cloneElement, useRef } from 'react';
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
     return (
@@ -19,8 +19,54 @@ export function Loading({ size }) {
     );
 }
 
-export function Tooltip({ text, dir, children }) {
+export function Tooltip({ text, dir, children, delay = 0 }) {
     const [visible, setVisible] = useState(false);
+    const tooltipRef = useRef();
+    const childRef = useRef();
+    const timer = useRef();  // If a delay is set, this tracks the setTimeout ID
+
+    function show() {
+        const offset = 5 + 5;  // Offset + arrow size
+        // Calculate position of tooltip
+        const tooltip = tooltipRef.current;
+        const child = childRef.current;
+        const childRect = child.getBoundingClientRect();
+
+        switch (dir) {
+            case "top": 
+                // Horizontal center
+                tooltip.style.left = `${childRect.x - (tooltip.offsetWidth / 2) + (childRect.width / 2)}px`;
+                // Top
+                tooltip.style.top = `${childRect.y - tooltip.offsetHeight - offset}px`;
+                break;
+            case "bottom":
+                // Horizontal center
+                tooltip.style.left = `${childRect.x - (tooltip.offsetWidth / 2) + (childRect.width / 2)}px`;
+                // Bottom
+                tooltip.style.top = `${childRect.y + childRect.height + offset}px`;
+                break;
+            case "left":
+                // Vertical center
+                tooltip.style.top = `${childRect.y - (tooltip.offsetHeight / 2) + (childRect.height / 2)}px`;
+                // Left
+                tooltip.style.left = `${childRect.x - tooltip.offsetWidth - offset}px`;
+                break;
+            case "right":
+                // Vertical center
+                tooltip.style.top = `${childRect.y - (tooltip.offsetHeight / 2) + (childRect.height / 2)}px`;
+                // Right
+                tooltip.style.left = `${childRect.x + childRect.width + offset}px`;
+                break;
+            default:
+                break;
+        }
+
+        timer.current = setTimeout(() => setVisible(true), delay * 1000);
+    }
+    function hide() {
+        clearTimeout(timer.current);
+        setVisible(false);
+    }
 
     // Can only have a single child
     if (Array.isArray(children)) {
@@ -30,14 +76,15 @@ export function Tooltip({ text, dir, children }) {
     
     // Add listeners for all children (generally should be one child)
     children = cloneElement(children, {
-        onMouseLeave: () => {setVisible(false)},
-        onMouseEnter: () => {setVisible(true)},
+        onMouseEnter: show,
+        onMouseLeave: hide,
+        ref: childRef,
     });
 
     return (
         <>
             {children}
-            <div className={`tooltip tooltip--${dir} ${visible ? "tooltip--visible" : ""}`}>{text}</div>
+            <div className={`tooltip tooltip--${dir} ${visible ? "tooltip--visible" : ""}`} ref={tooltipRef}>{text}</div>
         </>
     );
 }

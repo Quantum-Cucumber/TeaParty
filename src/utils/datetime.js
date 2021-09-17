@@ -39,6 +39,12 @@ export function messageTimestamp(date) {
     }
 }
 
+export function messageTimestampFull(date) {
+    const dt = _jsDateToLocal(date);
+    const format = {...DateTime.DATETIME_FULL, timeZoneName: undefined};  // Remove the timezone text
+    return dt.toLocaleString(format);
+}
+
 export function dateToWeekdayDate(date) {
     const dt = _jsDateToLocal(date);
     return dt.toLocaleString(DateTime.DATE_HUGE);

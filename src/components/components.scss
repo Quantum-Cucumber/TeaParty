@@ -71,9 +71,13 @@
     background-color: $color;
     padding: 8px 13px;
     border-radius: 10px;
-    z-index: 10;
-    position: absolute;
     width: max-content;
+    pointer-events: none;
+    
+    position: fixed;
+    top: 0px;
+    left: 0px;
+    z-index: 100;
 
     /* Visibility */
     transition: opacity 0.1s, visibility 0.1s;
@@ -92,49 +96,25 @@
     }
 
     /* Direction variants */
-    &--right {
-        left: calc(100% + #{$offset});
-        transform: translate(0, -50%);
-        top: 50%;
-
-        &::before {
+    &--right::before {
             top: calc(50% - #{$arrow-size});
             right: 100%;
             border-right-color: $color; 
-        }
     }
-    &--top {
-        bottom: calc(100% + #{$offset});
-        transform: translate(-50%, 0);
-        left: 50%;
-
-        &::before {
+    &--top::before {
             left: calc(50% - #{$arrow-size});
             top: 100%;
             border-top-color: $color; 
-        }
     }
-    &--left {
-        right: calc(100% + #{$offset});
-        transform: translate(0, -50%);
-        top: 50%;
-
-        &::before {
+    &--left::before {
             top: calc(50% - #{$arrow-size});
             left: 100%;
             border-left-color: $color; 
-        }
     }
-    &--bottom {
-        top: calc(100% + #{$offset});
-        transform: translate(-50%, 0);
-        left: 50%;
-
-        &::before {
+    &--bottom ::before {
             left: calc(50% - #{$arrow-size});
             bottom: 100%;
             border-bottom-color: $color; 
-        }
     }
 }
 
