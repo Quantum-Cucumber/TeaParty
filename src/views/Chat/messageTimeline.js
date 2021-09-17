@@ -43,7 +43,6 @@ export default class messageTimeline {
         let compiled = this.timeline.filter((event) => {
             return this._isMessage(event) && !this._isEdit(event)
         })
-        compiled.reverse()
 
         return compiled;
     }

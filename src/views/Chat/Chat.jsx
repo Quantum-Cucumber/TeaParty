@@ -1,5 +1,5 @@
-import "./Chat.scss";
 import { Avatar } from "../../components/user";
+import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback } from "react";
 import { Loading } from "../../components/interface";
 import messageTimeline from "./messageTimeline";
@@ -54,12 +54,17 @@ function Chat({ currentRoom }) {
     }, [currentRoom, updateMessageList]);
 
     // Convert message events into message components
-    // Messages are in order of youngest (top) to oldest (bottom)
     var messages = [];
     messageList.forEach((event, index) => {
-        const prevEvent = messageList[index + 1]; 
+        const prevEvent = messageList[index - 1]; 
 
         const border = dayBorder(event, prevEvent);
+        
+        if (border !== null) {
+            messages.push(
+                <DayBorder text={border} key={border} />
+            );
+        }
         
         // Determine whether last message was by same user
         if (border === null && nextShouldBePartial(event, prevEvent)) {
@@ -72,18 +77,13 @@ function Chat({ currentRoom }) {
             );
         }
 
-        if (border !== null) {
-            messages.push(
-                <DayBorder text={border} key={border} />
-            );
-        }
     });
     // If rendered last message in channel, add a day border and 30vh of padding
     if (timeline.current && messageList.length !== 0 && !timeline.current.canScroll) {
         const text = dateToDateStr(messageList[messageList.length - 1].getDate());
-        messages.push(
+        messages.unshift(
+            <div style={{height: "30vh"}} key="padding"></div>,
             <DayBorder text={text} key={text}/>,
-            <div style={{height: "30vh"}} key="padding"></div>
         );
     }
 
