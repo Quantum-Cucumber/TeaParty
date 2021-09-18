@@ -3,8 +3,9 @@ import { useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import { Button, Tooltip, Loading, Option, Overlay } from "../../components/interface";
-import { Avatar, User } from "../../components/user";
+import { Avatar } from "../../components/user";
 import { acronym, useBindEscape } from "../../utils/utils";
+import { get_username, get_homeserver } from "../../utils/matrix-client";
 
 function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, roomNav, invites }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
@@ -138,12 +139,26 @@ function RoomList({ rooms, currentGroup, currentRoom, selectRoom }) {
 }
 
 function MyUser({ user }) {
+    const defaultText = "Copy user ID";
+    const clickedText = "Copied";
+    const [tooltipText, setTooltipText] = useState(defaultText);
+
     function click() {
         navigator.clipboard.writeText(user.userId);
+        setTooltipText(clickedText);
+        setTimeout(() => setTooltipText(defaultText), 1000);
     }
 
     return (
-        <User user={user} subClass="client__user-bar__profile" clickFunc={click} />
+        <div className="user client__user-bar__profile" onClick={click}>
+            <Avatar subClass="user__avatar" user={user}></Avatar>
+            <Tooltip text={tooltipText} dir="top" delay={0.5}>
+                <div className="user__text-box">
+                    <span className="user__text user__username">{get_username(user)}</span>
+                    <span className="user__text user__homeserver">{get_homeserver(user)}</span>
+                </div>
+            </Tooltip>
+        </div>
     );
 }
 

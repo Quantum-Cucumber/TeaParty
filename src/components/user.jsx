@@ -1,5 +1,5 @@
 import "./components.scss";
-import { get_username, get_homeserver } from "../utils/matrix-client";
+import { get_username } from "../utils/matrix-client";
 import { getUserColour, acronym } from "../utils/utils";
 
 export function Avatar({ user, subClass }) {
@@ -35,7 +35,6 @@ export function User({ user, subClass, clickFunc }) {
             <Avatar subClass="user__avatar" user={user}></Avatar>
             <div className="user__text-box">
                 <span className="user__text user__username">{get_username(user)}</span>
-                <span className="user__text user__homeserver">{get_homeserver(user)}</span>
             </div>
         </div>
     );
