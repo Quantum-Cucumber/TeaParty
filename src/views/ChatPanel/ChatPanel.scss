@@ -1,0 +1,52 @@
+.chat-frame {
+    flex: 1 1 auto;
+    position: relative;
+}
+
+
+/* Typing indicator */
+$halfDotSize: 0.3rem;
+.typing-indicator {
+    height: 1.5rem;
+    flex: none;
+    padding: 0 15px;
+    font-size: 0.8rem;
+    user-select: none;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &__dots {
+        height: $halfDotSize * 2;
+        width: $halfDotSize * 6.5;
+        margin-right: $halfDotSize * 2;
+    }
+
+    circle {
+        $speed: 1.5s;
+
+        animation: glob #{$speed} cubic-bezier(.45,.05,.55,.95) infinite;
+
+        @for $offset from 1 to 4 {
+            &:nth-child(#{$offset}) {
+                animation-delay: 0.2s * ($offset - 1);
+                cx: ($halfDotSize) + ($halfDotSize * 2.25) * ($offset - 1);
+                cy: $halfDotSize;
+                r: $halfDotSize;
+
+                fill: var(--text);
+            }
+        }
+    }
+}
+
+@keyframes glob {
+    0%, 60%, 100% {
+        r: 0.2rem;
+        fill: var(--text-greyed);
+    }
+    30% {
+        r: $halfDotSize;
+        fill: var(--text);
+    }
+}

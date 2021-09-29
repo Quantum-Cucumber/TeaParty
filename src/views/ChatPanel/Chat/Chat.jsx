@@ -1,11 +1,11 @@
-import { Avatar } from "../../components/user";
+import { Avatar } from "../../../components/user";
 import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Loading, Tooltip } from "../../components/interface";
+import { Loading, Tooltip } from "../../../components/interface";
 import messageTimeline from "./messageTimeline";
-import { getUserColour, useBindEscape } from "../../utils/utils";
-import { dateToTime, dayBorder, dateToDateStr, messageTimestamp, messageTimestampFull } from "../../utils/datetime";
-import { tryGetUser } from "../../utils/matrix-client";
+import { getUserColour, useBindEscape } from "../../../utils/utils";
+import { dateToTime, dayBorder, dateToDateStr, messageTimestamp, messageTimestampFull } from "../../../utils/datetime";
+import { tryGetUser } from "../../../utils/matrix-client";
 
 
 function nextShouldBePartial(thisMsg, lastMsg) {

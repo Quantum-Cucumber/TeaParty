@@ -4,7 +4,7 @@ import { buildMatrix } from "../../utils/matrix-client";
 import { Loading, UserPopup} from "../../components/interface";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
-import Chat from "../../views/Chat/Chat";
+import ChatPanel from "../../views/ChatPanel/ChatPanel";
 import navManager from "../../views/Navigation/navManager";
 
 function Client() {
@@ -58,7 +58,7 @@ function Client() {
              currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav} invites={invites}
             />
             <div className="column column--chat">
-                <Chat currentRoom={currentRoom} setUserPopup={setUserPopup} />
+                <ChatPanel currentRoom={currentRoom} setUserPopup={setUserPopup} />
             </div>
             <div className="column column--right"></div>
             <UserPopup parent={userPopupInfo.parent} user={userPopupInfo.user} setUserPopup={setUserPopup} room={currentRoom} />
