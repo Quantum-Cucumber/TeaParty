@@ -2,7 +2,7 @@ import "./components.scss";
 import { get_username } from "../utils/matrix-client";
 import { getUserColour, acronym } from "../utils/utils";
 
-export function Avatar({ user, subClass }) {
+export function Avatar({ user, subClass, clickFunc }) {
     // Get mxc:// url 
     const mxc = user.avatarUrl;
     // Convert mxc url to https if it exists
@@ -21,7 +21,7 @@ export function Avatar({ user, subClass }) {
     }
 
     return (
-        <div className={"avatar__crop " + subClass}>
+        <div className={"avatar__crop " + subClass} onClick={clickFunc} >
             {icon}
         </div>
     );

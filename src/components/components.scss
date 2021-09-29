@@ -210,3 +210,40 @@
         z-index: 101;
     }
 }
+
+/* User popup */
+.user-popup {
+    position: fixed;
+    padding: 16px;
+
+    /* Temp */
+    width: 250px;
+    background-color: var(--border);
+    border-radius: 15px;
+
+    &__avatar {
+        width: 65px;
+        height: 65px;
+        border-radius: 30%;
+        margin-bottom: 10px;
+
+        &:hover {
+            opacity: 0.7;
+            cursor: pointer;
+        }
+    }
+
+    &__display-name {
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    &__label {
+        margin-top: 1rem;
+        font-size: 0.9rem;
+    }
+    &__text {
+        color: var(--text-greyed);
+        font-size: 0.8rem;
+    }
+}

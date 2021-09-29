@@ -1,7 +1,7 @@
 import "./Client.scss";
 import { useEffect, useState, useRef } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
-import { Loading } from "../../components/interface";
+import { Loading, UserPopup} from "../../components/interface";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
 import Chat from "../../views/Chat/Chat";
@@ -15,7 +15,8 @@ function Client() {
     const [page, setPage] = useState();  // Used to set full screen pages
     const [currentRoom, selectRoom] = useState();  // The currently selected room
     const roomNav = useRef(null);  // Handles populating the groups and room list
-    const [invites, setInvites] = useState([]);  // Passed into 
+    const [invites, setInvites] = useState([]);  // Passed into navmanager and navigation pane
+    const [userPopupInfo, setUserPopup] = useState({parent: null, user: null});  // Manage how the userpopup is displayed
 
 
     useEffect(() => {
@@ -57,9 +58,10 @@ function Client() {
              currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav} invites={invites}
             />
             <div className="column column--chat">
-                <Chat currentRoom={currentRoom} />
+                <Chat currentRoom={currentRoom} setUserPopup={setUserPopup} />
             </div>
             <div className="column column--right"></div>
+            <UserPopup parent={userPopupInfo.parent} user={userPopupInfo.user} setUserPopup={setUserPopup} room={currentRoom} />
         </div>
     );
 }

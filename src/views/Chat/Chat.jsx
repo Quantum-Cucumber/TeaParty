@@ -20,7 +20,7 @@ function nextShouldBePartial(thisMsg, lastMsg) {
 }
 
 
-function Chat({ currentRoom }) {
+function Chat({ currentRoom, setUserPopup }) {
     const timeline = useRef();
     const [messageList, setMessageList] = useState([]);
 
@@ -77,7 +77,7 @@ function Chat({ currentRoom }) {
             );
         } else {
             messages.push(
-                <Message event={event} timeline={timeline} key={event.getId()}/>
+                <Message event={event} timeline={timeline} setUserPopup={setUserPopup} key={event.getId()}/>
             );
         }
 
@@ -192,18 +192,24 @@ function ChatScroll({ children, timeline, updateMessageList }) {
 }
 
 
-function Message({ event, timeline }) {
+function Message({ event, timeline, setUserPopup }) {
     const author = tryGetUser(event.getSender());
-    if (!author) {console.log(event.getSender(), author);return;}
+    if (!author) {return;}
     const edited = timeline.current.edits.get(event.getId());
     const content = edited ? edited.getContent()["m.new_content"].body : event.getContent().body;
 
+    function userPopup(e) {
+        setUserPopup({parent: e.target, user: author})
+    }
+
     return (
         <div className="message">
-            <Avatar user={author} subClass="message__avatar__crop" />
+            <Avatar user={author} subClass="message__avatar__crop" clickFunc={userPopup} />
             <div className="message__text">
                 <div className="message__info">
-                    <span className="message__author" style={{color: getUserColour(author.userId)}}>{author.displayName}</span>
+                    <span className="message__author" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
+                        {author.displayName}
+                    </span>
 
                     <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
                         <span className="message-timestamp">{messageTimestamp(event.getDate())}</span>

@@ -1,8 +1,10 @@
 import Icon from '@mdi/react';
 import "./components.scss";
 import { mdiLoading } from "@mdi/js";
-import { useState, cloneElement, useRef } from 'react';
-import { useEffect } from 'react/cjs/react.development';
+import { useState, cloneElement, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
+import { Avatar } from './user';
+import { useBindEscape } from '../utils/utils';
+import { powerLevelText } from "../utils/matrix-client";
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
     return (
@@ -124,4 +126,61 @@ export function Overlay({ children, opacity="90%", click }) {
             <div className="overlay__fade" style={{opacity: opacity}} onClick={click}></div>
         </div>
     )
+}
+
+export function UserPopup({ user, parent, room, setUserPopup }) {
+    const popupRef = useRef();
+
+    useBindEscape(setUserPopup, {parent: null, user: null});
+
+    const clicked = useCallback((e) => {
+        if (!e.target.closest(".user-popup")) {
+            setUserPopup({parent: null, user: null});
+        }
+    }, [setUserPopup]);
+
+    // useLayoutEffect to set position before render
+    useLayoutEffect(() => {
+        if (!user || !parent) {return};
+        // Want to position at same height at parent, to the right of it while also within window boundaries
+        const padding = 10;
+        const parentRect = parent.getBoundingClientRect();
+        const popup = popupRef.current;
+
+        // Position at same height
+        popup.style.top = `${parentRect.y}px`;
+        popup.style.bottom = "auto";
+        // Position to the right of parent
+        popup.style.left = `${parentRect.x + parentRect.width + padding}px`
+        popup.style.right = "auto";
+
+        // Constrain to screen height
+        const popupRect = popup.getBoundingClientRect();
+        if (popupRect.bottom > window.innerHeight) {
+            popup.style.top = "auto";
+            popup.style.bottom = `${padding}px`;
+        }
+    }, [user, parent])
+
+    // Attach click event AFTER render
+    useEffect(() => {
+        if (!user || !parent) {return};
+        // Attach click event to dismiss the popup
+        document.addEventListener("click", clicked);
+        return () => document.removeEventListener("click", clicked);
+    }, [user, parent, clicked]);
+    
+
+    if (!user || !parent || !room) {return null};
+
+    return (
+        <div className="user-popup" ref={popupRef}>
+            <Avatar user={user} subClass="user-popup__avatar" />
+            <div className="user-popup__display-name">{user.rawDisplayName}</div>
+            <div className="user-popup__text">{user.userId}</div>
+
+            <div className="user-popup__label">Power Level</div>
+            <div className="user-popup__text">{powerLevelText(user.userId, room)}</div>
+        </div>
+    );
 }
