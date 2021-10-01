@@ -217,7 +217,11 @@ function Message({ event, timeline, setUserPopup }) {
                 </div>
                 <div className="message__content">
                     {content}
-                    {edited && <div className="message__content__edited">&nbsp;(edited)</div>}
+                    {edited && 
+                        <Tooltip delay={0.5} dir="top" text={messageTimestampFull(edited.getDate())}>
+                            <div className="message__content__edited">&nbsp;(edited)</div>
+                        </Tooltip>
+                    }
                 </div>
             </div>
         </div>
@@ -238,7 +242,11 @@ function PartialMessage({ event, timeline }) {
             <div className="message__text">
                 <div className="message__content">
                     {content}
-                    {edited && <div className="message__content__edited">(edited)</div>}
+                    {edited && 
+                        <Tooltip delay={0.5} dir="top" text={messageTimestampFull(edited.getDate())}>
+                            <div className="message__content__edited">&nbsp;(edited)</div>
+                        </Tooltip>
+                    }
                 </div>
             </div>
         </div>
@@ -262,11 +270,7 @@ function UnreadBorder() {
     useBindEscape(setVisible, false);
 
 
-    return (
-        <>
-        {visible && <MessageBorder text="New Messages" color="var(--error)"/>}
-        </>
-    );
+    return visible && <MessageBorder text="New Messages" color="var(--error)"/>;
 }
 
 export default Chat;
