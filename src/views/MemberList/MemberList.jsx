@@ -3,6 +3,8 @@ import { Member } from "../../components/user";
 import { useState, useEffect, useRef } from "react";
 
 const membersPerPage = 30;
+const memberEvents = ["RoomMember.membership", "RoomMember.name", "RoomMember.powerLevel"];
+
 
 function filterName(name) {
     // matches all ASCII punctuation: !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
@@ -16,10 +18,20 @@ function MemberList({ currentRoom, setUserPopup }) {
     const [loadedMembers, setLoadedMembers] = useState(membersPerPage);  // Number of members to load
     const memberScroll = useRef();
 
-    // When different room selected, reset the loaded members count and scroll to the top of the list
     useEffect(() => {
-        setLoadedMembers(membersPerPage);
-        memberScroll.current.scrollTop = 0;
+        setLoadedMembers(membersPerPage);  // Reset loaded member count
+        memberScroll.current.scrollTop = 0;  // Scroll to top of member list
+
+        function memberUpdated(event, member) {
+            if (member.roomId === currentRoom) {
+                setLoadedMembers(l => l);
+            }
+        }
+        for (const e in memberEvents) {
+            global.matrix.on(e, memberUpdated);
+        }
+
+        return () => {for (const e in memberEvents) {global.matrix.removeListener(e, memberUpdated)}}
     }, [currentRoom]);
 
     useEffect(() => {
