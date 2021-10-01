@@ -1,6 +1,6 @@
 import "./MemberList.scss";
 import { Member } from "../../components/user";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 
 const membersPerPage = 30;
 
@@ -14,8 +14,14 @@ function filterName(name) {
 function MemberList({ currentRoom, setUserPopup }) {
     const [memberList, setMembers] = useState([]);
     const [loadedMembers, setLoadedMembers] = useState(membersPerPage);  // Number of members to load
+    const memberScroll = useRef();
 
-    useEffect(() => {setLoadedMembers(membersPerPage)}, [currentRoom]);
+    // When different room selected, reset the loaded members count and scroll to the top of the list
+    useEffect(() => {
+        setLoadedMembers(membersPerPage);
+        memberScroll.current.scrollTop = 0;
+    }, [currentRoom]);
+
     useEffect(() => {
         if (!currentRoom) {return}
 
@@ -51,7 +57,7 @@ function MemberList({ currentRoom, setUserPopup }) {
     });
 
     return (
-        <div className="member-list" onScroll={onScroll}>
+        <div className="member-list" onScroll={onScroll} ref={memberScroll}>
             {members}
         </div>
     );

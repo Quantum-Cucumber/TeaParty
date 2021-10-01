@@ -34,17 +34,18 @@
     overflow-x: hidden;
 }
 
-.user__text {
-    text-overflow: ellipsis;
-    overflow-x: hidden;
-    user-select: none;
-}
 .user {
     &__username {
     color: var(--text);
     }
     &__homeserver {
         color: var(--text-greyed);
+    }
+    
+    &__text {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        user-select: none;
     }
 }
 
