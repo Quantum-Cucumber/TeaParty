@@ -204,10 +204,10 @@ function Message({ event, timeline, setUserPopup }) {
 
     return (
         <div className="message">
-            <Avatar user={author} subClass="message__avatar__crop" clickFunc={userPopup} />
+            <Avatar user={author} subClass="message__avatar__crop data__user-popup" clickFunc={userPopup} />
             <div className="message__text">
                 <div className="message__info">
-                    <span className="message__author" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
+                    <span className="message__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
                         {author.displayName}
                     </span>
 

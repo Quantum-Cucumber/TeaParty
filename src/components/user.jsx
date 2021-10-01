@@ -27,12 +27,12 @@ export function Avatar({ user, subClass, clickFunc }) {
     );
 }
 
-export function User({ user, subClass, clickFunc }) {
+export function Member({ user, subClass, clickFunc }) {
     /* A component containing the user avatar, user localpart/displayname and homeserver */
 
     return (
         <div className={"user " + subClass} onClick={clickFunc}>
-            <Avatar subClass="user__avatar" user={user}></Avatar>
+            <Avatar subClass="user__avatar" user={user} />
             <div className="user__text-box">
                 <span className="user__text user__username">{get_username(user)}</span>
             </div>

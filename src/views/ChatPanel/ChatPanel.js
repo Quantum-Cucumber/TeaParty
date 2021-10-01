@@ -17,7 +17,6 @@ export default function ChatPanel({currentRoom, setUserPopup}) {
 function TypingIndicator({currentRoom}) {
     const [text, setText] = useState(null);
     const typing = useRef([]);
-    console.log("render", currentRoom)
 
     // Listen for typing events
     useEffect(() => {

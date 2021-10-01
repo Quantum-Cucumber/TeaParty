@@ -134,10 +134,12 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
     useBindEscape(setUserPopup, {parent: null, user: null});
 
     const clicked = useCallback((e) => {
-        if (!e.target.closest(".user-popup")) {
+        // If anything other than the popup is clicked, or another component that opens the popup was clicked
+        console.log(parent, e.target)
+        if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || (parent === e.target || parent.contains(e.target))) {
             setUserPopup({parent: null, user: null});
         }
-    }, [setUserPopup]);
+    }, [setUserPopup, parent]);
 
     // useLayoutEffect to set position before render
     useLayoutEffect(() => {
@@ -159,6 +161,12 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
         if (popupRect.bottom > window.innerHeight) {
             popup.style.top = "auto";
             popup.style.bottom = `${padding}px`;
+        }
+
+        // Render on other side of parent if off the screen
+        if (popupRect.right > window.innerWidth) {
+            popup.style.left = "auto";
+            popup.style.right = `${padding + (window.innerWidth - parentRect.left)}px`;
         }
     }, [user, parent])
 

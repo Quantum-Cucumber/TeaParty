@@ -46,7 +46,9 @@ $border: 2px solid var(--border);
 }
 .column--right {
     flex: 0 0 auto;
-    width: 260px;
+    width: 300px;
     background-color: var(--bg-focus);
     border-left: $border;
+    display: flex;
+    flex-direction: column;
 }

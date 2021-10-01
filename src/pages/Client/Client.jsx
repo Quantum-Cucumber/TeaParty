@@ -6,6 +6,7 @@ import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
 import ChatPanel from "../../views/ChatPanel/ChatPanel";
 import navManager from "../../views/Navigation/navManager";
+import MemberList from "../../views/MemberList/MemberList";
 
 function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
@@ -60,7 +61,9 @@ function Client() {
             <div className="column column--chat">
                 <ChatPanel currentRoom={currentRoom} setUserPopup={setUserPopup} />
             </div>
-            <div className="column column--right"></div>
+            <div className="column column--right">
+                <MemberList currentRoom={currentRoom} setUserPopup={setUserPopup} />
+            </div>
             <UserPopup parent={userPopupInfo.parent} user={userPopupInfo.user} setUserPopup={setUserPopup} room={currentRoom} />
         </div>
     );
