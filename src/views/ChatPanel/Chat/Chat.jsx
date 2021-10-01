@@ -84,7 +84,7 @@ function Chat({ currentRoom, setUserPopup }) {
     });
     // If rendered last message in channel, add a day border and 30vh of padding
     if (timeline.current && messageList.length !== 0 && !timeline.current.canScroll) {
-        const text = dateToDateStr(messageList[messageList.length - 1].getDate());
+        const text = dateToDateStr(messageList[0].getDate());
         messages.unshift(
             <div style={{height: "30vh"}} key="padding"></div>,
             <MessageBorder text={text} color="var(--text-greyed)" key={text}/>
