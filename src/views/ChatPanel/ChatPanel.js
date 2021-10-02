@@ -20,6 +20,8 @@ function TypingIndicator({currentRoom}) {
 
     // Listen for typing events
     useEffect(() => {
+        setText(null);  // When room changed, clear typing text
+
         function onTyping(event, member) {
             const isTyping = member.typing;
 
