@@ -83,7 +83,7 @@ function Chat({ currentRoom, setUserPopup }) {
 
     });
     // If rendered last message in channel, add a day border and 30vh of padding
-    if (timeline.current && messageList.length !== 0 && !timeline.current.canScroll) {
+    if (messageList.length !== 0 && timeline.current?.canLoad === false) {
         const text = dateToDateStr(messageList[0].getDate());
         messages.unshift(
             <div style={{height: "30vh"}} key="padding"></div>,
@@ -102,81 +102,79 @@ function Chat({ currentRoom, setUserPopup }) {
 }
 
 function ChatScroll({ children, timeline, updateMessageList }) {
-    const [loading, setLoading] = useState(false);
     const atBottom = useRef(true);
-    const atTop = useRef(false);
+    const scrollPos = useRef(false);
     const scrollRef = useRef();
+    const loadingRef = useRef();
+    const isLoading = useRef(false);
 
+    // When escape key pressed, scroll to the bottom and mark chat as read
     function markAsRead() {
-        timeline.current.markAsRead();
         scrollToBottom();
+        timeline.current.markAsRead();
     }
     useBindEscape(() => markAsRead(), null);
 
+    // Callback to load more messages
     const loadMore = useCallback(() => {
-        setLoading(true);
+        // Don't try and load new messages if we are still waiting for a batch
+        if (isLoading.current) {return}
+
+        isLoading.current = true;
         timeline.current.getMore().then(() => {
             updateMessageList();
-            setLoading(false);
+            isLoading.current = false;
         });
     }, [timeline, updateMessageList]);
 
-    // Whenever component rerenders, if we were at the bottom, stay there
+    // Whenever component rerenders, if scroll was at the bottom, stay there
     useEffect(() => {
         if (atBottom.current) {
             scrollToBottom();
         } 
     });
 
-    // Only preserve height if at the top and new children (messages) are added
+    // When new messages load
     useEffect(() => {
-        if (atTop.current !== false) {
-            // Calculate where scrollTop should be based on last distance to bottom
-            restoreScrollPos();
-            //atTop.current = false;
-        }
+        restoreScrollPos();
 
-        // If screen isn't full and messages can be loaded, do that :)
-        if (scrollRef.current.offsetHeight === scrollRef.current.scrollHeight && timeline.current.canScroll) {
-            atBottom.current = true;
+        // If still able to see the loading cog, load more messages
+        if (isAtTop() && !isLoading.current) {
             loadMore();
         }
     }, [children, timeline, loadMore]);
-
-    useEffect(() => {
-        // Don't move page when loading wheel is rendered
-        if (loading && atTop.current !== false) {
-            restoreScrollPos();
-        }
-    }, [loading]);
 
     function scrollToBottom() {
         if (scrollRef) {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }
-    function saveScrollPos() {
-        atTop.current = scrollRef.current.scrollHeight - scrollRef.current.scrollTop;
+    function saveScrollPos() {  // Calculates scroll offset from bottom of the page
+        scrollPos.current = scrollRef.current.scrollHeight - scrollRef.current.scrollTop;
     }
-    function restoreScrollPos() {
-        scrollRef.current.scrollTop = scrollRef.current.scrollHeight - atTop.current;
+    function restoreScrollPos() {  // Jumps to the saved offset
+        scrollRef.current.scrollTop = scrollRef.current.scrollHeight - scrollPos.current;
+    }
+    function isAtTop() {
+        // If loading wheel isn't loaded then ignore
+        if (!loadingRef.current) {return false}
+
+        return loadingRef.current.getBoundingClientRect().bottom >= 0;
     }
 
-    // Determine position when we scroll and set flags accordingly
     function onScroll(e) {
-        atBottom.current = false;
+        atBottom.current = false;  // Will be reset if needed but most likely is not true initially anyway
         saveScrollPos();  // Save scroll position in case it will be restored
 
-        // When scrolled to the top, show the loading wheel and load new messages
-        if (e.target.scrollTop === 0 && !atBottom.current && timeline.current.canScroll) {
-            saveScrollPos();
+        // When we can see the loading wheel and are able to load messages
+        if (timeline.current.canLoad && isAtTop() && !isLoading.current) {
             loadMore();
         } 
         // Scrolled to bottom
         else if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
             atBottom.current = true;
-            atTop.current = false;
 
+            // Mark messages as read when scrolled to the bottom, if the page is opened
             if (document.hasFocus()) {
                 markAsRead()
             }
@@ -185,7 +183,7 @@ function ChatScroll({ children, timeline, updateMessageList }) {
 
     return (
         <div className="chat-scroll" ref={scrollRef} onScroll={onScroll}>
-            {loading && <div className="chat-scroll__loading"><Loading size="50px"/></div>}
+            {timeline.current?.canLoad && <div className="chat-scroll__loading" ref={loadingRef}><Loading size="50px"/></div>}
             {children}
         </div>
     );

@@ -13,7 +13,7 @@ export default class messageTimeline {
             }
         });
     }
-    canScroll = true;
+    canLoad = true;
     read = false;
 
     async getMore() {
@@ -21,7 +21,7 @@ export default class messageTimeline {
         if (this.room.oldState.paginationToken !== null) {
             await global.matrix.scrollback(this.room, msgLoadCount);
         } else {
-            this.canScroll = false;
+            this.canLoad = false;
         }
     }
 
@@ -65,7 +65,7 @@ export default class messageTimeline {
         do {
             await this.getMore()
             var messages = this.getMessages();
-        } while (this.canScroll && messages.length < msgLoadCount)
+        } while (this.canLoad && messages.length < msgLoadCount)
         return messages;
     }
 
