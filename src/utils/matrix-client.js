@@ -120,16 +120,18 @@ export function powerLevelText(userId, roomId) {
     const room = global.matrix.getRoom(roomId);
     const member = room.getMember(userId);
 
-    const levels = {
-        0: "User",
-        50: "Moderator",
-        100: "Admin",
-    }
-
-    if (member?.powerLevel !== undefined) {
-        if (levels[member.powerLevel] !== undefined) {
-            return `${levels[member.powerLevel]} (${member.powerLevel})`;
-        } else {return member.powerLevel}
+    const powerLevel = member?.powerLevel;
+    if (powerLevel !== undefined) {
+        if (powerLevel >= 100) {
+            return `Admin (${powerLevel})`;
+        } 
+        else if (powerLevel >= 50) {
+            return `Moderator (${powerLevel})`;
+        }
+        else if (powerLevel >= 0) {
+            return `User (${powerLevel})`;
+        } 
+        else {return powerLevel}
     }
     else {
         return "Unknown";
