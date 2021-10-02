@@ -135,7 +135,6 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
 
     const clicked = useCallback((e) => {
         // If anything other than the popup is clicked, or another component that opens the popup was clicked
-        console.log(parent, e.target)
         if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || (parent === e.target || parent.contains(e.target))) {
             setUserPopup({parent: null, user: null});
         }
@@ -168,6 +167,11 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
             popup.style.left = "auto";
             popup.style.right = `${padding + (window.innerWidth - parentRect.left)}px`;
         }
+
+        // Trigger the slide animation
+        popupRef.current.style.display = "none";
+        void(popupRef.current.offsetHeight);
+        popupRef.current.style.display = "block";
     }, [user, parent])
 
     // Attach click event AFTER render
