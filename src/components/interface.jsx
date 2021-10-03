@@ -1,10 +1,7 @@
 import Icon from '@mdi/react';
 import "./components.scss";
 import { mdiLoading } from "@mdi/js";
-import { useState, cloneElement, useRef, useEffect, useCallback, useLayoutEffect } from 'react';
-import { Avatar } from './user';
-import { useBindEscape } from '../utils/utils';
-import { powerLevelText } from "../utils/matrix-client";
+import { useState, cloneElement, useRef, useEffect } from 'react';
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
     return (
@@ -117,82 +114,43 @@ export function Option({ k, text, selected, select, danger, unread=false, notifi
     );
 }
 
-export function Overlay({ children, opacity="90%", click }) {
+export function Overlay({ children, opacity = "90%", click, fade = true, render = true, mountAnimation, unmountAnimation }) {
+    const [mount, setMount] = useState(true);  // Master state for whether to display or not
+    const [modal, modalUpdate] = useState();  // Acts as a ref except triggers the state update
+
+    // Allows for playing an animation when unmounting
+    useEffect(() => {        
+        if (render) {
+            if (modal && mountAnimation) {
+                modal.style.animation = mountAnimation;
+            }
+            setMount(true);
+        } 
+        else if (!render) {
+            if (modal && unmountAnimation) {
+                // Bind for animation end event then unmount
+                const unmount = () => {console.log("unmount"); setMount(false)};
+                modal.addEventListener("animationend", unmount);
+                // Set unmount animation
+                modal.style.animation = unmountAnimation;
+                void(modal.offsetHeight);  // Force animation to run
+
+                return () => {modal.removeEventListener("animationend", unmount)}
+            } 
+            else {
+                setMount(false);
+            }
+        }
+    }, [modal, render, mountAnimation, unmountAnimation])
+
+    if (!mount) {return null}
+
     return (
-        <div className="overlay">
+        <div className="overlay" ref={modalUpdate}>
             <div className="overlay__modal">
                 {children}
             </div>
-            <div className="overlay__fade" style={{opacity: opacity}} onClick={click}></div>
+            {fade && <div className="overlay__fade" style={{opacity: opacity}} onClick={click}></div>}
         </div>
     )
-}
-
-export function UserPopup({ user, parent, room, setUserPopup }) {
-    const popupRef = useRef();
-
-    useBindEscape(setUserPopup, {parent: null, user: null});
-
-    const clicked = useCallback((e) => {
-        // If anything other than the popup is clicked, or another component that opens the popup was clicked
-        if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || (parent === e.target || parent.contains(e.target))) {
-            setUserPopup({parent: null, user: null});
-        }
-    }, [setUserPopup, parent]);
-
-    // useLayoutEffect to set position before render
-    useLayoutEffect(() => {
-        if (!user || !parent) {return};
-        // Want to position at same height at parent, to the right of it while also within window boundaries
-        const padding = 10;
-        const parentRect = parent.getBoundingClientRect();
-        const popup = popupRef.current;
-
-        // Position at same height
-        popup.style.top = `${parentRect.y}px`;
-        popup.style.bottom = "auto";
-        // Position to the right of parent
-        popup.style.left = `${parentRect.x + parentRect.width + padding}px`
-        popup.style.right = "auto";
-
-        // Constrain to screen height
-        const popupRect = popup.getBoundingClientRect();
-        if (popupRect.bottom > window.innerHeight) {
-            popup.style.top = "auto";
-            popup.style.bottom = `${padding}px`;
-        }
-
-        // Render on other side of parent if off the screen
-        if (popupRect.right > window.innerWidth) {
-            popup.style.left = "auto";
-            popup.style.right = `${padding + (window.innerWidth - parentRect.left)}px`;
-        }
-
-        // Trigger the slide animation
-        popupRef.current.style.display = "none";
-        void(popupRef.current.offsetHeight);
-        popupRef.current.style.display = "block";
-    }, [user, parent])
-
-    // Attach click event AFTER render
-    useEffect(() => {
-        if (!user || !parent) {return};
-        // Attach click event to dismiss the popup
-        document.addEventListener("click", clicked);
-        return () => document.removeEventListener("click", clicked);
-    }, [user, parent, clicked]);
-    
-
-    if (!user || !parent || !room) {return null};
-
-    return (
-        <div className="user-popup" ref={popupRef}>
-            <Avatar user={user} subClass="user-popup__avatar" />
-            <div className="user-popup__display-name">{user.rawDisplayName}</div>
-            <div className="user-popup__text">{user.userId}</div>
-
-            <div className="user-popup__label">Power Level</div>
-            <div className="user-popup__text">{powerLevelText(user.userId, room)}</div>
-        </div>
-    );
 }

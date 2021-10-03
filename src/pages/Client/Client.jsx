@@ -1,7 +1,8 @@
 import "./Client.scss";
 import { useEffect, useState, useRef } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
-import { Loading, UserPopup} from "../../components/interface";
+import { Loading, Overlay } from "../../components/interface";
+import { UserPopup } from "../../components/user";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
 import ChatPanel from "../../views/ChatPanel/ChatPanel";
@@ -49,10 +50,6 @@ function Client() {
         );
     }
 
-    if (page === "settings") {
-        return (<Settings setPage={setPage} />);
-    };
-
     return (
         <div className="client">
             <Navigation groupList={groupList} roomPanel={roomPanel} setPage={setPage} 
@@ -65,6 +62,10 @@ function Client() {
                 <MemberList currentRoom={currentRoom} setUserPopup={setUserPopup} />
             </div>
             <UserPopup parent={userPopupInfo.parent} user={userPopupInfo.user} setUserPopup={setUserPopup} room={currentRoom} />
+            
+            <Overlay fade={false} render={page === "settings"} mountAnimation="zoom-in 0.1s ease 0s 1" unmountAnimation="zoom-out 0.1s ease 0s 1">
+                <Settings setPage={setPage} />
+            </Overlay>
         </div>
     );
 }
