@@ -43,6 +43,25 @@ export function useBindEscape(setState, value) {
         return () => {
             document.removeEventListener("keydown", keyPress);
         };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, []);
+    }, [setState, value]);
 }
+
+export function classList(...classes) {
+    /* Takes a dict of classNames: bool and outputs a string of the classes that are true */
+    var output = [];
+    classes.forEach((item) => {
+        if (typeof item === "object") {
+            Object.keys(item).forEach((className) => {
+                if (item[className]) {
+                    output.push(className)
+                }
+            });
+        } 
+        else if (item !== null) {
+            output.push(item)
+        }
+    });
+
+    return output.join(" ")
+}
+

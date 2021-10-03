@@ -1,6 +1,6 @@
 import "./components.scss";
 import { get_username } from "../utils/matrix-client";
-import { getUserColour, acronym } from "../utils/utils";
+import { getUserColour, acronym, classList } from "../utils/utils";
 import { useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { useBindEscape } from '../utils/utils';
 import { powerLevelText } from "../utils/matrix-client";
@@ -24,7 +24,7 @@ export function Avatar({ user, subClass, clickFunc }) {
     }
 
     return (
-        <div className={"avatar__crop " + subClass} onClick={clickFunc} >
+        <div className={classList("avatar__crop", subClass)} onClick={clickFunc} >
             {icon}
         </div>
     );
@@ -34,7 +34,7 @@ export function Member({ user, subClass, clickFunc }) {
     /* A component containing the user avatar, user localpart/displayname and homeserver */
 
     return (
-        <div className={"user " + subClass} onClick={clickFunc}>
+        <div className={classList("user", subClass)} onClick={clickFunc}>
             <Avatar subClass="user__avatar" user={user} />
             <div className="user__text-box">
                 <span className="user__text user__username">{get_username(user)}</span>

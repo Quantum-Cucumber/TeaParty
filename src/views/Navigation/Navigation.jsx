@@ -4,7 +4,7 @@ import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClos
 import { Icon } from "@mdi/react";
 import { Button, Tooltip, Loading, Option, Overlay } from "../../components/interface";
 import { Avatar } from "../../components/user";
-import { acronym, useBindEscape } from "../../utils/utils";
+import { acronym, useBindEscape, classList } from "../../utils/utils";
 import { get_username, get_homeserver } from "../../utils/matrix-client";
 
 function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, roomNav, invites }) {
@@ -54,7 +54,7 @@ function GroupList({ roomNav, setGroup, currentGroup, groupList }) {
             <div className="group__holder">
                 <Tooltip text={groupName} dir="right">
                     <div
-                        className={"group " + (builtin ? "group--default " : "") + (currentGroup.key === k ? "group--selected" : "")}
+                        className={classList("group", {"group--default": builtin}, {"group--selected": currentGroup.key === k})}
                         onClick={() => {
                             if (k !== currentGroup.key) {
                                 setGroup({ name: groupName, key: k })

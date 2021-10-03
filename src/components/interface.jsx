@@ -2,6 +2,7 @@ import Icon from '@mdi/react';
 import "./components.scss";
 import { mdiLoading } from "@mdi/js";
 import { useState, cloneElement, useRef, useEffect } from 'react';
+import { classList } from '../utils/utils';
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
     return (
@@ -88,15 +89,15 @@ export function Tooltip({ text, dir, children, delay = 0 }) {
     return (
         <>
             {children}
-            <div className={`tooltip tooltip--${dir} ${visible ? "tooltip--visible" : ""}`} ref={tooltipRef}>{text}</div>
+            <div className={classList("tooltip", `tooltip--${dir}`, {"tooltip--visible": visible})} ref={tooltipRef}>{text}</div>
         </>
     );
 }
 
 export function Option({ k, text, selected, select, danger, unread=false, notification=0, children }) {
-    const className = "option" + 
-                      (selected === k ? " option--selected" : "") +
-                      (danger ? " option--danger" : "");
+    const className = classList("option",
+                                {"option--selected": selected===k}, 
+                                {"option--danger": danger}) 
 
     var indicator = null;
     if (notification > 0) {

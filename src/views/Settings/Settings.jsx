@@ -6,7 +6,7 @@ import { Icon } from "@mdi/react";
 import { setTheme, getSetting } from "../../utils/settings";
 import { logoutMatrix } from "../../utils/matrix-client";
 import { msToDate } from "../../utils/datetime";
-import { useBindEscape } from "../../utils/utils";
+import { classList, useBindEscape } from "../../utils/utils";
 
 
 function SettingsPage({ setPage }) {
@@ -99,7 +99,7 @@ function ThemeSelect({ initial, setter, themeList }) {
     function Theme({ label, name }) {
         return (
             <div
-                className={`theme ${name}` + (selected === name ? " theme--selected" : "")}
+                className={classList("theme", name, {"theme--selected": selected === name})}
                 onClick={() => {setter(name); Select(name)}}
             >
                 <div className="theme__colours">
@@ -169,7 +169,7 @@ function DeviceTable() {
         const current = device_id === global.matrix.getDeviceId();
 
         return (
-            <tr key={device_id} className={current ? "device-table--current" : ""}>
+            <tr key={device_id} className={classList({"device-table--current": current})}>
                 <td>{display_name}</td>
                 <td>{device_id}</td>
                 <td>{msToDate(last_seen_ts)}<br />{last_seen_ip}</td>
