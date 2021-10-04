@@ -1,11 +1,10 @@
-import { Avatar } from "../../../components/user";
 import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback } from "react";
-import { Loading, Tooltip } from "../../../components/interface";
+import { Loading } from "../../../components/interface";
 import messageTimeline from "./messageTimeline";
-import { getUserColour, useBindEscape } from "../../../utils/utils";
-import { dateToTime, dayBorder, dateToDateStr, messageTimestamp, messageTimestampFull } from "../../../utils/datetime";
-import { tryGetUser } from "../../../utils/matrix-client";
+import { useBindEscape } from "../../../utils/utils";
+import { dayBorder, dateToDateStr } from "../../../utils/datetime";
+import { Message, PartialMessage } from "./Message/Message";
 
 
 function nextShouldBePartial(thisMsg, lastMsg) {
@@ -189,67 +188,6 @@ function ChatScroll({ children, timeline, updateMessageList }) {
     );
 }
 
-
-function Message({ event, timeline, setUserPopup }) {
-    const author = tryGetUser(event.getSender());
-    if (!author) {return;}
-    const edited = timeline.current.edits.get(event.getId());
-    const content = edited ? edited.getContent()["m.new_content"].body : event.getContent().body;
-
-    function userPopup(e) {
-        setUserPopup({parent: e.target, user: author})
-    }
-
-    return (
-        <div className="message">
-            <Avatar user={author} subClass="message__avatar__crop data__user-popup" clickFunc={userPopup} />
-            <div className="message__text">
-                <div className="message__info">
-                    <span className="message__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
-                        {author.displayName}
-                    </span>
-
-                    <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
-                        <span className="message-timestamp">{messageTimestamp(event.getDate())}</span>
-                    </Tooltip>
-                </div>
-                <div className="message__content">
-                    {content}
-                    {edited && 
-                        <Tooltip delay={0.5} dir="top" text={messageTimestampFull(edited.getDate())}>
-                            <div className="message__content__edited">&nbsp;(edited)</div>
-                        </Tooltip>
-                    }
-                </div>
-            </div>
-        </div>
-    );
-}
-
-function PartialMessage({ event, timeline }) {
-    const edited = timeline.current.edits.get(event.getId());
-    const content = edited ? edited.getContent()["m.new_content"].body : event.getContent().body;
-
-    return (
-        <div className="message--partial">
-            <div className="message--partial__offset">
-                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
-                    <span className="message-timestamp">{dateToTime(event.getDate())}</span>
-                </Tooltip>
-            </div>
-            <div className="message__text">
-                <div className="message__content">
-                    {content}
-                    {edited && 
-                        <Tooltip delay={0.5} dir="top" text={messageTimestampFull(edited.getDate())}>
-                            <div className="message__content__edited">&nbsp;(edited)</div>
-                        </Tooltip>
-                    }
-                </div>
-            </div>
-        </div>
-    )
-}
 
 function MessageBorder({ text, color }) {
     return (

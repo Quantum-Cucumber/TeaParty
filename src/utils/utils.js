@@ -62,6 +62,7 @@ export function classList(...classes) {
         }
     });
 
-    return output.join(" ")
+    // Return space seperated classes, or null if there are no classes to be added
+    return output.join(" ") || null;
 }
 
