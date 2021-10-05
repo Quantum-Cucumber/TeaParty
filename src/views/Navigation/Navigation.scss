@@ -1,3 +1,5 @@
+@use "../../pages/root";
+
 /* Rooms panel */
 .column--rooms {
     flex: 0 0 auto;
@@ -18,9 +20,11 @@
         flex: 1 1 auto;
         width: 100%;
         padding: 5px 10px;
-        overflow-y: auto;
         box-sizing: border-box;
         font-size: 0.9rem;
+
+        overflow: hidden auto;
+        @include root.scroll-style(var(--bg-focus));
 
         &__loading {
             display: flex;
@@ -106,6 +110,7 @@ $group-padding: 11px;
     width: 70px;
     background-color: var(--bg-dark);
     padding: 15px 0;
+    overflow: hidden auto;
 }
 
 .group__holder {

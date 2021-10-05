@@ -63,3 +63,43 @@ a {
     background-color: var(--primary);
     color: var(--bg-dark)
 }
+
+
+
+/* Scrollbars :] */
+@mixin hide-scroll {
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    
+    /* Hide scrollbar for Chrome, Safari and Opera */
+    &::-webkit-scrollbar {
+      display: none;
+    }
+}
+.scroll--hidden {
+    @include hide-scroll;
+}
+/* Show scrollbar on hover */
+.scroll--hover{
+    &:not(:hover) {
+        @include hide-scroll;
+    }
+    scrollbar-width: thin;
+}
+
+@mixin scroll-style($bg-col) {
+    $slider-col: var(--bg-dark);
+    scrollbar-color: $slider-col $bg-col;
+
+    &::-webkit-scrollbar {
+        width: 10px;
+    }
+    &::-webkit-scrollbar-track {
+        background-color: $bg-col;
+        border-radius: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: $slider-col;
+        border-radius: 5px;
+    }
+}

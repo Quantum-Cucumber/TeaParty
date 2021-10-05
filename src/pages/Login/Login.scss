@@ -79,11 +79,11 @@
 
 
 .input--prefill::placeholder {
-    color: inherit;
+    color: var(--text) !important;
 }
 
 .input--prefill:focus::placeholder {
-    color: var(--text-greyed);
+    color: var(--text-greyed) !important;
 }
 
 .modal__button {

@@ -1,9 +1,13 @@
+@use "../../../pages/root";
+
 .chat-scroll {
     position: absolute;
     max-height: 100%;
     width: 100%;
     overflow: hidden scroll; /* Only vertical scroll */
     bottom: 0;
+
+    @include root.scroll-style(var(--bg));
 
     &__loading {
         width: 100%;

@@ -1,6 +1,10 @@
+@use "../../pages/root";
+
 .member-list {
     padding: 10px 0;
-    overflow-y: auto;
+
+    overflow: hidden auto;
+    @include root.scroll-style(var(--bg-focus));
 
     &__member {
         height: 2.5rem;

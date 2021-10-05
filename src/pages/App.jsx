@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
-import './root.css';
+import './root.scss';
 import Login from "./Login/Login";
 import Client from "./Client/Client";
 import { logged_in } from "../utils/matrix-client";

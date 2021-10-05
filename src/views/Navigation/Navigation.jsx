@@ -14,7 +14,7 @@ function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, ro
 
     return (
         <>
-            <div className="column column--groups">
+            <div className="column column--groups scroll--hidden">
                 {invLen !== 0 && 
                     <>
                     <InvitesIcon invites={invites} invLen={invLen} />
@@ -25,7 +25,7 @@ function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, ro
             </div>
             <div className="column column--rooms">
                 <div className="column--rooms__label">{currentGroup.name}</div>
-                <div className="column--rooms__holder">
+                <div className="column--rooms__holder scroll--hover">
                     {roomPanel ?
                         <RoomList rooms={roomPanel} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> :
                         <div className="column--rooms__holder__loading"><Loading size="30px" /></div>

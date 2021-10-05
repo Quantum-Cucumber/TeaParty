@@ -69,7 +69,7 @@ function MemberList({ currentRoom, setUserPopup }) {
     });
 
     return (
-        <div className="member-list" onScroll={onScroll} ref={memberScroll}>
+        <div className="member-list scroll--hover" onScroll={onScroll} ref={memberScroll}>
             {members}
         </div>
     );
