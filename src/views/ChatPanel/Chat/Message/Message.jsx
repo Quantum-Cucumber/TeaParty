@@ -58,7 +58,7 @@ function MessageContent({ event, timeline }) {
     return (
         <div className="message__content">
             {useMarkdown ? 
-                <ReactMarkdown remarkPlugins={[remarkGfm]} linkTarget="_blank">{content}</ReactMarkdown> :
+                <ReactMarkdown remarkPlugins={[[remarkGfm, {singleTilde: false}]]} linkTarget="_blank">{content}</ReactMarkdown> :
                 <p>{content}</p>
             }
             {edited && 

@@ -3,6 +3,7 @@
     --primary: #5e72d1;
     --bg: #494a51;
     --bg-focus: #3a3b43;
+    --bg-dark: #2a2b31;
     --text: #e6e6e6;
     --text-greyed: #8d8d8d;
     --success: #52c550;
@@ -24,6 +25,7 @@
     --primary: #df79d4;
     --bg: #efefef;
     --bg-focus: #e1e1e1;
+    --bg-dark: #d3d3d3;
     --text: #404040;
     --text-greyed: #6c6c6c;
     --success: #67c671;
@@ -59,5 +61,5 @@ a {
 
 *::selection {
     background-color: var(--primary);
-    color: var(--bg)
+    color: var(--bg-dark)
 }

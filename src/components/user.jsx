@@ -14,7 +14,7 @@ export function Avatar({ user, subClass, clickFunc }) {
     // Use a placeholder if need be
     var icon;
     if (url) {
-        icon = <img alt="Avatar" className="avatar" src={url} />;
+        icon = <img alt={acronym(user.displayName, 1)} style={{"backgroundColor": getUserColour(user.userId)}} className="avatar" src={url} />;
     } else {
         icon = (
             <div className="avatar" style={{"backgroundColor": getUserColour(user.userId)}}>
