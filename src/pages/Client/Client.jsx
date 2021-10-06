@@ -63,7 +63,7 @@ function Client() {
             </div>
             <UserPopup parent={userPopupInfo?.parent} user={userPopupInfo?.user} setUserPopup={setUserPopup} room={currentRoom} />
             
-            <Overlay fade={false} render={page === "settings"} mountAnimation="zoom-in 0.1s ease 0s 1" unmountAnimation="zoom-out 0.1s ease 0s 1">
+            <Overlay dim={false} render={page === "settings"} mountAnimation="page__zoom-in 0.1s ease 0s 1" unmountAnimation="page__zoom-out 0.1s ease 0s 1">
                 <Settings setPage={setPage} />
             </Overlay>
         </div>

@@ -1,7 +1,7 @@
 import Icon from '@mdi/react';
 import "./components.scss";
 import { mdiLoading } from "@mdi/js";
-import { useState, cloneElement, useRef, useEffect } from 'react';
+import { useState, cloneElement, useRef, useEffect, useLayoutEffect } from 'react';
 import { classList } from '../utils/utils';
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
@@ -115,12 +115,19 @@ export function Option({ k, text, selected, select, danger, unread=false, notifi
     );
 }
 
-export function Overlay({ children, opacity = "90%", click, fade = true, render = true, mountAnimation, unmountAnimation }) {
+export function Overlay({ children, opacity = "85%", click, dim = true, fade = 0, render = true, mountAnimation, unmountAnimation }) {
+    /* click refers to the onClick function for the dim bg
+       dim is whether to add a transparent overlay to the background
+       fade determines how long the dim element will fade for
+       render is passed to determine if the overlay should display
+    */
+
     const [mount, setMount] = useState(true);  // Master state for whether to display or not
     const [modal, modalUpdate] = useState();  // Acts as a ref except triggers the state update
+    const [dimNode, dimUpdate] = useState();  // ^
 
     // Allows for playing an animation when unmounting
-    useEffect(() => {        
+    useLayoutEffect(() => {  // LayoutEffect creates a smoother animation
         if (render) {
             if (modal && mountAnimation) {
                 modal.style.animation = mountAnimation;
@@ -130,7 +137,7 @@ export function Overlay({ children, opacity = "90%", click, fade = true, render 
         else if (!render) {
             if (modal && unmountAnimation) {
                 // Bind for animation end event then unmount
-                const unmount = () => {console.log("unmount"); setMount(false)};
+                const unmount = () => {setMount(false);console.log("unmount")};
                 modal.addEventListener("animationend", unmount);
                 // Set unmount animation
                 modal.style.animation = unmountAnimation;
@@ -143,15 +150,22 @@ export function Overlay({ children, opacity = "90%", click, fade = true, render 
             }
         }
     }, [modal, render, mountAnimation, unmountAnimation])
+    useLayoutEffect(() => {
+        if (!dimNode || !dim) {return}
+
+        dimNode.style.animation = `overlay__dim__fade-${render ? "in" : "out"} ${fade}s ease 0s 1`;
+        void(dimNode.offsetHeight);
+        // dimNode.style.display = render ? "block" : "none";
+    }, [dimNode, dim, fade, render]);
 
     if (!mount) {return null}
 
     return (
-        <div className="overlay" ref={modalUpdate}>
-            <div className="overlay__modal">
+        <div className="overlay">
+            <div className="overlay__modal" ref={modalUpdate}>
                 {children}
             </div>
-            {fade && <div className="overlay__fade" style={{opacity: opacity}} onClick={click}></div>}
+            {dim && <div className="overlay__dim" ref={dimUpdate} style={{opacity: opacity}} onClick={click}></div>}
         </div>
     )
 }

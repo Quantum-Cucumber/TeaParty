@@ -70,6 +70,7 @@
 
     user-select: none;
     background-color: $color;
+    color: var(--text);
     padding: 8px 13px;
     border-radius: 10px;
     width: max-content;
@@ -197,7 +198,7 @@
     left: 0;
     right: 0;
     
-    &__fade {
+    &__dim {
         background-color: var(--border);
         top: 0;
         bottom: 0;
@@ -207,6 +208,31 @@
     }
     &__modal {
         z-index: 101;
+        position: relative;
+    }
+}
+
+@mixin startframe {
+    opacity: 0;
+}
+@mixin endframe {
+    /* End opacity will end up as what is set in the component */
+}
+
+@keyframes overlay__dim__fade-in {
+    0% {
+        @include startframe;
+    }
+    100% {
+        @include endframe;
+    }
+}
+@keyframes overlay__dim__fade-out {
+    0% {
+        @include endframe;
+    }
+    100% {
+        @include startframe;
     }
 }
 

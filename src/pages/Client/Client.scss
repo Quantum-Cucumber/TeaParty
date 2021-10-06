@@ -49,27 +49,30 @@
     flex-direction: column;
 }
 
-@keyframes zoom-in {
+
+@mixin startframe {
+    scale: 0.8;
+    opacity: 0;
+    filter: blur(3px);
+}
+@mixin endframe {
+    opacity: 1;
+    scale: 1;
+}
+@keyframes page__zoom-in {
     0% {
-        scale: 0.8;
-        opacity: 0;
-        filter: blur(3px);
+        @include startframe;
     }
     100% {
-        opacity: 1;
-        scale: 1;
+        @include endframe;
     }
 }
-
-@keyframes zoom-out {
+@keyframes page__zoom-out {
     0% {
-        opacity: 1;
-        scale: 1;
+        @include endframe;
     }
     100% {
-        scale: 0.8;
-        opacity: 0;
-        filter: blur(3px);
+        @include startframe;
     }
 }
 
