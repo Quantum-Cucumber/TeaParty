@@ -1,5 +1,5 @@
 import "./Chat.scss";
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useRef, useCallback, memo } from "react";
 import { Loading } from "../../../components/interface";
 import messageTimeline from "./messageTimeline";
 import { useBindEscape } from "../../../utils/utils";
@@ -25,7 +25,7 @@ function Chat({ currentRoom, setUserPopup }) {
 
     const updateMessageList = useCallback(() => {
         setMessageList(timeline.current.getMessages());
-    }, [setMessageList])
+    }, [])
 
     // Add event listener when room is changed
     useEffect(() => {
@@ -108,11 +108,11 @@ function ChatScroll({ children, timeline, updateMessageList }) {
     const isLoading = useRef(false);
 
     // When escape key pressed, scroll to the bottom and mark chat as read
-    function markAsRead() {
+    const markAsRead = useCallback(() => {
         scrollToBottom();
         timeline.current.markAsRead();
-    }
-    useBindEscape(() => markAsRead(), null);
+    }, [timeline]);
+    useBindEscape(markAsRead, null);
 
     // Callback to load more messages
     const loadMore = useCallback(() => {
@@ -126,12 +126,12 @@ function ChatScroll({ children, timeline, updateMessageList }) {
         });
     }, [timeline, updateMessageList]);
 
-    // Whenever component rerenders, if scroll was at the bottom, stay there
+    // When children are modified, if scroll was at the bottom, stay there
     useEffect(() => {
         if (atBottom.current) {
             scrollToBottom();
         } 
-    });
+    }, [children]);
 
     // When new messages load
     useEffect(() => {
@@ -209,4 +209,4 @@ function UnreadBorder() {
     return visible && <MessageBorder text="New Messages" color="var(--error)"/>;
 }
 
-export default Chat;
+export default memo(Chat);

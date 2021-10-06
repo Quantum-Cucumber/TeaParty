@@ -1,6 +1,6 @@
 import "./MemberList.scss";
 import { Member } from "../../components/user";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo } from "react";
 
 const membersPerPage = 30;
 const memberEvents = ["RoomMember.membership", "RoomMember.name", "RoomMember.powerLevel"];
@@ -76,4 +76,4 @@ function MemberList({ currentRoom, setUserPopup }) {
 }
 
 
-export default MemberList;
+export default memo(MemberList);

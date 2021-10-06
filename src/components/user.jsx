@@ -48,12 +48,12 @@ export function Member({ user, subClass, clickFunc }) {
 export function UserPopup({ user, parent, room, setUserPopup }) {
     const popupRef = useRef();
 
-    useBindEscape(setUserPopup, {parent: null, user: null});
+    useBindEscape(setUserPopup, null);
 
     const clicked = useCallback((e) => {
         // If anything other than the popup is clicked, or another component that opens the popup was clicked
         if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || (parent === e.target || parent.contains(e.target))) {
-            setUserPopup({parent: null, user: null});
+            setUserPopup(null);
         }
     }, [setUserPopup, parent]);
 

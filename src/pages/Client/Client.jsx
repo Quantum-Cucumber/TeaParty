@@ -61,7 +61,7 @@ function Client() {
             <div className="column column--right">
                 <MemberList currentRoom={currentRoom} setUserPopup={setUserPopup} />
             </div>
-            <UserPopup parent={userPopupInfo.parent} user={userPopupInfo.user} setUserPopup={setUserPopup} room={currentRoom} />
+            <UserPopup parent={userPopupInfo?.parent} user={userPopupInfo?.user} setUserPopup={setUserPopup} room={currentRoom} />
             
             <Overlay fade={false} render={page === "settings"} mountAnimation="zoom-in 0.1s ease 0s 1" unmountAnimation="zoom-out 0.1s ease 0s 1">
                 <Settings setPage={setPage} />
