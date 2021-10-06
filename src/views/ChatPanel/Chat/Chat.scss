@@ -1,4 +1,4 @@
-@use "../../../pages/root";
+@use "../../../utils/common";
 
 .chat-scroll {
     position: absolute;
@@ -7,7 +7,7 @@
     overflow: hidden scroll; /* Only vertical scroll */
     bottom: 0;
 
-    @include root.scroll-style(var(--bg));
+    @include common.scroll-style(var(--bg));
 
     &__loading {
         width: 100%;

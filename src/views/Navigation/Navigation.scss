@@ -1,4 +1,4 @@
-@use "../../pages/root";
+@use "../../utils/common";
 
 /* Rooms panel */
 .column--rooms {
@@ -24,7 +24,7 @@
         font-size: 0.9rem;
 
         overflow: hidden auto;
-        @include root.scroll-style(var(--bg-focus));
+        @include common.scroll-style(var(--bg-focus));
 
         &__loading {
             display: flex;

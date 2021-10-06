@@ -1,10 +1,10 @@
-@use "../../pages/root";
+@use "../../utils/common";
 
 .member-list {
     padding: 10px 0;
 
     overflow: hidden auto;
-    @include root.scroll-style(var(--bg-focus));
+    @include common.scroll-style(var(--bg-focus));
 
     &__member {
         height: 2.5rem;

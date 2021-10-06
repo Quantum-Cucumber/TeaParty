@@ -1,0 +1,17 @@
+
+@mixin scroll-style($bg-col) {
+    $slider-col: var(--bg-dark);
+    scrollbar-color: $slider-col $bg-col;
+
+    &::-webkit-scrollbar {
+        width: 10px;
+    }
+    &::-webkit-scrollbar-track {
+        background-color: $bg-col;
+        border-radius: 5px;
+    }
+    &::-webkit-scrollbar-thumb {
+        background-color: $slider-col;
+        border-radius: 5px;
+    }
+}
