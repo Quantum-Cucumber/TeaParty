@@ -1,15 +1,16 @@
+@use "../../../../utils/common";
 
-.message {
+/* Base message */
+.message, .message--partial {
     flex: none;
+    display: flex;
+    flex-direction: row;
+    position: relative;
+}
+.message {
     padding: 0 15px;
     box-sizing: border-box;
     margin-top: 10px;
-    display: flex;
-    flex-direction: row;
-
-    &:hover {
-        background-color: var(--bg-focus);
-    }
 
     &__avatar__crop {
         width: 40px;
@@ -79,9 +80,6 @@
 
 .message--partial {
     padding: 2px 15px;
-    flex: none;
-    display: flex;
-    flex-direction: row;
     min-height: calc(1rem + 4px);
 
     .message-timestamp {
@@ -92,8 +90,6 @@
     }
 
     &:hover {
-        background-color: var(--bg-focus);
-
         .message-timestamp {
             display: block;
         }
@@ -113,6 +109,30 @@
     font-size: 0.8rem;
     height: min-content;
     padding-top: 0.15rem;
+}
+
+.message:hover, .message--partial:hover{
+    background-color: var(--bg-focus);
+
+    .message__options {
+        display: flex;
+    }
+}
+
+.message__options {
+    position: absolute;
+    top: -0.75rem;
+    right: 1rem;
+    background-color: var(--bg);
+    border-radius: 0.2rem;
+    filter: drop-shadow(0 0 2px var(--border));
+    flex-direction: row;
+    display: none;
+
+    &__entry {
+        height: 1.8rem;
+        padding: 0.2rem 0.1rem;
+    }
 }
 
 
@@ -142,13 +162,7 @@
     }
     /* Code block */
     p > code:only-child, pre > code:only-child {
-        display: block;
-        padding: 0.25rem 0.5rem;
-        width: 90%;
-        box-sizing: border-box;
-        border: 1px solid var(--border);
-        border-radius: 0.25rem;
-        margin: 2px 0;
+        @include common.codeblock;
     }
     input[type=checkbox] {
         appearance: none;

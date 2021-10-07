@@ -7,9 +7,13 @@ import { classList } from '../utils/utils';
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
     return (
         <div className={subClass} onClick={clickFunc}>
-            <Tooltip text={tipText} dir={tipDir}>
+            {tipText ?
+                <Tooltip text={tipText} dir={tipDir}>
+                    <Icon path={path} className="mdi-icon" size={size} />
+                </Tooltip> 
+                :
                 <Icon path={path} className="mdi-icon" size={size} />
-            </Tooltip>
+            }
         </div>
     );
 }

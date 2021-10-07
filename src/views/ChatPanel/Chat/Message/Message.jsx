@@ -1,12 +1,13 @@
 import "./Message.scss";
 import { Avatar } from "../../../../components/user";
-import { ImagePopup, Tooltip } from "../../../../components/interface";
+import { Button, ImagePopup, Tooltip } from "../../../../components/interface";
 import { getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import { tryGetUser } from "../../../../utils/matrix-client";
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm"
+import { mdiDotsHorizontal } from "@mdi/js";
 
 
 export function Message({ event, timeline, setUserPopup }) {
@@ -32,6 +33,7 @@ export function Message({ event, timeline, setUserPopup }) {
                 </div>
                 <MessageContent event={event} timeline={timeline} />
             </div>
+            <MessageOptions />
         </div>
     );
 }
@@ -47,6 +49,15 @@ export function PartialMessage({ event, timeline }) {
             <div className="message__text">
                 <MessageContent event={event} timeline={timeline} />
             </div>
+            <MessageOptions />
+        </div>
+    )
+}
+
+function MessageOptions() {
+    return (
+        <div className="message__options">
+            <Button subClass="message__options__entry" path={mdiDotsHorizontal} size="100%" />
         </div>
     )
 }
