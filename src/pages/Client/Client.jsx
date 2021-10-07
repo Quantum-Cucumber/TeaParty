@@ -18,8 +18,7 @@ function Client() {
     const [currentRoom, selectRoom] = useState();  // The currently selected room
     const roomNav = useRef(null);  // Handles populating the groups and room list
     const [invites, setInvites] = useState([]);  // Passed into navmanager and navigation pane
-    const [userPopupInfo, setUserPopup] = useState({parent: null, user: null});  // Manage how the userpopup is displayed
-
+    const [userPopupInfo, setUserPopup] = useState(null);  // Manage how the userpopup is displayed
 
     useEffect(() => {
         if (roomNav.current) {

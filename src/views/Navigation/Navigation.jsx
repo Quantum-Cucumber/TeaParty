@@ -43,39 +43,15 @@ function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, ro
     );
 }
 
-function GroupList({ roomNav, setGroup, currentGroup, groupList }) {
-
-    // Placed here so we can inherit roomNav, currentGroup and selectGroup
-    function Group({ groupName, k, children, builtin = false }) {
-        const roomState = roomNav.current.groupUnreads(k);
-        const {read, notifications} = roomState;
-
-        return (
-            <div className="group__holder">
-                <Tooltip text={groupName} dir="right">
-                    <div
-                        className={classList("group", {"group--default": builtin}, {"group--selected": currentGroup.key === k})}
-                        onClick={() => {
-                            if (k !== currentGroup.key) {
-                                setGroup({ name: groupName, key: k })
-                                roomNav.current.groupSelected(k);
-                            }
-                        }}
-                    >
-                        {children}
-                        {notifications > 0 && <div className="group__notification">{notifications}</div>}
-                    </div>
-                </Tooltip>
-                <div className="group__unread" style={{display: read ? "none" : "block"}}></div>
-            </div>
-        );
-    }
+function GroupList(props) {
+    // props = groupList, roomNav, setGroup, currentGroup
+    const { groupList } = props;
 
     var groups = [
-        <Group groupName="Home" key="home" k="home" builtin>
+        <Group props={props} groupName="Home" key="home" k="home" builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </Group>,
-        <Group groupName="Direct Messages" key="directs" k="directs" path={mdiHomeVariant} builtin>
+        <Group props={props} groupName="Direct Messages" key="directs" k="directs" path={mdiHomeVariant} builtin>
             <Icon path={mdiAccountMultiple} color="var(--text)" size="100%" />
         </Group>,
     ];
@@ -88,7 +64,7 @@ function GroupList({ roomNav, setGroup, currentGroup, groupList }) {
             <div className="room__icon">{acronym(room.name)}</div>;
 
         groups.push(
-            <Group
+            <Group props={props}
                 groupName={room.name}
                 key={key} k={key}
             >
@@ -98,6 +74,32 @@ function GroupList({ roomNav, setGroup, currentGroup, groupList }) {
     })
 
     return groups;
+}
+function Group({ props, groupName, k, children, builtin = false }) {
+    const { roomNav, setGroup, currentGroup } = props;
+    
+    const roomState = roomNav.current.groupUnreads(k);
+    const {read, notifications} = roomState;
+
+    return (
+        <div className="group__holder">
+            <Tooltip text={groupName} dir="right">
+                <div
+                    className={classList("group", {"group--default": builtin}, {"group--selected": currentGroup.key === k})}
+                    onClick={() => {
+                        if (k !== currentGroup.key) {
+                            setGroup({ name: groupName, key: k })
+                            roomNav.current.groupSelected(k);
+                        }
+                    }}
+                >
+                    {children}
+                    {notifications > 0 && <div className="group__notification">{notifications}</div>}
+                </div>
+            </Tooltip>
+            <div className="group__unread" style={{display: read ? "none" : "block"}}></div>
+        </div>
+    );
 }
 
 function getRoomIcon(room, isDm = false) {
