@@ -187,7 +187,7 @@ function Invites({ setShowModal, invitedRooms }) {
         if (invitedRooms[name].length === 0) {return holders}
         const invites = invitedRooms[name].map((invite) => {
             return (
-                <InviteEntry invite={invite} key={invite.roomId} />
+                <InviteEntry invite={invite} key={invite.roomId} direct={name === "Direct messages"} />
             );
         })
 
@@ -218,7 +218,7 @@ function Invites({ setShowModal, invitedRooms }) {
     )
 }
 
-function InviteEntry({ invite }) {
+function InviteEntry({ invite, direct }) {
     const [status, setStatus] = useState(null);
     const { inviter, room } = invite;
 
@@ -231,6 +231,17 @@ function InviteEntry({ invite }) {
         }).catch(() => {
             setStatus("Error")
         });
+
+        if (direct) {
+            // Update account data
+            const directs = global.matrix.getAccountData("m.direct")?.getContent() || {};
+            directs[inviter] = room.roomId;
+            try {
+                global.matrix.setAccountData("m.direct", directs);
+            } catch (e) {
+                console.warn(e);
+            }
+        }
     }
 
     function declineInvite() {

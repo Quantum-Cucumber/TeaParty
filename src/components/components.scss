@@ -253,11 +253,12 @@
         height: 65px;
         border-radius: 30%;
         margin-bottom: 10px;
+        font-size: 25px;
 
-        &:hover {
+        /*&:hover {
             opacity: 0.7;
             cursor: pointer;
-        }
+        }*/
     }
 
     &__display-name {
@@ -292,5 +293,25 @@
     100% {
         opacity: 100%;
         visibility: visible;
+    }
+}
+
+/* Image popup */
+.image-popup {
+    max-height: 70vh;
+    max-width: 70vw;
+
+    &__buttons {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        width: min-content;
+        right: 0;
+        position: absolute;
+
+        .mdi-icon {
+            margin: 0.1rem;
+            padding: 0.1rem;
+        }
     }
 }

@@ -70,6 +70,10 @@
             display: inline-block;
             user-select: none;
         }
+
+        &--unknown {
+            color: var(--text-greyed)
+        }
     }
 }
 
@@ -78,6 +82,7 @@
     flex: none;
     display: flex;
     flex-direction: row;
+    min-height: calc(1rem + 4px);
 
     .message-timestamp {
         display: none;
@@ -171,27 +176,8 @@
     cursor: pointer;
     margin-top: 0.25rem;
     border-radius: 4px;
-    max-width: 400px;
-    max-height: 300px;
-}
-
-.image-popup {
-    max-height: 70vh;
-    max-width: 70vw;
-
-    &__buttons {
-        display: flex;
-        justify-content: flex-end;
-        align-items: center;
-        width: min-content;
-        right: 0;
-        position: absolute;
-
-        .mdi-icon {
-            margin: 0.1rem;
-            padding: 0.1rem;
-        }
-    }
+    max-width: 320px;
+    max-height: 240px;
 }
 
 @mixin startframe {
