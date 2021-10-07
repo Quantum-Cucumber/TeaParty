@@ -106,9 +106,11 @@ function UnknownMessageType({ eventContent, edited }) {
     const content = edited ? edited.getContent()["m.new_content"].body : eventContent.body;
 
     return (
-        <p className="message__content--unknown">
-            {content || "** Unknown message type **"}
-        </p>
+        <Tooltip text={eventContent.msgtype} dir="top" x="mouse" delay={0.5} >
+            <p className="message__content--unknown">
+                {content || "** Unknown message type **"}
+            </p>
+        </Tooltip>
     )
 }
 

@@ -1,7 +1,7 @@
 import Icon from '@mdi/react';
 import "./components.scss";
 import { mdiLoading, mdiDownload, mdiOpenInNew } from "@mdi/js";
-import { useState, cloneElement, useRef, useEffect, useLayoutEffect } from 'react';
+import { useState, cloneElement, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
 import { classList } from '../utils/utils';
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
@@ -20,54 +20,79 @@ export function Loading({ size }) {
     );
 }
 
-export function Tooltip({ text, dir, children, delay = 0 }) {
+export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
     const [visible, setVisible] = useState(false);
     const tooltipRef = useRef();
     const childRef = useRef();
     const timer = useRef();  // If a delay is set, this tracks the setTimeout ID
+    const oldEvent = useRef({});
 
-    function show() {
+    const setPosition = useCallback((e) => {
         const offset = 5 + 5;  // Offset + arrow size
         // Calculate position of tooltip
         const tooltip = tooltipRef.current;
         const child = childRef.current;
         const childRect = child.getBoundingClientRect();
 
-        switch (dir) {
-            case "top": 
-                // Horizontal center
+        oldEvent.current = e;  // Save in case text changes 
+
+        const presets = {
+            "top": {x: "center", y: "top"},
+            "bottom": {x: "center", y: "bottom"},
+            "left": {x: "left", y: "center"},
+            "right": {x: "right", "y": "center"}
+        }
+
+        // Determine horizontal positioning
+        switch (x || presets[dir]?.x) {
+            case "center":
                 tooltip.style.left = `${childRect.x - (tooltip.offsetWidth / 2) + (childRect.width / 2)}px`;
-                // Top
-                tooltip.style.top = `${childRect.y - tooltip.offsetHeight - offset}px`;
-                break;
-            case "bottom":
-                // Horizontal center
-                tooltip.style.left = `${childRect.x - (tooltip.offsetWidth / 2) + (childRect.width / 2)}px`;
-                // Bottom
-                tooltip.style.top = `${childRect.y + childRect.height + offset}px`;
                 break;
             case "left":
-                // Vertical center
-                tooltip.style.top = `${childRect.y - (tooltip.offsetHeight / 2) + (childRect.height / 2)}px`;
-                // Left
                 tooltip.style.left = `${childRect.x - tooltip.offsetWidth - offset}px`;
                 break;
             case "right":
-                // Vertical center
-                tooltip.style.top = `${childRect.y - (tooltip.offsetHeight / 2) + (childRect.height / 2)}px`;
-                // Right
                 tooltip.style.left = `${childRect.x + childRect.width + offset}px`;
+                break;
+            case "mouse":
+                const centerX = e.clientX;
+                tooltip.style.left = `${centerX - (tooltip.offsetWidth / 2)}px`;
                 break;
             default:
                 break;
         }
-
+        // Vertical positioning
+        switch (y || presets[dir]?.y) {
+            case "center":
+                tooltip.style.top = `${childRect.y - (tooltip.offsetHeight / 2) + (childRect.height / 2)}px`;
+                break;
+            case "top":
+                tooltip.style.top = `${childRect.y - tooltip.offsetHeight - offset}px`;
+                break;
+            case "bottom":
+                tooltip.style.top = `${childRect.y + childRect.height + offset}px`;
+                break;
+            case "mouse":
+                const centerY = e.clientY;
+                tooltip.style.top = `${centerY - (tooltip.offsetHeight / 2)}px`;
+                break;
+            default:
+                break;
+        }
+    }, [x, y, dir])
+    function show(e) {
+        setPosition(e)
         timer.current = setTimeout(() => setVisible(true), delay * 1000);
     }
     function hide() {
         clearTimeout(timer.current);
         setVisible(false);
     }
+
+    // If the text changes, recalculate position
+    useEffect(() => {
+        setPosition(oldEvent.current);
+    }, [text, setPosition])
 
     useEffect(() => {
         return () => {clearTimeout(timer.current)};

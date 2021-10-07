@@ -152,7 +152,7 @@ function MyUser({ user }) {
     return (
         <div className="user client__user-bar__profile" onClick={click}>
             <Avatar subClass="user__avatar" user={user}></Avatar>
-            <Tooltip text={tooltipText} dir="top" delay={0.5}>
+            <Tooltip text={tooltipText} dir="top" x="mouse" delay={0.5}>
                 <div className="user__text-box">
                     <span className="user__text user__username">{get_username(user)}</span>
                     <span className="user__text user__homeserver">{get_homeserver(user)}</span>
