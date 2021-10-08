@@ -48,10 +48,10 @@ function GroupList(props) {
     const { groupList } = props;
 
     var groups = [
-        <Group props={props} groupName="Home" key="home" k="home" builtin>
+        <Group {...props} groupName="Home" key="home" k="home" builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </Group>,
-        <Group props={props} groupName="Direct Messages" key="directs" k="directs" path={mdiHomeVariant} builtin>
+        <Group {...props} groupName="Direct Messages" key="directs" k="directs" path={mdiHomeVariant} builtin>
             <Icon path={mdiAccountMultiple} color="var(--text)" size="100%" />
         </Group>,
     ];
@@ -64,7 +64,7 @@ function GroupList(props) {
             <div className="room__icon">{acronym(room.name)}</div>;
 
         groups.push(
-            <Group props={props}
+            <Group {...props}
                 groupName={room.name}
                 key={key} k={key}
             >
@@ -75,9 +75,7 @@ function GroupList(props) {
 
     return groups;
 }
-function Group({ props, groupName, k, children, builtin = false }) {
-    const { roomNav, setGroup, currentGroup } = props;
-    
+function Group({ roomNav, setGroup, currentGroup, groupName, k, children, builtin = false }) {
     const roomState = roomNav.current.groupUnreads(k);
     const {read, notifications} = roomState;
 

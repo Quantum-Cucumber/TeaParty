@@ -4,13 +4,13 @@ import { Button, ImagePopup, Tooltip } from "../../../../components/interface";
 import { getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import { tryGetUser } from "../../../../utils/matrix-client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm"
 import { mdiDotsHorizontal } from "@mdi/js";
 
 
-export function Message({ event, timeline, setUserPopup }) {
+export const Message = memo(({ event, timeline, setUserPopup }) => {
     const author = tryGetUser(event.getSender());
     if (!author) {return;}
 
@@ -36,9 +36,9 @@ export function Message({ event, timeline, setUserPopup }) {
             <MessageOptions />
         </div>
     );
-}
+})
 
-export function PartialMessage({ event, timeline }) {
+export const PartialMessage = memo(({ event, timeline }) => {
     return (
         <div className="message--partial">
             <div className="message--partial__offset">
@@ -52,7 +52,7 @@ export function PartialMessage({ event, timeline }) {
             <MessageOptions />
         </div>
     )
-}
+})
 
 function MessageOptions() {
     return (

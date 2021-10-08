@@ -25,6 +25,14 @@ function _getUnreads(room) {
     return {read: read, notifications: notifications}
 }
 
+function debounce(func, timeout = 300){
+    let timer;
+    return (...args) => {
+      clearTimeout(timer);
+      timer = setTimeout(() => { func.apply(this, args); }, timeout);
+    };
+  }
+
 
 export default class navManager {
     constructor(setGroups, setRooms, setInvites, selectRoom) {
@@ -125,7 +133,7 @@ export default class navManager {
         "Room.myMembership": this._membershipChange.bind(this),
         "accountData": this._accountData.bind(this), 
         "Room.name": this._roomRenamed.bind(this),
-        "Room.timeline": this._roomEvent.bind(this),
+        "Room.timeline": debounce(this._roomEvent.bind(this), 1000),  // For unread indicator updates
         "Room.receipt": this._readReceipt.bind(this),
     }
     _startListeners() {
@@ -208,6 +216,7 @@ export default class navManager {
     _roomEvent(event, room, toStartOfTimeline, removed) {
         if (removed) {return};
         if (event.getType() !== "m.room.message") {return};
+        if (toStartOfTimeline) {return}  // Only update for messages at start of chat
 
         // If event's room is in current roomlist, refresh (to add indicators)
         if (this.currentRooms.includes(room)) {

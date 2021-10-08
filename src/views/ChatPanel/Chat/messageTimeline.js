@@ -5,6 +5,7 @@ export default class messageTimeline {
         this.roomId = roomId;
         this.room = global.matrix.getRoom(this.roomId);
         this.timeline = this.room?.getLiveTimeline().events;
+        this.userId = global.matrix.getUserId();
 
         this.edits = new Map();
         this.timeline.forEach((event) => {
@@ -30,7 +31,7 @@ export default class messageTimeline {
     }
     _isEdit(event) {return event.isRelation("m.replace")}
 
-    onEvent(event) {
+    onEvent(event, toStartOfTimeline) {
         // Only process messages for current room
         if (event.getRoomId() !== this.roomId) {return}
 
@@ -38,8 +39,9 @@ export default class messageTimeline {
         if (this._isEdit(event)) {
             this._addRelationToMap(this.edits, event);
         } 
-        // Mark timeline as unread if a message is sent
-        if (this._isMessage(event)) {
+        // Mark timeline as unread if new message received and not from current user
+        if (!toStartOfTimeline && this._isMessage(event) && event.getSender() !== this.userId) {
+            console.log("mark unread")
             this.read = false;
         }
     }
@@ -78,6 +80,7 @@ export default class messageTimeline {
             // Spec says not to send read receipts for own events
             if (event.getSender() === global.matrix.getUserId()) {return}
 
+            this.read = true;
             await global.matrix.sendReadReceipt(event);
         }
     }

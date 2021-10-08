@@ -36,7 +36,10 @@ function Client() {
             })
         })
 
-        return () => {roomNav.current.detachListeners()}
+        return () => {
+            global.matrix.stopClient();
+            roomNav.current.detachListeners();
+        }
     }, []);
     if (!synced) {
         return (

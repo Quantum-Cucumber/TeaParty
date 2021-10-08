@@ -35,11 +35,11 @@ function Chat({ currentRoom, setUserPopup }) {
         timeline.current = new messageTimeline(currentRoom);
 
         // Set up timeline event handler
-        function onEvent(event, eventRoom) {
+        function onEvent(event, eventRoom, toStartOfTimeline) {
             if (eventRoom.roomId !== currentRoom) {return}
             
             // Pass event to timeline handler and refresh message list
-            timeline.current.onEvent(event);
+            timeline.current.onEvent(event, toStartOfTimeline);
             updateMessageList();
         }
         global.matrix.on("Room.timeline", onEvent);
