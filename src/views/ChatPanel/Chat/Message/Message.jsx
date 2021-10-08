@@ -1,10 +1,10 @@
 import "./Message.scss";
+import { useState, useEffect, memo } from "react";
 import { Avatar } from "../../../../components/user";
-import { Button, ImagePopup, Tooltip } from "../../../../components/interface";
-import { getUserColour } from "../../../../utils/utils";
+import { Button, ImagePopup, Option, positionFloating, Tooltip } from "../../../../components/interface";
+import { getUserColour, useBindEscape } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import { tryGetUser } from "../../../../utils/matrix-client";
-import { useState, useEffect, memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm"
 import { mdiDotsHorizontal } from "@mdi/js";
@@ -55,11 +55,44 @@ export const PartialMessage = memo(({ event, timeline }) => {
 })
 
 function MessageOptions() {
-    return (
+    const [optionsParent, setOptionsParent] = useState();
+
+    return (<>
         <div className="message__options">
-            <Button subClass="message__options__entry" path={mdiDotsHorizontal} size="100%" />
+            <Button subClass="message__options__entry" path={mdiDotsHorizontal} size="100%" clickFunc={(e) => {setOptionsParent(e.target)}} />
         </div>
-    )
+        {optionsParent && 
+            <MessageDropDown setShow={setOptionsParent} parent={optionsParent} />
+        }
+    </>)
+}
+
+function MessageDropDown({ setShow, parent }) {
+    const [me, setMe] = useState();
+    
+    useEffect(() => {
+        if (me) {
+            positionFloating(me, parent, "align-right", "bottom")
+        }
+    }, [me, parent])
+    
+    useBindEscape(setShow, false);
+    useEffect(() => {
+        function hide(e) {
+            console.log("click")
+            if ((!e.target.closest(".message__options") && !e.target.closest(".message__dropdown"))){ //|| parent.contains(e.target)) {
+                console.log("hide")
+                setShow(false)
+            }
+        };
+        document.addEventListener("click", hide);
+        return () => {document.removeEventListener("click", hide)}
+    }, [setShow, parent])
+
+    return (
+        <div ref={setMe} className="message__dropdown">
+        </div>
+    );
 }
 
 function MessageContent({ event, timeline }) {

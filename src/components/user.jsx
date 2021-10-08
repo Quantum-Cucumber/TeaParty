@@ -55,7 +55,7 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
 
     const clicked = useCallback((e) => {
         // If anything other than the popup is clicked, or another component that opens the popup was clicked
-        if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || (parent === e.target || parent.contains(e.target))) {
+        if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || parent.contains(e.target)) {
             setUserPopup(null);
         }
     }, [setUserPopup, parent]);

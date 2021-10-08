@@ -24,7 +24,7 @@ export function Loading({ size }) {
     );
 }
 
-export function positionFloating(positionMe, referenceNode, x, y, offset, mouseEvent) {
+export function positionFloating(positionMe, referenceNode, x, y, offset=0, mouseEvent) {
     const referenceRect = referenceNode.getBoundingClientRect();;
 
     // Determine horizontal positioning
@@ -87,6 +87,8 @@ export function positionFloating(positionMe, referenceNode, x, y, offset, mouseE
         default:
             break;
     }
+
+    return positionMe;
 }
 
 export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
@@ -153,9 +155,9 @@ export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
     );
 }
 
-export function Option({ k, text, selected, select, danger, unread=false, notification=0, children }) {
+export function Option({ text, k, selected, select = ()=>{}, danger, unread=false, notification=0, children }) {
     const className = classList("option",
-                                {"option--selected": selected===k}, 
+                                {"option--selected": k ? selected===k : null}, 
                                 {"option--danger": danger}) 
 
     var indicator = null;

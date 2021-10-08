@@ -136,6 +136,13 @@
         height: 2rem;
     }
 }
+.message__dropdown {
+    background-color: var(--bg-dark);
+    border-radius: 10px;
+    width: 160px;
+    position: fixed;
+    padding: 8px;
+}
 
 
 /* Markdown */
