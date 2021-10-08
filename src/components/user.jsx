@@ -1,10 +1,11 @@
 import "./components.scss";
 import { get_username } from "../utils/matrix-client";
 import { getUserColour, acronym, classList } from "../utils/utils";
-import { useEffect, useRef, useCallback, useLayoutEffect } from "react";
+import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { useBindEscape } from '../utils/utils';
 import { powerLevelText } from "../utils/matrix-client";
-import { positionFloating } from "./interface";
+import { Button, positionFloating } from "./interface";
+import { mdiContentCopy } from "@mdi/js";
 
 export function Avatar({ user, subClass, clickFunc }) {
     // Get mxc:// url 
@@ -48,6 +49,7 @@ export function Member({ user, subClass, clickFunc }) {
 
 export function UserPopup({ user, parent, room, setUserPopup }) {
     const popupRef = useRef();
+    const [idCopyText, setIdCopyText] = useState("Copy");
 
     useBindEscape(setUserPopup, null);
 
@@ -96,11 +98,20 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
 
     if (!user || !parent || !room) {return null};
 
+    function copyUserId() {
+        navigator.clipboard.writeText(user.userId);
+        setIdCopyText("Copied");
+        setTimeout(() => setIdCopyText("Copy"), 1000);
+    }
+
     return (
         <div className="user-popup" ref={popupRef}>
             <Avatar user={user} subClass="user-popup__avatar" />
             <div className="user-popup__display-name">{user.rawDisplayName}</div>
-            <div className="user-popup__text">{user.userId}</div>
+            <div className="user-popup__text">
+                {user.userId}&nbsp;
+                <Button path={mdiContentCopy} size="100%" tipDir="top" tipText={idCopyText} subClass="user-popup__text__copy" clickFunc={copyUserId} />
+            </div>
 
             <div className="user-popup__label">Power Level</div>
             <div className="user-popup__text">{powerLevelText(user.userId, room)}</div>

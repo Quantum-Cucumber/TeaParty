@@ -271,8 +271,27 @@
         font-size: 0.9rem;
     }
     &__text {
+        --font-size: 0.8rem;
         color: var(--text-greyed);
-        font-size: 0.8rem;
+        font-size: var(--font-size);
+
+        &:hover > &__copy {
+            display: inline-block;
+        }
+
+        &__copy {
+            display: none;
+            height: var(--font-size);
+            vertical-align: bottom;
+
+            & > .mdi-icon {
+                color: var(--text-greyed);
+
+                &:hover {
+                    color: var(--text);
+                }
+            }
+        }
     }
 }
 
