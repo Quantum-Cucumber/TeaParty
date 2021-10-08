@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 // Stolen from matrix-org/matrix-react-sdk
 function hashCode(str) {
@@ -56,7 +56,7 @@ export function classList(...classes) {
                     output.push(className)
                 }
             });
-        } 
+        }
         else if (item !== null) {
             output.push(item)
         }
@@ -66,3 +66,40 @@ export function classList(...classes) {
     return output.join(" ") || null;
 }
 
+
+export function debounce(func, timeout) {
+    /* Returns a function that will only run once per the timeout period */
+    let timer;
+    return (...args) => {
+        clearTimeout(timer);
+        timer = setTimeout(() => {func.apply(this, args)}, timeout);
+    };
+}
+
+export function useDebouncedState(initial, delay) {
+    // The pending state to return
+    const [queuedState, queueState] = useState(initial);
+    // The final state (when the timeout ends)
+    const [debouncedState, saveState] = useState(queuedState);
+    // Save the timer ID so we can unmount it on unload
+    const timerId = useRef();
+
+    useEffect(() => {
+        // When the timer ends, save the queued state and return it, otherwise when a new state is queued, cancel the timeout
+        timerId.current = setTimeout(() => {
+            saveState(queuedState);
+        }, delay);
+
+        return () => {
+            clearTimeout(timerId.current);
+        }
+    }, [queuedState, delay])
+    // If component is unmounted, clear the timer
+    useEffect(() => {
+        return () => {clearTimeout(timerId.current)};
+    }, [])
+
+    // Appears like useState. The current state value and the function to add to the queue
+    return [debouncedState, queueState];
+}
+  

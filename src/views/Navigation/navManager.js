@@ -1,4 +1,5 @@
 import { getSetting, updateSettings } from "../../utils/settings";
+import { debounce } from "../../utils/utils";
 
 function _isJoined(room) {
     return room?.getMyMembership() === "join";
@@ -24,14 +25,6 @@ function _getUnreads(room) {
     const notifications = room.getUnreadNotificationCount("total");
     return {read: read, notifications: notifications}
 }
-
-function debounce(func, timeout = 300){
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => { func.apply(this, args); }, timeout);
-    };
-  }
 
 
 export default class navManager {

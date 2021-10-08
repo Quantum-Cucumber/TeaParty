@@ -2,7 +2,7 @@ import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback, memo } from "react";
 import { Loading } from "../../../components/interface";
 import messageTimeline from "./messageTimeline";
-import { useBindEscape } from "../../../utils/utils";
+import { useBindEscape, useDebouncedState } from "../../../utils/utils";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
 import { Message, PartialMessage } from "./Message/Message";
 
@@ -19,13 +19,14 @@ function nextShouldBePartial(thisMsg, lastMsg) {
 }
 
 
+
 function Chat({ currentRoom, setUserPopup }) {
     const timeline = useRef();
-    const [messageList, setMessageList] = useState([]);
+    const [messageList, setMessageList] = useDebouncedState([], 200);
 
     const updateMessageList = useCallback(() => {
         setMessageList(timeline.current.getMessages());
-    }, [])
+    }, []);
 
     // Add event listener when room is changed
     useEffect(() => {
