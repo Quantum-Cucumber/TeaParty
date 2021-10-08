@@ -4,6 +4,7 @@ import { getUserColour, acronym, classList } from "../utils/utils";
 import { useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import { useBindEscape } from '../utils/utils';
 import { powerLevelText } from "../utils/matrix-client";
+import { positionFloating } from "./interface";
 
 export function Avatar({ user, subClass, clickFunc }) {
     // Get mxc:// url 
@@ -62,15 +63,9 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
         if (!user || !parent) {return};
         // Want to position at same height at parent, to the right of it while also within window boundaries
         const padding = 10;
-        const parentRect = parent.getBoundingClientRect();
         const popup = popupRef.current;
 
-        // Position at same height
-        popup.style.top = `${parentRect.y}px`;
-        popup.style.bottom = "auto";
-        // Position to the right of parent
-        popup.style.left = `${parentRect.x + parentRect.width + padding}px`
-        popup.style.right = "auto";
+        positionFloating(popup, parent, "right", "align-top", padding);
 
         // Constrain to screen height
         const popupRect = popup.getBoundingClientRect();
@@ -81,8 +76,7 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
 
         // Render on other side of parent if off the screen
         if (popupRect.right > window.innerWidth) {
-            popup.style.left = "auto";
-            popup.style.right = `${padding + (window.innerWidth - parentRect.left)}px`;
+            positionFloating(popup, parent, "left", "align-top", padding);
         }
 
         // Trigger the slide animation

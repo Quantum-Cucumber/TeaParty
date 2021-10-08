@@ -24,21 +24,83 @@ export function Loading({ size }) {
     );
 }
 
+export function positionFloating(positionMe, referenceNode, x, y, offset, mouseEvent) {
+    const referenceRect = referenceNode.getBoundingClientRect();;
+
+    // Determine horizontal positioning
+    switch (x) {
+        // Align node's center with the center of the reference node
+        case "center":
+            positionMe.style.left = `${referenceRect.x - (positionMe.offsetWidth / 2) + (referenceRect.width / 2)}px`;
+            break;
+        // Position to the left of the reference node w/ offset
+        case "left":
+            positionMe.style.left = `${referenceRect.x - positionMe.offsetWidth - offset}px`;
+            break;
+        // Position to the right of the reference node w/ offset
+        case "right":
+            positionMe.style.left = `${referenceRect.x + referenceRect.width + offset}px`;
+            break;
+        // Center node over the mouseEvent x position
+        case "mouse":
+            const centerX = mouseEvent.clientX;
+            positionMe.style.left = `${centerX - (positionMe.offsetWidth / 2)}px`;
+            break;
+        // Align the left edge of both nodes
+        case "align-left":
+            positionMe.style.left = `${referenceRect.x}px`;
+            break;
+        // Align the right edge of both nodes
+        case "align-right":
+            positionMe.style.left = `${referenceRect.x - positionMe.offsetWidth + referenceRect.width}px`;
+            break;
+        default:
+            break;
+    }
+    // Vertical positioning
+    switch (y) {
+        // Align node's center with the center of the reference node
+        case "center":
+            positionMe.style.top = `${referenceRect.y - (positionMe.offsetHeight / 2) + (referenceRect.height / 2)}px`;
+            break;
+        // Position above the reference node w/ offset
+        case "top":
+            positionMe.style.top = `${referenceRect.y - positionMe.offsetHeight - offset}px`;
+            break;
+        // Position below the reference node w/ offset
+        case "bottom":
+            positionMe.style.top = `${referenceRect.y + referenceRect.height + offset}px`;
+            break;
+        // Center node over the mouseEvent y position
+        case "mouse":
+            const centerY = mouseEvent.clientY;
+            positionMe.style.top = `${centerY - (positionMe.offsetHeight / 2)}px`;
+            break;
+        // Align the top edge of both nodes
+        case "align-top": 
+            positionMe.style.top = `${referenceRect.y}px`;
+            break;
+        // Align the bottom edge of both nodes
+        case "align-bottom":
+            positionMe.style.top = `${referenceRect.y - positionMe.offsetHeight + referenceRect.height}px`;
+            break;
+        default:
+            break;
+    }
+}
+
 export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
     const [visible, setVisible] = useState(false);
     const tooltipRef = useRef();
     const childRef = useRef();
     const timer = useRef();  // If a delay is set, this tracks the setTimeout ID
-    const oldEvent = useRef({});
+    const mouseEvent = useRef({});
 
     const setPosition = useCallback((e) => {
         const offset = 5 + 5;  // Offset + arrow size
         // Calculate position of tooltip
         const tooltip = tooltipRef.current;
         const child = childRef.current;
-        const childRect = child.getBoundingClientRect();
-
-        oldEvent.current = e;  // Save in case text changes 
 
         const presets = {
             "top": {x: "center", y: "top"},
@@ -47,46 +109,13 @@ export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
             "right": {x: "right", "y": "center"}
         }
 
-        // Determine horizontal positioning
-        switch (x || presets[dir]?.x) {
-            case "center":
-                tooltip.style.left = `${childRect.x - (tooltip.offsetWidth / 2) + (childRect.width / 2)}px`;
-                break;
-            case "left":
-                tooltip.style.left = `${childRect.x - tooltip.offsetWidth - offset}px`;
-                break;
-            case "right":
-                tooltip.style.left = `${childRect.x + childRect.width + offset}px`;
-                break;
-            case "mouse":
-                const centerX = e.clientX;
-                tooltip.style.left = `${centerX - (tooltip.offsetWidth / 2)}px`;
-                break;
-            default:
-                break;
-        }
-        // Vertical positioning
-        switch (y || presets[dir]?.y) {
-            case "center":
-                tooltip.style.top = `${childRect.y - (tooltip.offsetHeight / 2) + (childRect.height / 2)}px`;
-                break;
-            case "top":
-                tooltip.style.top = `${childRect.y - tooltip.offsetHeight - offset}px`;
-                break;
-            case "bottom":
-                tooltip.style.top = `${childRect.y + childRect.height + offset}px`;
-                break;
-            case "mouse":
-                const centerY = e.clientY;
-                tooltip.style.top = `${centerY - (tooltip.offsetHeight / 2)}px`;
-                break;
-            default:
-                break;
-        }
+        positionFloating(tooltip, child, x || presets[dir]?.x, y || presets[dir]?.y, offset, e);
     }, [x, y, dir])
-    function show(e) {
-        setPosition(e)
-        timer.current = setTimeout(() => setVisible(true), delay * 1000);
+    function show() {
+        timer.current = setTimeout(() => {
+            setPosition(mouseEvent.current);
+            setVisible(true)
+        }, delay * 1000);
     }
     function hide() {
         clearTimeout(timer.current);
@@ -95,7 +124,7 @@ export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
 
     // If the text changes, recalculate position
     useEffect(() => {
-        setPosition(oldEvent.current);
+        setPosition(mouseEvent.current);
     }, [text, setPosition])
 
     useEffect(() => {
@@ -113,6 +142,7 @@ export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
         onMouseEnter: show,
         onMouseLeave: hide,
         ref: childRef,
+        onMouseMove: x === "mouse" || y === "mouse" ? (e) => {mouseEvent.current = e; console.log('mouse')} : null,
     });
 
     return (
