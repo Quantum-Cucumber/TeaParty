@@ -130,7 +130,7 @@
     display: none;
 
     &:hover {
-        box-shadow: 0px 2px 3px var(--border);
+        box-shadow: 0px 1px 3px var(--border);
     }
     &__entry {
         height: 1.6rem;
@@ -207,18 +207,13 @@
 }
 
 .message__popup {
-    .overlay__modal {
-        background-color: var(--bg);
-        border-radius: 30px;
-        padding: 30px 35px;
-        max-height: 80%;
-        display: flex;
-        flex-direction: column;
-    }
+    display: flex;
+    flex-direction: column;
 
     code {
         flex: 1 1 auto;
-        overflow: hidden auto;
+        overflow: hidden scroll;
+        @include common.scroll-style(var(--bg-focus), var(--bg));
     }
 }
 

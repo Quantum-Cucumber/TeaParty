@@ -68,7 +68,7 @@ a {
 
 .codeblock {
     @include common.codeblock;
-    background-color: var(--bg-focus);
+    background-color: var(--bg-dark);
     white-space: pre-wrap;
 }
 

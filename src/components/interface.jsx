@@ -1,6 +1,6 @@
-import Icon from '@mdi/react';
 import "./components.scss";
-import { mdiLoading, mdiDownload, mdiOpenInNew } from "@mdi/js";
+import Icon from '@mdi/react';
+import { mdiLoading, mdiDownload, mdiOpenInNew, mdiClose } from "@mdi/js";
 import { useState, cloneElement, useRef, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
 import { classList, useBindEscape } from '../utils/utils';
 
@@ -196,13 +196,13 @@ export function Option({ text, k, selected, select = ()=>{}, danger=false, compa
     );
 }
 
-export function Overlay({ children, opacity = "85%", click, dim = true, fade = 0, render = true, mountAnimation, unmountAnimation }) {
+export function Overlay({ children, opacity = "85%", click, modalClass, dim = true, 
+                          fade = 0, render = true, mountAnimation, unmountAnimation }) {
     /* click refers to the onClick function for the dim bg
        dim is whether to add a transparent overlay to the background
        fade determines how long the dim element will fade for
        render is passed to determine if the overlay should display
     */
-
     const [mount, setMount] = useState(true);  // Master state for whether to display or not
     const [modal, modalUpdate] = useState();  // Acts as a ref except triggers the state update
     const [dimNode, dimUpdate] = useState();  // ^
@@ -243,11 +243,31 @@ export function Overlay({ children, opacity = "85%", click, dim = true, fade = 0
 
     return (
         <div className="overlay">
-            <div className="overlay__modal" ref={modalUpdate}>
+            <div className={classList("overlay__modal", modalClass)} ref={modalUpdate}>
                 {children}
             </div>
             {dim && <div className="overlay__dim" ref={dimUpdate} style={{opacity: opacity}} onClick={click}></div>}
         </div>
+    )
+}
+export function Modal(props) {
+    /* High order component of overlay that gives the modal styling and adds a title/close button */
+    const { title, hide, children, modalClass, ...passThroughProps } = props;
+
+    return (
+        <Overlay modalClass={classList("overlay__modal--bg", modalClass)} click={hide} {...passThroughProps}>
+            <div className="overlay__title">
+                {title}:
+
+                <Icon className="overlay__close" 
+                    path={mdiClose} 
+                    size="20px" 
+                    color="var(--text-greyed)" 
+                    onClick={hide}
+                />
+            </div>
+            {children}
+        </Overlay>
     )
 }
 

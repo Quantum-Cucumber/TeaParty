@@ -1,13 +1,12 @@
 import "./Message.scss";
 import { useContext, memo, useState } from "react";
 import { Avatar } from "../../../../components/user";
-import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Overlay } from "../../../../components/interface";
+import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Modal } from "../../../../components/interface";
 import { getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import { tryGetUser } from "../../../../utils/matrix-client";
-import { mdiClose, mdiDotsHorizontal, mdiEmoticonOutline, mdiReply } from "@mdi/js";
+import { mdiDotsHorizontal, mdiEmoticonOutline, mdiReply } from "@mdi/js";
 import MessageContent from "./MessageTypes";
-import { Icon } from "@mdi/react";
 
 
 export const Message = memo(({ event, timeline, setUserPopup }) => {
@@ -80,23 +79,14 @@ function MoreOptions({ parent, event }) {
             <Option text="View source" select={() => {setShowSource(true)}} compact/>
 
             {showSource &&
-                <div className="message__popup">
-                <Overlay click={() => {setShowSource(false)}}>
-                    <div className="overlay__title">
-                        Event Source:
-
-                        <Icon className="overlay__close" 
-                            path={mdiClose} 
-                            size="20px" 
-                            color="var(--text-greyed)" 
-                            onClick={() => setShowSource(false)}
-                        />
-                    </div>
-                    <code className="codeblock">
+                <Modal title="Event Source" hide={() => {setShowSource(false)}} modalClass="message__popup">
+                    <div><b>Event ID:</b> {event.getId()}</div>
+                    <div><b>Room ID:</b> {event.getRoomId()}</div>
+                    <br />
+                    <code className="codeblock scroll--hover">
                         {JSON.stringify(event.toJSON(), null, 4)}
                     </code>
-                </Overlay>
-                </div>
+                </Modal>
             }
         </ContextMenu>
     )

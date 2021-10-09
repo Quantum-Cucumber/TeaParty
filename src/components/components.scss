@@ -219,6 +219,14 @@
     &__modal {
         z-index: 101;
         position: relative;
+
+        &--bg {
+            background-color: var(--bg-focus);
+            border-radius: 30px;
+            padding: 30px 35px;
+            box-sizing: border-box;
+            max-height: 75%;
+        }
     }
 
     &__title {

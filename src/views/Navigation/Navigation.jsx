@@ -2,7 +2,7 @@ import "./Navigation.scss";
 import { useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import { Button, Tooltip, Loading, Option, Overlay } from "../../components/interface";
+import { Button, Tooltip, Loading, Option, Modal } from "../../components/interface";
 import { Avatar } from "../../components/user";
 import { acronym, useBindEscape, classList } from "../../utils/utils";
 import { get_username, get_homeserver } from "../../utils/matrix-client";
@@ -187,7 +187,7 @@ function Invites({ setShowModal, invitedRooms }) {
         if (invitedRooms[name].length === 0) {return holders}
         const invites = invitedRooms[name].map((invite) => {
             return (
-                <InviteEntry invite={invite} key={invite.roomId} direct={name === "Direct messages"} />
+                <InviteEntry invite={invite} key={invite.room.roomId} direct={name === "Direct messages"} />
             );
         })
 
@@ -200,21 +200,9 @@ function Invites({ setShowModal, invitedRooms }) {
     }, []);
 
     return (
-        <Overlay opacity="60%" click={() => setShowModal(false)}>
-            <div className="invites__modal">
-                <div className="overlay__title">
-                    Invites:
-
-                    <Icon className="overlay__close" 
-                        path={mdiClose} 
-                        size="20px" 
-                        color="var(--text-greyed)" 
-                        onClick={() => setShowModal(false)}
-                    />
-                </div>
-                {holders}
-            </div>
-        </Overlay>
+        <Modal title="Invites" hide={() => setShowModal(false)}>
+            {holders}
+        </Modal>
     )
 }
 

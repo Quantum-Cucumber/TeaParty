@@ -1,6 +1,5 @@
 
-@mixin scroll-style($bg-col) {
-    $slider-col: var(--bg-dark);
+@mixin scroll-style($bg-col, $slider-col: var(--bg-dark)) {
     scrollbar-color: $slider-col $bg-col;
 
     &::-webkit-scrollbar {
