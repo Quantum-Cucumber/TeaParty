@@ -222,8 +222,8 @@
 
         &--bg {
             background-color: var(--bg-focus);
-            border-radius: 30px;
-            padding: 30px 35px;
+            border-radius: 15px;
+            padding: 20px 25px;
             box-sizing: border-box;
             max-height: 75%;
         }
@@ -307,27 +307,8 @@
         font-size: 0.9rem;
     }
     &__text {
-        --font-size: 0.8rem;
         color: var(--text-greyed);
-        font-size: var(--font-size);
-
-        &:hover > &__copy {
-            display: inline-block;
-        }
-
-        &__copy {
-            display: none;
-            height: var(--font-size);
-            vertical-align: bottom;
-
-            & > .mdi-icon {
-                color: var(--text-greyed);
-
-                &:hover {
-                    color: var(--text);
-                }
-            }
-        }
+        font-size: 0.8rem;
     }
 }
 
@@ -378,4 +359,25 @@
     padding: 6px;
     background-color: var(--bg-dark);
     width: 150px;
+}
+
+/* Copy text */
+.copy-text {
+    &:hover > &__button {
+        display: inline-block;
+    }
+
+    &__button {
+        display: none;
+        height: 0.9em;
+        vertical-align: middle;
+
+        & > .mdi-icon {
+            color: var(--text-greyed);
+
+            &:hover {
+                color: var(--text);
+            }
+        }
+    }
 }

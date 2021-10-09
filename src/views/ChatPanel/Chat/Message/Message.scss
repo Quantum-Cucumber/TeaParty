@@ -214,6 +214,14 @@
         flex: 1 1 auto;
         overflow: hidden scroll;
         @include common.scroll-style(var(--bg-focus), var(--bg));
+        position: relative;
+
+        .copy-text__button {
+            font-family: var(--font-standard);
+            position: absolute;
+            top: 15px;
+            right: 15px;
+        }
     }
 }
 

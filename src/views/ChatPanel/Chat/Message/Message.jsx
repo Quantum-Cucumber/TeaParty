@@ -1,7 +1,7 @@
 import "./Message.scss";
 import { useContext, memo, useState } from "react";
 import { Avatar } from "../../../../components/user";
-import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Modal } from "../../../../components/interface";
+import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Modal, TextCopy } from "../../../../components/interface";
 import { getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import { tryGetUser } from "../../../../utils/matrix-client";
@@ -74,17 +74,25 @@ function MessageButtons({ event }) {
 function MoreOptions({ parent, event }) {
     const [showSource, setShowSource] = useState(false);
 
+    const eventJSON = JSON.stringify(event.toJSON(), null, 4);
+
     return (
         <ContextMenu parent={parent} x="left" y="align-top">
             <Option text="View source" select={() => {setShowSource(true)}} compact/>
 
             {showSource &&
                 <Modal title="Event Source" hide={() => {setShowSource(false)}} modalClass="message__popup">
-                    <div><b>Event ID:</b> {event.getId()}</div>
-                    <div><b>Room ID:</b> {event.getRoomId()}</div>
+                    <TextCopy text={event.getId()}>
+                        <b>Event ID:</b> {event.getId()}
+                    </TextCopy>
+                    <TextCopy text={event.getRoomId()}>
+                        <b>Room ID:</b> {event.getRoomId()}
+                    </TextCopy>
                     <br />
                     <code className="codeblock scroll--hover">
-                        {JSON.stringify(event.toJSON(), null, 4)}
+                        <TextCopy text={eventJSON}>
+                            {eventJSON}
+                        </TextCopy>
                     </code>
                 </Modal>
             }

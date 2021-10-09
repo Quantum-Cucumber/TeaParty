@@ -1,6 +1,6 @@
 import "./components.scss";
 import Icon from '@mdi/react';
-import { mdiLoading, mdiDownload, mdiOpenInNew, mdiClose } from "@mdi/js";
+import { mdiLoading, mdiDownload, mdiOpenInNew, mdiClose, mdiContentCopy } from "@mdi/js";
 import { useState, cloneElement, useRef, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
 import { classList, useBindEscape } from '../utils/utils';
 
@@ -351,6 +351,23 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, children }) {
     return (
         <div className="context-menu" ref={setMenu}>
             {children}
+        </div>
+    )
+}
+
+export function TextCopy({ text, children }) {
+    const [tooltip, setTooltip] = useState("Copy");
+
+    function copyText() {
+        navigator.clipboard.writeText(text);
+        setTooltip("Copied");
+        setTimeout(() => {setTooltip("Copy")}, 1000);
+    }
+
+    return (
+        <div className="copy-text">
+        {children || text}&nbsp;
+        <Button subClass="copy-text__button" path={mdiContentCopy} size="100%" tipDir="top" tipText={tooltip} clickFunc={copyText} />
         </div>
     )
 }
