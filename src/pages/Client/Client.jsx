@@ -1,13 +1,14 @@
 import "./Client.scss";
 import { useEffect, useState, useRef } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
-import { Loading, Overlay } from "../../components/interface";
+import { contextMenuCtx, Loading, Overlay } from "../../components/interface";
 import { UserPopup } from "../../components/user";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
 import ChatPanel from "../../views/ChatPanel/ChatPanel";
 import navManager from "../../views/Navigation/navManager";
 import MemberList from "../../views/MemberList/MemberList";
+
 
 function Client() {
     // On first load, start syncing. Once synced, change state to reload as client
@@ -19,6 +20,7 @@ function Client() {
     const roomNav = useRef(null);  // Handles populating the groups and room list
     const [invites, setInvites] = useState([]);  // Passed into navmanager and navigation pane
     const [userPopupInfo, setUserPopup] = useState(null);  // Manage how the userpopup is displayed
+    const [contextMenu, setContextMenu] = useState();  // Centralise displaying context menus
 
     useEffect(() => {
         if (roomNav.current) {
@@ -53,6 +55,8 @@ function Client() {
     }
 
     return (
+        <contextMenuCtx.Provider value={setContextMenu}>
+
         <div className="client">
             <Navigation groupList={groupList} roomPanel={roomPanel} setPage={setPage} 
              currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav} invites={invites}
@@ -68,7 +72,10 @@ function Client() {
             <Overlay dim={false} render={page === "settings"} mountAnimation="page__zoom-in 0.1s ease 0s 1" unmountAnimation="page__zoom-out 0.1s ease 0s 1">
                 <Settings setPage={setPage} />
             </Overlay>
+            {contextMenu}
         </div>
+
+        </contextMenuCtx.Provider>
     );
 }
 

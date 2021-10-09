@@ -67,19 +67,7 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
         const padding = 10;
         const popup = popupRef.current;
 
-        positionFloating(popup, parent, "right", "align-top", padding);
-
-        // Constrain to screen height
-        const popupRect = popup.getBoundingClientRect();
-        if (popupRect.bottom > window.innerHeight) {
-            popup.style.top = "auto";
-            popup.style.bottom = `${padding}px`;
-        }
-
-        // Render on other side of parent if off the screen
-        if (popupRect.right > window.innerWidth) {
-            positionFloating(popup, parent, "left", "align-top", padding);
-        }
+        positionFloating(popup, parent, "right", "align-top", padding, undefined, true);
 
         // Trigger the slide animation
         popupRef.current.style.display = "none";

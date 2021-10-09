@@ -1,13 +1,13 @@
 import "./Message.scss";
-import { useState, useEffect, memo } from "react";
+import { useContext, memo, useState } from "react";
 import { Avatar } from "../../../../components/user";
-import { Button, ImagePopup, Option, positionFloating, Tooltip } from "../../../../components/interface";
-import { getUserColour, useBindEscape } from "../../../../utils/utils";
+import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Overlay } from "../../../../components/interface";
+import { getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import { tryGetUser } from "../../../../utils/matrix-client";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm"
-import { mdiDotsHorizontal } from "@mdi/js";
+import { mdiClose, mdiDotsHorizontal, mdiEmoticonOutline, mdiReply } from "@mdi/js";
+import MessageContent from "./MessageTypes";
+import { Icon } from "@mdi/react";
 
 
 export const Message = memo(({ event, timeline, setUserPopup }) => {
@@ -33,7 +33,7 @@ export const Message = memo(({ event, timeline, setUserPopup }) => {
                 </div>
                 <MessageContent event={event} timeline={timeline} />
             </div>
-            <MessageOptions />
+            <MessageButtons event={event} />
         </div>
     );
 })
@@ -49,141 +49,55 @@ export const PartialMessage = memo(({ event, timeline }) => {
             <div className="message__text">
                 <MessageContent event={event} timeline={timeline} />
             </div>
-            <MessageOptions />
+            <MessageButtons event={event} />
         </div>
     )
 })
 
-function MessageOptions() {
-    const [optionsParent, setOptionsParent] = useState();
-
-    return (<>
-        <div className="message__options">
-            <Button subClass="message__options__entry" path={mdiDotsHorizontal} size="100%" clickFunc={(e) => {setOptionsParent(e.target)}} />
-        </div>
-        {optionsParent && 
-            <MessageDropDown setShow={setOptionsParent} parent={optionsParent} />
-        }
-    </>)
-}
-
-function MessageDropDown({ setShow, parent }) {
-    const [me, setMe] = useState();
-    
-    useEffect(() => {
-        if (me) {
-            positionFloating(me, parent, "align-right", "bottom")
-        }
-    }, [me, parent])
-    
-    useBindEscape(setShow, false);
-    useEffect(() => {
-        function hide(e) {
-            console.log("click")
-            if ((!e.target.closest(".message__options") && !e.target.closest(".message__dropdown"))){ //|| parent.contains(e.target)) {
-                console.log("hide")
-                setShow(false)
-            }
-        };
-        document.addEventListener("click", hide);
-        return () => {document.removeEventListener("click", hide)}
-    }, [setShow, parent])
+function MessageButtons({ event }) {
+    const setPopup = useContext(contextMenuCtx);
 
     return (
-        <div ref={setMe} className="message__dropdown">
+        <div className="message__buttons">
+            <Button subClass="message__buttons__entry" path={mdiReply} size="100%" tipDir="top" tipText="Reply" />
+            <Button subClass="message__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction" />
+            <Button subClass="message__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
+                clickFunc={(e) => {
+                    setPopup(
+                        <MoreOptions event={event} parent={e.target.closest(".message__buttons__entry")} />
+                    );
+                }}
+            />
         </div>
-    );
-}
-
-function MessageContent({ event, timeline }) {
-    const edited = timeline.current.edits.get(event.getId());
-    const eventContent = event.getContent();
-
-    let content;
-    switch (eventContent.msgtype) {
-        case "m.text":
-            content = (
-                <MessageText eventContent={eventContent} edited={edited} />
-            );
-            break;
-        case "org.matrix.custom.html":
-            content = (
-                <MessageText eventContent={eventContent} edited={edited}/>
-            );
-            break;
-        case "m.image": 
-            content = (
-                <MessageImage eventContent={eventContent} />
-            )
-            break;
-        default:
-            content = (
-                <UnknownMessageType eventContent={eventContent} edited={edited} />
-            )
-    }
-
-    return (
-        <div className="message__content">
-            {content}
-            {edited && 
-                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(edited.getDate())}>
-                    <div className="message__content__edited">(edited)</div>
-                </Tooltip>
-            }
-        </div>
-    );
-}
-
-function MessageText({ eventContent, edited }) {
-    const content = edited ? edited.getContent()["m.new_content"].body : eventContent.body;
-    const useMarkdown = eventContent.format === "org.matrix.custom.html";
-
-    return (<>
-        {useMarkdown ? 
-            <ReactMarkdown remarkPlugins={[[remarkGfm, {singleTilde: false}]]} linkTarget="_blank">{content}</ReactMarkdown> :
-            <p>{content}</p>
-        }
-    </>)
-}
-
-function UnknownMessageType({ eventContent, edited }) {
-    const content = edited ? edited.getContent()["m.new_content"].body : eventContent.body;
-
-    return (
-        <Tooltip text={eventContent.msgtype} dir="top" x="mouse" delay={0.5} >
-            <p className="message__content--unknown">
-                {content || "** Unknown message type **"}
-            </p>
-        </Tooltip>
     )
 }
 
-function genThumbnailUrl(eventContent) {
-    /* Load a smaller version of the given file */
-    const width = 320;
-    const height = 240;
-    const info = eventContent.info;
-    const url = eventContent.url;
+function MoreOptions({ parent, event }) {
+    const [showSource, setShowSource] = useState(false);
 
-    if (info.w > width || info.h > height) {
-        return global.matrix.mxcUrlToHttp(url, width, height, "scale") || url;
-    } else {
-        return global.matrix.mxcUrlToHttp(eventContent.url) || url;  // Return as is
-    }
-}
+    return (
+        <ContextMenu parent={parent} x="left" y="align-top">
+            <Option text="View source" select={() => {setShowSource(true)}} compact/>
 
-function MessageImage({ eventContent }) {
-    const [showOverlay, setShowOverlay] = useState(false);
-    const [thumbnail, setThumbnail] = useState();
+            {showSource &&
+                <div className="message__popup">
+                <Overlay click={() => {setShowSource(false)}}>
+                    <div className="overlay__title">
+                        Event Source:
 
-    useEffect(() => {
-        setThumbnail(genThumbnailUrl(eventContent));
-    }, [eventContent])
-
-    const sourceUrl = global.matrix.mxcUrlToHttp(eventContent.url) || eventContent.url;
-
-    return (<>
-        <img src={thumbnail} alt={eventContent.body} className="message__content__image" onClick={() => {setShowOverlay(true)}} />
-        <ImagePopup sourceUrl={sourceUrl} setRender={setShowOverlay} render={showOverlay} name={eventContent.body}/>
-    </>)
+                        <Icon className="overlay__close" 
+                            path={mdiClose} 
+                            size="20px" 
+                            color="var(--text-greyed)" 
+                            onClick={() => setShowSource(false)}
+                        />
+                    </div>
+                    <code className="codeblock">
+                        {JSON.stringify(event.toJSON(), null, 4)}
+                    </code>
+                </Overlay>
+                </div>
+            }
+        </ContextMenu>
+    )
 }

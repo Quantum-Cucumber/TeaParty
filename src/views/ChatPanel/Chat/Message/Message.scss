@@ -114,26 +114,28 @@
 .message:hover, .message--partial:hover{
     background-color: var(--bg-focus);
 
-    .message__options {
+    .message__buttons {
         display: flex;
     }
 }
 
-.message__options {
+.message__buttons {
     position: absolute;
     top: -1.2rem;
     right: 1rem;
     background-color: var(--bg);
     border-radius: 0.2rem;
-    filter: drop-shadow(0 0 1px var(--border));
+    box-shadow: 0 0 1px var(--border);
     flex-direction: row;
     display: none;
 
     &:hover {
-        filter: drop-shadow(0 2px 3px var(--border));
+        box-shadow: 0px 2px 3px var(--border);
     }
     &__entry {
-        height: 2rem;
+        height: 1.6rem;
+        margin: 0 0.2rem;
+        padding: 0.2rem 0;  /* To position the dropdowns correctly */
     }
 }
 .message__dropdown {
@@ -172,6 +174,7 @@
     /* Code block */
     p > code:only-child, pre > code:only-child {
         @include common.codeblock;
+        width: 90%;
     }
     input[type=checkbox] {
         appearance: none;
@@ -203,6 +206,22 @@
     max-height: 240px;
 }
 
+.message__popup {
+    .overlay__modal {
+        background-color: var(--bg);
+        border-radius: 30px;
+        padding: 30px 35px;
+        max-height: 80%;
+        display: flex;
+        flex-direction: column;
+    }
+
+    code {
+        flex: 1 1 auto;
+        overflow: hidden auto;
+    }
+}
+
 @mixin startframe {
     transform: scale(0.5);
     opacity: 0;
@@ -213,20 +232,11 @@
     opacity: 1;
     filter: blur(0px);
 }
-
 @keyframes image__zoom-in {
-    0% {
-        @include startframe;
-    }
-    100% {
-        @include endframe;
-    }
+    0% {@include startframe}
+    100% {@include endframe}
 }
 @keyframes image__zoom-out {
-    0% {
-        @include endframe;
-    }
-    100% {
-        @include startframe;
-    }
+    0% {@include endframe}
+    100% {@include startframe}
 }

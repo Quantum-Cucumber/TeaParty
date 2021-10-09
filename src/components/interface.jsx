@@ -1,8 +1,8 @@
 import Icon from '@mdi/react';
 import "./components.scss";
 import { mdiLoading, mdiDownload, mdiOpenInNew } from "@mdi/js";
-import { useState, cloneElement, useRef, useEffect, useLayoutEffect, useCallback } from 'react';
-import { classList } from '../utils/utils';
+import { useState, cloneElement, useRef, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
+import { classList, useBindEscape } from '../utils/utils';
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
     return (
@@ -24,7 +24,7 @@ export function Loading({ size }) {
     );
 }
 
-export function positionFloating(positionMe, referenceNode, x, y, offset=0, mouseEvent) {
+export function positionFloating(positionMe, referenceNode, x, y, offset=0, mouseEvent=null, constrain=false) {
     const referenceRect = referenceNode.getBoundingClientRect();;
 
     // Determine horizontal positioning
@@ -86,6 +86,25 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
             break;
         default:
             break;
+    }
+
+    if (constrain) {
+        const rect = positionMe.getBoundingClientRect();
+
+        // Constrain to screen height
+        if (rect.bottom > window.innerHeight) {
+            positionMe.style.top = "auto";
+            positionMe.style.bottom = `${offset}px`;
+        }
+
+        // Render on other side of parent if off the screen
+        if (rect.right > window.innerWidth) {
+            const inverseX = {
+                "left": "right", "right": "left",
+                "align-left": "align-right", "align-right": "align-left",
+            }
+            positionFloating(positionMe, referenceNode, inverseX[x], y, offset);
+        }
     }
 
     return positionMe;
@@ -155,10 +174,11 @@ export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
     );
 }
 
-export function Option({ text, k, selected, select = ()=>{}, danger, unread=false, notification=0, children }) {
+export function Option({ text, k, selected, select = ()=>{}, danger=false, compact=false, unread=false, notification=0, children }) {
     const className = classList("option",
                                 {"option--selected": k ? selected===k : null}, 
-                                {"option--danger": danger}) 
+                                {"option--danger": danger},
+                                {"option--compact": compact}) 
 
     var indicator = null;
     if (notification > 0) {
@@ -280,4 +300,37 @@ export function ImagePopup({ sourceUrl, render, setRender, name }) {
             </div>
         </Overlay>
     );
+}
+
+export const contextMenuCtx = createContext(() => {});
+export function ContextMenu({ parent, x, y, mouseEvent = null, children }) {
+    const setVisible = useContext(contextMenuCtx);
+    const [menu, setMenu] = useState();
+
+    useBindEscape(setVisible, () => {});
+
+    useEffect(() => {
+        if (!menu) {return}
+        positionFloating(menu, parent, x, y, 10, mouseEvent, true);
+    }, [menu, x, y, parent, mouseEvent])
+
+    useEffect(() => {
+        if (!menu) {return};
+
+        function hide(e) {
+            if (!e.target.closest(".context-menu")) {
+                console.log("hide")
+                setVisible(false);
+            }
+        }
+
+        document.addEventListener("click", hide);
+        return () => {document.removeEventListener("click", hide)};
+    }, [setVisible, menu])
+
+    return (
+        <div className="context-menu" ref={setMenu}>
+            {children}
+        </div>
+    )
 }

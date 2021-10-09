@@ -1,3 +1,5 @@
+@use "../utils/common";
+
 /* Colour themes */
 .dark {
     --primary: #5e72d1;
@@ -64,6 +66,11 @@ a {
     color: var(--text)
 }
 
+.codeblock {
+    @include common.codeblock;
+    background-color: var(--bg-focus);
+    white-space: pre-wrap;
+}
 
 /* Scrollbars :] */
 @mixin hide-scroll {

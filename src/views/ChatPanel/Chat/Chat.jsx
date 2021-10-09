@@ -27,7 +27,6 @@ function Chat({ currentRoom, setUserPopup }) {
     const updateMessageList = useCallback(() => {
         setMessageList(timeline.current.getMessages());
     }, [setMessageList]);
-    useEffect(() => console.warn("aa"), [setMessageList])
 
     // Add event listener when room is changed
     useEffect(() => {

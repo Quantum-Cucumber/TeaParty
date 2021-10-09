@@ -181,31 +181,13 @@ $group-padding: 11px;
     }
 }
 
-/* Invites */
 .invites__modal {
     background-color: var(--bg-focus);
     border-radius: 30px;
     padding: 30px 35px;
-
-    &__holder {
-        margin-top: 15px;
-    }
-
-    &__label {
-        font-size: 1.2rem;
-        border-bottom: 2px solid var(--text-greyed);
-        padding: 4px 2px;
-    }
-
-    &__close {
-        cursor: pointer;
-        float: right;
-
-        &:hover > path {
-            fill: var(--text) !important;
-        }
-    }
+    max-height: 80%;
 }
+
 
 .invite-entry {
     display: flex;

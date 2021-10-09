@@ -202,10 +202,10 @@ function Invites({ setShowModal, invitedRooms }) {
     return (
         <Overlay opacity="60%" click={() => setShowModal(false)}>
             <div className="invites__modal">
-                <div className="invites__modal__label">
+                <div className="overlay__title">
                     Invites:
 
-                    <Icon className="invites__modal__close" 
+                    <Icon className="overlay__close" 
                         path={mdiClose} 
                         size="20px" 
                         color="var(--text-greyed)" 
