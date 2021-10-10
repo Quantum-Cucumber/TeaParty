@@ -20,7 +20,7 @@ function nextShouldBePartial(thisMsg, lastMsg) {
 
 
 
-function Chat({ currentRoom, setUserPopup }) {
+function Chat({ currentRoom }) {
     const timeline = useRef();
     const [messageList, setMessageList] = useDebouncedState([], 200);
 
@@ -77,7 +77,7 @@ function Chat({ currentRoom, setUserPopup }) {
             );
         } else {
             messages.push(
-                <Message event={event} timeline={timeline} setUserPopup={setUserPopup} key={event.getId()}/>
+                <Message event={event} timeline={timeline} key={event.getId()}/>
             );
         }
 

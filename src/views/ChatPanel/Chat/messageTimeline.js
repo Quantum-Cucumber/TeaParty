@@ -4,7 +4,7 @@ export default class messageTimeline {
     constructor(roomId) {
         this.roomId = roomId;
         this.room = global.matrix.getRoom(this.roomId);
-        this.timeline = this.room?.getLiveTimeline().events;
+        this.timeline = this.room?.getLiveTimeline().getEvents();
         this.userId = global.matrix.getUserId();
 
         this.edits = new Map();
@@ -50,7 +50,7 @@ export default class messageTimeline {
         let compiled = this.timeline.filter((event) => {
             return this._isMessage(event) && !this._isEdit(event)
         })
-
+        
         return compiled;
     }
     

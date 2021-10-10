@@ -163,7 +163,7 @@ export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
         onMouseEnter: show,
         onMouseLeave: hide,
         ref: childRef,
-        onMouseMove: x === "mouse" || y === "mouse" ? (e) => {mouseEvent.current = e; console.log('mouse')} : null,
+        onMouseMove: x === "mouse" || y === "mouse" ? (e) => {mouseEvent.current = e} : null,
     });
 
     return (
@@ -252,7 +252,7 @@ export function Overlay({ children, opacity = "85%", click, modalClass, dim = tr
 }
 export function Modal(props) {
     /* High order component of overlay that gives the modal styling and adds a title/close button */
-    const { title, hide, children, modalClass, ...passThroughProps } = props;
+    const { title, hide, children, modalClass, bodyClass, ...passThroughProps } = props;
 
     return (
         <Overlay modalClass={classList("overlay__modal--bg", modalClass)} click={hide} {...passThroughProps}>
@@ -266,7 +266,9 @@ export function Modal(props) {
                     onClick={hide}
                 />
             </div>
-            {children}
+            <div className={classList("overlay__body", bodyClass)}>
+                {children}
+            </div>
         </Overlay>
     )
 }
@@ -339,7 +341,6 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, children }) {
 
         function hide(e) {
             if (!e.target.closest(".context-menu")) {
-                console.log("hide")
                 setVisible(false);
             }
         }

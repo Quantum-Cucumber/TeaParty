@@ -111,7 +111,7 @@
     padding-top: 0.15rem;
 }
 
-.message:hover, .message--partial:hover{
+.message:hover, .message--partial:hover, .message--hover{
     background-color: var(--bg-focus);
 
     .message__buttons {
@@ -207,23 +207,34 @@
 }
 
 .message__popup {
-    display: flex;
-    flex-direction: column;
-
     code {
         flex: 1 1 auto;
-        overflow: hidden scroll;
-        @include common.scroll-style(var(--bg-focus), var(--bg));
+        overflow: hidden auto;
+        @include common.scroll-style(var(--bg-dark), var(--bg));
         position: relative;
 
         .copy-text__button {
             font-family: var(--font-standard);
             position: absolute;
-            top: 15px;
-            right: 15px;
+            top: 1em;
+            right: 1em;
         }
     }
 }
+
+.overlay__modal--read {
+    width: 400px;
+    .user {
+        height: 2.5rem;
+        padding: 5px;
+        border-radius: 5px;
+
+        &:hover {
+            background-color: var(--text-greyed);
+        }
+    }
+}
+
 
 @mixin startframe {
     transform: scale(0.5);

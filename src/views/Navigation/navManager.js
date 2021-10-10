@@ -8,7 +8,7 @@ function _isJoined(room) {
 function _getUnreads(room) {
     /* Determine if there are unread events or notifications */
     const userId = global.matrix.getUserId();
-    const events = room.getLiveTimeline().events.slice().reverse();  // Get events youngest to oldest
+    const events = room.getLiveTimeline().getEvents().slice().reverse();  // Get events youngest to oldest
     const lastRead = room.getEventReadUpTo(userId);
     var read = true;
     for (const event of events) {

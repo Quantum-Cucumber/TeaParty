@@ -50,14 +50,14 @@ export function classList(...classes) {
     /* Takes a dict of classNames: bool and outputs a string of the classes that are true */
     var output = [];
     classes.forEach((item) => {
-        if (typeof item === "object") {
+        if (typeof item === "object" && item !== null) {
             Object.keys(item).forEach((className) => {
                 if (item[className]) {
                     output.push(className)
                 }
             });
         }
-        else if (item !== null) {
+        else if (item !== null & item !== undefined) {
             output.push(item)
         }
     });

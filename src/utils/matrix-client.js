@@ -137,3 +137,19 @@ export function powerLevelText(userId, roomId) {
         return "Unknown";
     }
 }
+
+export function getMembersRead(event) {
+    const room = global.matrix.getRoom(event.getRoomId());
+    
+    const roomEvents = [...room.getLiveTimeline().getEvents()];
+    roomEvents.reverse();  // Newest event first
+    var readUpTo = [];
+    for (var i=0; i < roomEvents.indexOf(event) + 1; i++) {  // Progress through timeline until event reached 
+        readUpTo.push(...room.getReceiptsForEvent(roomEvents[i]))  // Add each user to array
+    }
+    readUpTo = [...new Set(readUpTo)];  // Dedup array    
+
+    return readUpTo.map((read) => {
+        return room.getMember(read.userId);
+    })
+}

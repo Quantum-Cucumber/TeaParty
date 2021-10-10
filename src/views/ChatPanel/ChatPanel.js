@@ -3,11 +3,11 @@ import Chat from "./Chat/Chat";
 import { useEffect, useState } from "react";
 
 
-export default function ChatPanel({currentRoom, setUserPopup}) {
+export default function ChatPanel({currentRoom}) {
     return (
         <>
         <div className="chat-frame">
-            <Chat currentRoom={currentRoom} setUserPopup={setUserPopup}/>
+            <Chat currentRoom={currentRoom} />
         </div>
         <TypingIndicator currentRoom={currentRoom} />
         </>

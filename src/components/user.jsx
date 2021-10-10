@@ -1,7 +1,7 @@
 import "./components.scss";
 import { get_username } from "../utils/matrix-client";
 import { getUserColour, acronym, classList } from "../utils/utils";
-import { useEffect, useRef, useCallback, useLayoutEffect } from "react";
+import { useEffect, useRef, useCallback, useLayoutEffect, createContext } from "react";
 import { useBindEscape } from '../utils/utils';
 import { powerLevelText } from "../utils/matrix-client";
 import { positionFloating, TextCopy } from "./interface";
@@ -31,8 +31,8 @@ export function Avatar({ user, subClass, clickFunc }) {
     );
 }
 
-export function Member({ user, subClass, clickFunc }) {
-    /* A component containing the user avatar, user localpart/displayname and homeserver */
+export function Member({ user, subClass = null, clickFunc }) {
+    /* A component containing the user avatar, user localpart/displayname */
 
     return (
         <div className={classList("user", subClass)} onClick={clickFunc}>
@@ -45,7 +45,7 @@ export function Member({ user, subClass, clickFunc }) {
 }
 
 
-
+export const userPopupCtx = createContext(() => {});
 export function UserPopup({ user, parent, room, setUserPopup }) {
     const popupRef = useRef();
 

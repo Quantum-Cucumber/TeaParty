@@ -1,3 +1,5 @@
+@use "../utils/common";
+
 /* User */
 .user {
     display: flex;
@@ -79,7 +81,7 @@
     position: fixed;
     top: 0px;
     left: 0px;
-    z-index: 100;
+    z-index: 500;
 
     /* Visibility */
     visibility: hidden;
@@ -219,6 +221,7 @@
     &__modal {
         z-index: 101;
         position: relative;
+        max-width: 75%;
 
         &--bg {
             background-color: var(--bg-focus);
@@ -226,6 +229,8 @@
             padding: 20px 25px;
             box-sizing: border-box;
             max-height: 75%;
+            display: flex;
+            flex-direction: column;
         }
     }
 
@@ -236,6 +241,12 @@
         flex: 0 0 auto;
         font-weight: bold;
         margin-bottom: 0.8rem;
+    }
+
+    &__body {
+        flex: 1 1 auto;
+        overflow: hidden auto;
+        @include common.scroll-style(var(--bg-focus));
     }
 
     &__close{
@@ -279,6 +290,7 @@
     width: 250px;
     background-color: var(--bg-dark);
     border-radius: 15px;
+    z-index: 120;
 
     // Slide in animation
     animation: slide-in 0.2s ease-in-out 0s 1,

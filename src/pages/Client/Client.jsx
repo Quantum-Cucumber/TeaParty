@@ -2,7 +2,7 @@ import "./Client.scss";
 import { useEffect, useState, useRef } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
 import { contextMenuCtx, Loading, Overlay } from "../../components/interface";
-import { UserPopup } from "../../components/user";
+import { UserPopup, userPopupCtx } from "../../components/user";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
 import ChatPanel from "../../views/ChatPanel/ChatPanel";
@@ -56,13 +56,14 @@ function Client() {
 
     return (
         <contextMenuCtx.Provider value={setContextMenu}>
+        <userPopupCtx.Provider value={setUserPopup}>
 
         <div className="client">
             <Navigation groupList={groupList} roomPanel={roomPanel} setPage={setPage} 
              currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav} invites={invites}
             />
             <div className="column column--chat">
-                <ChatPanel currentRoom={currentRoom} setUserPopup={setUserPopup} />
+                <ChatPanel currentRoom={currentRoom} />
             </div>
             <div className="column column--right">
                 <MemberList currentRoom={currentRoom} setUserPopup={setUserPopup} />
@@ -75,6 +76,7 @@ function Client() {
             {contextMenu}
         </div>
 
+        </userPopupCtx.Provider>
         </contextMenuCtx.Provider>
     );
 }
