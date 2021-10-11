@@ -221,7 +221,6 @@
     &__modal {
         z-index: 101;
         position: relative;
-        max-width: 75%;
 
         &--bg {
             background-color: var(--bg-focus);
@@ -231,6 +230,7 @@
             max-height: 75%;
             display: flex;
             flex-direction: column;
+            max-width: 75%;
         }
     }
 
@@ -246,6 +246,7 @@
     &__body {
         flex: 1 1 auto;
         overflow: hidden auto;
+        padding: 0 10px;
         @include common.scroll-style(var(--bg-focus));
     }
 
@@ -383,6 +384,7 @@
         display: none;
         height: 0.9em;
         vertical-align: middle;
+        font-family: var(--font-standard);
 
         & > .mdi-icon {
             color: var(--text-greyed);

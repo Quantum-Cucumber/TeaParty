@@ -196,6 +196,27 @@
             font-weight: bold;
         }
     }
+
+    table {
+        --table-border: 2px solid var(--bg-dark);
+        border-spacing: 0;
+        border-radius: 4px;
+        border: var(--table-border);
+
+        th, td {
+            padding: 0.1rem 0.2rem;
+            text-align: center !important;
+    
+            &:not(:last-child) {
+                border-right: var(--table-border);
+            }
+        }
+        tr:not(:last-child) {
+            th, td {
+                border-bottom: var(--table-border);
+            }
+        }
+    }
 }
 
 .message__content__image {
@@ -206,19 +227,16 @@
     max-height: 240px;
 }
 
-.message__popup {
-    code {
-        flex: 1 1 auto;
-        overflow: hidden auto;
-        @include common.scroll-style(var(--bg-dark), var(--bg));
-        position: relative;
+.overlay__body code {
+    flex: 1 1 auto;
+    position: relative;
 
-        .copy-text__button {
-            font-family: var(--font-standard);
-            position: absolute;
-            top: 1em;
-            right: 1em;
-        }
+    .copy-text__button {
+        position: absolute;
+        top: 0.5em;
+        right: 0.5em;
+        background-color: var(--bg-dark);
+        box-shadow: -0.5em 0 0.5em var(--bg-dark);
     }
 }
 

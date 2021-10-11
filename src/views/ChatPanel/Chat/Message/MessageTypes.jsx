@@ -11,13 +11,9 @@ export default function MessageContent({ event, timeline }) {
     let content;
     switch (eventContent.msgtype) {
         case "m.text":
-            content = (
-                <MessageText eventContent={eventContent} edited={edited} />
-            );
-            break;
         case "org.matrix.custom.html":
             content = (
-                <MessageText eventContent={eventContent} edited={edited}/>
+                <MessageText eventContent={eventContent} edited={edited} />
             );
             break;
         case "m.image": 

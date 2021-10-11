@@ -19,7 +19,6 @@ function nextShouldBePartial(thisMsg, lastMsg) {
 }
 
 
-
 function Chat({ currentRoom }) {
     const timeline = useRef();
     const [messageList, setMessageList] = useDebouncedState([], 200);
@@ -30,8 +29,11 @@ function Chat({ currentRoom }) {
 
     // Add event listener when room is changed
     useEffect(() => {
+        setMessageList([]);
+        timeline.current = null;
         // No listener when no selected room
         if (!currentRoom) {return};
+
         console.info("Load room: ", currentRoom)
         timeline.current = new messageTimeline(currentRoom);
 
@@ -49,11 +51,11 @@ function Chat({ currentRoom }) {
 
         // Remove listener on unmount (room change)
         return () => {global.matrix.removeListener("Room.timeline", onEvent)};
-    }, [currentRoom, updateMessageList]);
+    }, [currentRoom, setMessageList, updateMessageList]);
 
     // Convert message events into message components
     var messages = [];
-    const lastRead = global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId());
+    const lastRead = currentRoom ? global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId()) : null;
     messageList.forEach((event, index) => {
         const prevEvent = messageList[index - 1]; 
 

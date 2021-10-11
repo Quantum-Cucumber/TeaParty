@@ -362,7 +362,9 @@ export function TextCopy({ text, children }) {
     function copyText() {
         navigator.clipboard.writeText(text);
         setTooltip("Copied");
-        setTimeout(() => {setTooltip("Copy")}, 1000);
+        const timerId = setTimeout(() => {setTooltip("Copy")}, 1000);
+
+        return () => {clearTimeout(timerId)}
     }
 
     return (

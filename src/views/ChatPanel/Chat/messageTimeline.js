@@ -62,15 +62,6 @@ export default class messageTimeline {
         map.set(refId, event);
     }
 
-    // Probably deprecated but keep for now
-    async _padTimeline() {
-        do {
-            await this.getMore()
-            var messages = this.getMessages();
-        } while (this.canLoad && messages.length < msgLoadCount)
-        return messages;
-    }
-
     async markAsRead() {
         if (!this.read) {
             const messages = this.getMessages()

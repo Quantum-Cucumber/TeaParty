@@ -5,7 +5,7 @@ import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Modal, TextCopy }
 import { classList, getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
-import { mdiCheckAll, mdiDotsHorizontal, mdiEmoticonOutline, mdiReply, mdiXml } from "@mdi/js";
+import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml } from "@mdi/js";
 import MessageContent from "./MessageTypes";
 import Icon from "@mdi/react";
 
@@ -36,7 +36,7 @@ export const Message = memo(({ event, timeline }) => {
                 </div>
                 <MessageContent event={event} timeline={timeline} />
             </div>
-            <MessageButtons event={event} setHover={setHover} />
+            <MessageButtons timeline={timeline} event={event} setHover={setHover} />
         </div>
     );
 })
@@ -54,22 +54,22 @@ export const PartialMessage = memo(({ event, timeline }) => {
             <div className="message__text">
                 <MessageContent event={event} timeline={timeline} />
             </div>
-            <MessageButtons event={event} setHover={setHover} />
+            <MessageButtons timeline={timeline} event={event} setHover={setHover} />
         </div>
     )
 })
 
-function MessageButtons({ event, setHover }) {
+function MessageButtons(props) {
     const setPopup = useContext(contextMenuCtx);
 
     return (
         <div className="message__buttons">
-            <Button subClass="message__buttons__entry" path={mdiReply} size="100%" tipDir="top" tipText="Reply" />
-            <Button subClass="message__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction" />
+            {/*<Button subClass="message__buttons__entry" path={mdiReply} size="100%" tipDir="top" tipText="Reply" />
+            <Button subClass="message__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction" />*/}
             <Button subClass="message__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
                 clickFunc={(e) => {
                     setPopup(
-                        <MoreOptions event={event} parent={e.target.closest(".message__buttons__entry")} setHover={setHover} />
+                        <MoreOptions parent={e.target.closest(".message__buttons__entry")} {...props} />
                     );
                 }}
             />
@@ -83,10 +83,10 @@ const messageOptions = {
         title: "Read By",
         label: "Read receipts",
         bodyClass: "overlay__modal--read",
-        render: ({ event, setUserPopup }) => {
+        render: ({ trueEvent, setUserPopup }) => {
             return (<>
                 {
-                    getMembersRead(event).map((member) => {
+                    getMembersRead(trueEvent).map((member) => {
                         const user = member.user || global.matrix.getUser(member.userId);
                         return (
                             <Member user={user} key={member.userId} subClass="data__user-popup" clickFunc={
@@ -104,15 +104,14 @@ const messageOptions = {
         path: mdiXml,
         title: "Event Source",
         label: "View source",
-        modalClass: "message__popup",
-        render: ({ event }) => {
-            const eventJSON = JSON.stringify(event.toJSON(), null, 4);
+        render: ({ trueEvent }) => {
+            const eventJSON = JSON.stringify(trueEvent.toJSON(), null, 4);
             return (<>
-               <TextCopy text={event.getId()}>
-                    <b>Event ID:</b> {event.getId()}
+               <TextCopy text={trueEvent.getId()}>
+                    <b>Event ID:</b> {trueEvent.getId()}
                 </TextCopy>
-                <TextCopy text={event.getRoomId()}>
-                    <b>Room ID:</b> {event.getRoomId()}
+                <TextCopy text={trueEvent.getRoomId()}>
+                    <b>Room ID:</b> {trueEvent.getRoomId()}
                 </TextCopy>
                 <br />
                 <code className="codeblock">
@@ -125,7 +124,7 @@ const messageOptions = {
     },
 }
 
-function MoreOptions({ parent, event, setHover }) {
+function MoreOptions({ parent, event, setHover, timeline }) {
     const [currentModal, selectModal] = useState(null);
     const hide = () => {selectModal(null)};
     const setUserPopup = useContext(userPopupCtx);
@@ -139,10 +138,12 @@ function MoreOptions({ parent, event, setHover }) {
     let modal;
     if (messageOptions[currentModal]) {
         const {title, render, modalClass, bodyClass} = messageOptions[currentModal];
+        const trueEvent = timeline.current.edits.get(event.getId()) || event;
+        console.log(trueEvent, event)
 
         modal = (
             <Modal title={title} hide={hide} modalClass={modalClass} bodyClass={bodyClass}>
-                {render({event, setUserPopup})}
+                {render({ trueEvent, setUserPopup})}
             </Modal>
         );
     }
