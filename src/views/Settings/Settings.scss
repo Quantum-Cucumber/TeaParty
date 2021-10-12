@@ -27,24 +27,38 @@
     }
 }
 
-.settings__holder {
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    flex-direction: row;
-}
 
-.settings__categories {
-    width: 170px;
-    padding: 0px 15px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex: none;
+.settings {
+    &__holder {
+        width: 100%;
+        min-height: 100%;
+        display: flex;
+        flex-direction: row;
+    }
 
-    .option {
-        border-radius: 15px;
-        margin-bottom: 5px;
+    &__categories {
+        width: 170px;
+        padding: 0px 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex: none;
+
+        .option {
+            border-radius: 15px;
+            margin-bottom: 5px;
+        }
+    }
+
+    &__divider {
+        width: 2px;
+        background-color: var(--bg);
+        flex: none;
+    }
+
+    &__panel {
+    flex: 1 1 auto;
+    padding: 5px 20px;
     }
 }
 
@@ -55,16 +69,7 @@
     margin: 15px 0px;
 }
 
-.settings__divider {
-    width: 2px;
-    background-color: var(--bg);
-    flex: none;
-}
-
-.settings__panel {
-  flex: 1 1 auto;
-  padding: 5px 20px;
-}
+/* Components */
 
 .settings__panel__group {
     width: 100%;
@@ -78,6 +83,53 @@
 
     &__options {
         padding: 15px 10px;
+    }
+}
+
+.settings__toggle {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    &:not(:last-child) {
+        border-bottom: 2px solid var(--bg);
+    }
+
+    &__label {
+        padding: 10px 0; 
+        flex: 1 1 auto;
+    }
+    &__switch {
+        $height: 25px;
+        $width: $height * 1.75;
+        $padding: 2.5px;
+        flex: none;
+        height: $height;
+        width: $width;
+        position: relative;
+
+        border-radius: 30px;
+        background-color: var(--text-greyed);
+        cursor: pointer;
+        transition: 0.3s;
+
+        &__indicator {
+            position: absolute;
+            top: $padding;
+            left: $padding;
+            height: $height - ($padding * 2);
+            width: $height - ($padding * 2);
+
+            border-radius: 50%;
+            background-color: var(--text);
+            transition: 0.3s;
+        }
+        &--on {
+            background-color: var(--success);
+        }
+        &--on &__indicator {
+            left: $width - $padding - ($height - ($padding * 2)) ;  /* Overly complicated so it animates */
+        }
     }
 }
 

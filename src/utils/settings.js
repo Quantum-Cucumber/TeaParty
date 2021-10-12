@@ -1,6 +1,7 @@
 const default_settings = {
     theme: "dark",
     groupBreadcrumbs: {},
+    devMode: false,
 }
 
 
@@ -14,7 +15,7 @@ export function getSetting(key) {
     return loadSettings()[key] || default_settings[key];
 }
 
-export function updateSettings(key, value) {
+export function updateSetting(key, value) {
     let settings = loadSettings();
     settings[key] = value;
     localStorage.setItem("settings", JSON.stringify(settings));
@@ -24,7 +25,7 @@ export function updateSettings(key, value) {
 export function setTheme(theme = null) {
     // If called without a theme, load the theme from storage
     if (theme !== null) {
-        updateSettings("theme", theme);
+        updateSetting("theme", theme);
     } else {
         theme = getSetting("theme");
         if (theme === undefined) {theme = default_settings["theme"]};

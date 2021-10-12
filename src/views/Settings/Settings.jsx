@@ -1,61 +1,77 @@
 import "./Settings.scss";
 import { useEffect, useState } from "react";
 import { Loading, Option } from "../../components/interface";
-import { mdiClose, mdiBrush, mdiLock } from "@mdi/js";
+import { mdiClose, mdiBrush, mdiLock, mdiHammerWrench } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import { setTheme, getSetting } from "../../utils/settings";
 import { logoutMatrix } from "../../utils/matrix-client";
 import { msToDate } from "../../utils/datetime";
 import { classList, useBindEscape } from "../../utils/utils";
+import { Section, Toggle } from "./components";
 
-
-function SettingsPage({ setPage }) {
-    const currentTheme = getSetting("theme");
-    const settings_pages = [
-        {
-            label: "Appearance",
-            path: mdiBrush,
-            page: (
+const settings_pages = [
+    {
+        title: "Appearance",
+        icon: mdiBrush,
+        render: () => {
+            const currentTheme = getSetting("theme");
+            return (
                 <Section name="Theme">
                     <ThemeSelect initial={currentTheme} setter={setTheme} themeList={[
                         {label: "Dark", theme: "dark"},
                         {label: "Light", theme: "light"}
                     ]}/>
                 </Section>
-            ),
+            );
         },
-        {
-            label: "Security",
-            path: mdiLock,
-            page: (
+    },
+    {
+        title: "Security",
+        icon: mdiLock,
+        render: () => {
+            return (
                 <Section name="Devices">
                     <DeviceTable />
                 </Section>
-            ),
+            );
+        },
+    },
+    {
+        title: "Advanced",
+        icon: mdiHammerWrench,
+        render: () => {
+            return (
+                <Section name="Advanced">
+                    <Toggle label="Developer Tools" setting="devMode" />
+                </Section>
+            );
         }
-    ];
-
-    const [tab, setTab] = useState(settings_pages[0].label);
-    const [settingsPage, setSettingsPage] = useState(settings_pages[0].page);
+    },
+];
 
 
-    function SettingsTab({ path, text, children }) {
+function SettingsPage({ setPage }) {
+    const [tab, setTab] = useState(settings_pages[0].title);
+    const [settingsPage, setSettingsPage] = useState(settings_pages[0].render());
+
+
+    function SettingsTab({ icon, title, children }) {
         function select(k) {
             setTab(k);
             setSettingsPage(children);
         }
 
         return (
-            <Option k={text} text={text} select={select} selected={tab}>
-                <Icon path={path} size="1.4rem" color="var(--text)" />
+            <Option k={title} text={title} select={select} selected={tab}>
+                <Icon path={icon} size="1.4rem" color="var(--text)" />
             </Option>
         );
     }
 
     const tabs = settings_pages.map((tab) => {
         return (
-            <SettingsTab path={tab.path} text={tab.label} key={tab.label}>
-                {tab.page}
+            <SettingsTab icon={tab.icon} title={tab.title} key={tab.title}>
+                {tab.render()}
             </SettingsTab>
         );
     });
@@ -77,17 +93,6 @@ function SettingsPage({ setPage }) {
                 <div className="settings__panel">
                     {settingsPage}
                 </div>
-            </div>
-        </div>
-    );
-}
-
-function Section({ name, children }) {
-    return (
-        <div className="settings__panel__group">
-            <div className="settings__panel__group__label">{`${name}:`}</div>
-            <div className="settings__panel__group__options">
-                {children}
             </div>
         </div>
     );

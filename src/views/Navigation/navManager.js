@@ -1,4 +1,4 @@
-import { getSetting, updateSettings } from "../../utils/settings";
+import { getSetting, updateSetting } from "../../utils/settings";
 import { debounce } from "../../utils/utils";
 
 function _isJoined(room) {
@@ -305,6 +305,6 @@ export default class navManager {
         this.groupBreadcrumbs.set(this.currentGroup, room);
         // Convert map to object to be saved
         const crumbObj = Object.fromEntries(this.groupBreadcrumbs);
-        updateSettings("groupBreadcrumbs", crumbObj);
+        updateSetting("groupBreadcrumbs", crumbObj);
     }
 }
