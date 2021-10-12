@@ -38,6 +38,11 @@ $halfDotSize: 0.3rem;
             }
         }
     }
+
+    &__error {
+        color: var(--error);
+        font-weight: bold;
+    }
 }
 
 @keyframes glob {

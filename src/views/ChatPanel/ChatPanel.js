@@ -16,6 +16,7 @@ export default function ChatPanel({currentRoom}) {
 
 function TypingIndicator({currentRoom}) {
     const [typing, setTyping] = useState(new Set());
+    const [connError, setConnError] = useState(null);
 
     // Listen for typing events
     useEffect(() => {
@@ -45,26 +46,51 @@ function TypingIndicator({currentRoom}) {
         }
 
         global.matrix.on("RoomMember.typing", onTyping);
-        return () => {global.matrix.removeListener("RoomMember.typing", onTyping)};
+        return () => {
+            global.matrix.removeListener("RoomMember.typing", onTyping)
+        };
     }, [currentRoom]);
+
+    useEffect(() => {
+        function clientState(oldState, newState) {
+            if (newState === "ERROR" || newState === "RECONNECTING") {
+                setConnError(newState);
+            } else {
+                setConnError(false);
+            }
+        }
+
+        global.matrix.on("sync", clientState);
+        return () => {
+            global.matrix.removeListener("sync", clientState)
+        }
+    }, [])
 
     // Format text
     let text;
-    const typingList = [...typing];
-    if (typingList.length === 1) {
-        text = typingList[0] + " is typing...";
-    }
-    else if (typingList.length > 3) {
-        text = "Several people are typing...";
-    }
-    else if (typingList.length !== 0) {  // Between 2 and 3 people
-        const last = typingList.slice(typingList.length - 1);
-        text = typingList.slice(0, typingList.length - 1).join(", ") + ` and ${last} are typing...`;
+    if (connError) {
+        if (connError === "ERROR") {
+            text = "Reconnecting to server..."
+        } else if (connError === "RECONNECTING") {
+            text = "Error connecting to server..."
+        }
+    } else {
+        const typingList = [...typing];
+        if (typingList.length === 1) {
+            text = typingList[0] + " is typing...";
+        }
+        else if (typingList.length > 3) {
+            text = "Several people are typing...";
+        }
+        else if (typingList.length !== 0) {  // Between 2 and 3 people
+            const last = typingList.slice(typingList.length - 1);
+            text = typingList.slice(0, typingList.length - 1).join(", ") + ` and ${last} are typing...`;
+        }
     }
 
     return (
         <div className="typing-indicator">
-            { text &&
+            { text && !connError &&
             <>
                 <svg className="typing-indicator__dots">
                     <circle />
@@ -73,6 +99,11 @@ function TypingIndicator({currentRoom}) {
                 </svg>
                 <div>{text}</div>
             </>
+            }
+            { connError &&
+                <div className="typing-indicator__error">
+                    {text}
+                </div>
             }
         </div>
     );
