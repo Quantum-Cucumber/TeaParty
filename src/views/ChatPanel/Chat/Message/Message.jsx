@@ -9,8 +9,16 @@ import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXm
 import MessageContent from "./MessageTypes";
 import Icon from "@mdi/react";
 
+function messageIsSame(oldProps, newProps) {
+    const oldMsg = oldProps.event;
+    const newMsg = newProps.event;
 
-export const Message = memo(({ event, timeline }) => {
+    return (
+        oldMsg.replacingEventId() === newMsg.replacingEventId()
+    );
+}
+
+export const Message = memo(({ event }) => {
     const [hover, setHover] = useState(false);
     const setUserPopup = useContext(userPopupCtx);
 
@@ -34,14 +42,14 @@ export const Message = memo(({ event, timeline }) => {
                         <span className="message-timestamp">{messageTimestamp(event.getDate())}</span>
                     </Tooltip>
                 </div>
-                <MessageContent event={event} timeline={timeline} />
+                <MessageContent event={event} />
             </div>
-            <MessageButtons timeline={timeline} event={event} setHover={setHover} />
+            <MessageButtons event={event} setHover={setHover} />
         </div>
     );
-})
+}, messageIsSame)
 
-export const PartialMessage = memo(({ event, timeline }) => {
+export const PartialMessage = memo(({ event }) => {
     const [hover, setHover] = useState(false);
 
     return (
@@ -52,12 +60,12 @@ export const PartialMessage = memo(({ event, timeline }) => {
                 </Tooltip>
             </div>
             <div className="message__text">
-                <MessageContent event={event} timeline={timeline} />
+                <MessageContent event={event} />
             </div>
-            <MessageButtons timeline={timeline} event={event} setHover={setHover} />
+            <MessageButtons event={event} setHover={setHover} />
         </div>
     )
-})
+}, messageIsSame)
 
 function MessageButtons(props) {
     const setPopup = useContext(contextMenuCtx);
@@ -83,10 +91,12 @@ const messageOptions = {
         title: "Read By",
         label: "Read receipts",
         bodyClass: "overlay__modal--read",
-        render: ({ trueEvent, setUserPopup }) => {
+        render: ({ event, setUserPopup }) => {
+            const readBy = getMembersRead(event);
+            console.log(readBy);
             return (<>
                 {
-                    getMembersRead(trueEvent).map((member) => {
+                    readBy.map((member) => {
                         const user = member.user || global.matrix.getUser(member.userId);
                         return (
                             <Member user={user} key={member.userId} subClass="data__user-popup" clickFunc={
@@ -124,7 +134,7 @@ const messageOptions = {
     },
 }
 
-function MoreOptions({ parent, event, setHover, timeline }) {
+function MoreOptions({ parent, event, setHover }) {
     const [currentModal, selectModal] = useState(null);
     const hide = () => {selectModal(null)};
     const setUserPopup = useContext(userPopupCtx);
@@ -138,12 +148,11 @@ function MoreOptions({ parent, event, setHover, timeline }) {
     let modal;
     if (messageOptions[currentModal]) {
         const {title, render, modalClass, bodyClass} = messageOptions[currentModal];
-        const trueEvent = timeline.current.edits.get(event.getId()) || event;
-        console.log(trueEvent, event)
+        const trueEvent = event.replacingEvent() || event;
 
         modal = (
             <Modal title={title} hide={hide} modalClass={modalClass} bodyClass={bodyClass}>
-                {render({ trueEvent, setUserPopup})}
+                {render({ trueEvent, event, setUserPopup})}
             </Modal>
         );
     }

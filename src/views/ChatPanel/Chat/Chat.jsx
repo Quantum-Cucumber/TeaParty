@@ -55,8 +55,10 @@ function Chat({ currentRoom }) {
 
     // Convert message events into message components
     var messages = [];
-    const lastRead = currentRoom ? global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId()) : null;
+    const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId()) : null;
     messageList.forEach((event, index) => {
+        if (!timeline.current.shouldDisplayEvent(event)) {return};
+        event = event.toSnapshot();
         const prevEvent = messageList[index - 1]; 
 
         if (lastRead && prevEvent?.getId() === lastRead) {
@@ -75,11 +77,11 @@ function Chat({ currentRoom }) {
         // Determine whether last message was by same user
         if (border === null && nextShouldBePartial(event, prevEvent)) {
             messages.push(
-                <PartialMessage event={event} timeline={timeline} key={event.getId()}/>
+                <PartialMessage event={event} key={event.getId()}/>
             );
         } else {
             messages.push(
-                <Message event={event} timeline={timeline} key={event.getId()}/>
+                <Message event={event} key={event.getId()}/>
             );
         }
 
@@ -165,7 +167,8 @@ function ChatScroll({ children, timeline, updateMessageList }) {
     }
 
     function onScroll(e) {
-        atBottom.current = false;  // Will be reset if needed but most likely is not true initially anyway
+        atBottom.current = false;  // Will be reset if needed
+        timeline.current.isReading = false;  // ^
         saveScrollPos();  // Save scroll position in case it will be restored
 
         // When we can see the loading wheel and are able to load messages
@@ -175,9 +178,10 @@ function ChatScroll({ children, timeline, updateMessageList }) {
         // Scrolled to bottom
         else if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
             atBottom.current = true;
-
+            
             // Mark messages as read when scrolled to the bottom, if the page is opened
             if (document.hasFocus()) {
+                timeline.current.isReading = true;
                 markAsRead()
             }
         }

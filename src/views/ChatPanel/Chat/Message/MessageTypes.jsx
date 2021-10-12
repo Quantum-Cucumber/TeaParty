@@ -4,8 +4,7 @@ import remarkGfm from "remark-gfm"
 import { ImagePopup, Tooltip } from "../../../../components/interface";
 import { messageTimestampFull } from "../../../../utils/datetime";
 
-export default function MessageContent({ event, timeline }) {
-    const edited = timeline.current.edits.get(event.getId());
+export default function MessageContent({ event }) {
     const eventContent = event.getContent();
 
     let content;
@@ -13,7 +12,7 @@ export default function MessageContent({ event, timeline }) {
         case "m.text":
         case "org.matrix.custom.html":
             content = (
-                <MessageText eventContent={eventContent} edited={edited} />
+                <MessageText eventContent={eventContent} />
             );
             break;
         case "m.image": 
@@ -23,15 +22,15 @@ export default function MessageContent({ event, timeline }) {
             break;
         default:
             content = (
-                <UnknownMessageType eventContent={eventContent} edited={edited} />
+                <UnknownMessageType eventContent={eventContent} />
             )
     }
 
     return (
         <div className="message__content">
             {content}
-            {edited && 
-                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(edited.getDate())}>
+            {event.replacingEventId() && 
+                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.replacingEventDate())}>
                     <div className="message__content__edited">(edited)</div>
                 </Tooltip>
             }
@@ -39,8 +38,8 @@ export default function MessageContent({ event, timeline }) {
     );
 }
 
-function MessageText({ eventContent, edited }) {
-    const content = edited ? edited.getContent()["m.new_content"].body : eventContent.body;
+function MessageText({ eventContent }) {
+    const content = eventContent.body;
     const useMarkdown = eventContent.format === "org.matrix.custom.html";
 
     return (<>
@@ -51,8 +50,8 @@ function MessageText({ eventContent, edited }) {
     </>)
 }
 
-function UnknownMessageType({ eventContent, edited }) {
-    const content = edited ? edited.getContent()["m.new_content"].body : eventContent.body;
+function UnknownMessageType({ eventContent }) {
+    const content = eventContent.body;
 
     return (
         <Tooltip text={eventContent.msgtype} dir="top" x="mouse" delay={0.5} >

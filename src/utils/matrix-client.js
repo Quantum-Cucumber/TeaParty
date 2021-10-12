@@ -37,7 +37,10 @@ export async function attemptLogin(username, homeserver, password) {
     const base_url = await discover_base_url(homeserver);
     console.info("Found base url: " + base_url);
 
-    const client = matrixsdk.createClient(base_url)
+    const client = matrixsdk.createClient({
+        baseUrl: base_url,
+        unstableClientRelationAggregation: true,
+    })
     const response = await client.login("m.login.password", {
         identifier: {
             type: "m.id.user",
@@ -77,7 +80,8 @@ export async function buildMatrix() {
     console.info("Started IndexedDB");
 
     global.matrix = matrixsdk.createClient({
-        accessToken: token, userId: user_id, baseUrl: base_url, store: store, deviceId: device_id,
+        accessToken: token, userId: user_id, baseUrl: base_url, deviceId: device_id, 
+        store: store, unstableClientRelationAggregation: true,
     })
     await global.matrix.startClient();
 }
@@ -139,13 +143,16 @@ export function powerLevelText(userId, roomId) {
 }
 
 export function getMembersRead(event) {
+    const eventId = event.getId();
     const room = global.matrix.getRoom(event.getRoomId());
-    
     const roomEvents = [...room.getLiveTimeline().getEvents()];
     roomEvents.reverse();  // Newest event first
+
     var readUpTo = [];
-    for (var i=0; i < roomEvents.indexOf(event) + 1; i++) {  // Progress through timeline until event reached 
+    for (var i=0; i < roomEvents.length; i++) {  // Progress through timeline
         readUpTo.push(...room.getReceiptsForEvent(roomEvents[i]))  // Add each user to array
+
+        if (eventId === roomEvents[i].getId()) {break}  // Stop loop when we find the event
     }
     readUpTo = [...new Set(readUpTo)];  // Dedup array    
 

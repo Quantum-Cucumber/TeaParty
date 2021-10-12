@@ -331,7 +331,7 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, children }) {
 
     useBindEscape(setVisible, () => {});
 
-    useEffect(() => {
+    useLayoutEffect(() => {  // Layout effect reduces visual bugs
         if (!menu) {return}
         positionFloating(menu, parent, x, y, 10, mouseEvent, true);
     }, [menu, x, y, parent, mouseEvent])

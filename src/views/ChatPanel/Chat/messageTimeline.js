@@ -6,16 +6,14 @@ export default class messageTimeline {
         this.room = global.matrix.getRoom(this.roomId);
         this.timeline = this.room?.getLiveTimeline().getEvents();
         this.userId = global.matrix.getUserId();
-
-        this.edits = new Map();
-        this.timeline.forEach((event) => {
-            if (this._isEdit(event)) {
-                this._addRelationToMap(this.edits, event);
-            }
-        });
     }
     canLoad = true;
     read = false;
+    isReading = true;  // An override variable for read. true when user is at bottom of the chat
+
+    isRead() {
+        return (this.read || this.isReading);
+    }
 
     async getMore() {
         // Only get scrollback if there are messages still to get
@@ -35,10 +33,6 @@ export default class messageTimeline {
         // Only process messages for current room
         if (event.getRoomId() !== this.roomId) {return}
 
-        // If edited message
-        if (this._isEdit(event)) {
-            this._addRelationToMap(this.edits, event);
-        } 
         // Mark timeline as unread if new message received and not from current user
         if (!toStartOfTimeline && this._isMessage(event) && event.getSender() !== this.userId) {
             console.log("mark unread")
@@ -48,18 +42,10 @@ export default class messageTimeline {
 
     getMessages() {
         let compiled = this.timeline.filter((event) => {
-            return this._isMessage(event) && !this._isEdit(event)
+            return this._isMessage(event)  // && !this._isEdit(event)
         })
         
         return compiled;
-    }
-    
-    _addRelationToMap(map, event) {
-        const refId = event.getAssociatedId();
-
-        if (!refId) {return};
-        // Events are oldest first so we can safely clear the old edit if one exists
-        map.set(refId, event);
     }
 
     async markAsRead() {
@@ -74,5 +60,9 @@ export default class messageTimeline {
             this.read = true;
             await global.matrix.sendReadReceipt(event);
         }
+    }
+
+    shouldDisplayEvent(event) {
+        return this._isMessage(event) && !this._isEdit(event);
     }
 }
