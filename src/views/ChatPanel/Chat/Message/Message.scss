@@ -1,4 +1,5 @@
 @use "../../../../utils/common";
+$message-margin-top: 10px;
 
 /* Base message */
 .message, .message--partial {
@@ -10,7 +11,7 @@
 .message {
     padding: 0 15px;
     box-sizing: border-box;
-    margin-top: 10px;
+    margin-top: $message-margin-top;
 
     &__avatar__crop {
         width: 40px;
@@ -69,11 +70,13 @@
             color: var(--text-greyed);
             font-size: 0.7rem !important;
             display: inline-block;
+            margin-right: 100% !important;  /* Force newline */
             user-select: none;
         }
 
         &--unknown {
             color: var(--text-greyed);
+            width: fit-content;
         }
     }
 }
@@ -109,6 +112,20 @@
     font-size: 0.8rem;
     height: min-content;
     padding-top: 0.15rem;
+}
+
+.message--emote {
+    font-style: italic;
+
+    &--partial {
+        margin-top: $message-margin-top;
+    }
+
+    &__content {
+        & > p:first-of-type {
+            display: inline;
+        }
+    }
 }
 
 .message:hover, .message--partial:hover, .message--hover{

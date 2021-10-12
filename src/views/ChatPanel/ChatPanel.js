@@ -1,6 +1,8 @@
 import "./ChatPanel.scss";
 import Chat from "./Chat/Chat";
 import { useEffect, useState } from "react";
+import Icon from "@mdi/react";
+import { mdiAlert } from "@mdi/js";
 
 
 export default function ChatPanel({currentRoom}) {
@@ -100,11 +102,13 @@ function TypingIndicator({currentRoom}) {
                 <div>{text}</div>
             </>
             }
-            { connError &&
+            { connError && <>
+                <Icon path={mdiAlert} color="var(--error)" size="0.9rem" />
+                &nbsp;
                 <div className="typing-indicator__error">
                     {text}
                 </div>
-            }
+            </>}
         </div>
     );
 }

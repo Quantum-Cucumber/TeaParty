@@ -4,7 +4,7 @@ import { Loading } from "../../../components/interface";
 import messageTimeline from "./messageTimeline";
 import { useBindEscape, useDebouncedState } from "../../../utils/utils";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
-import { Message, PartialMessage } from "./Message/Message";
+import { TimelineEvent } from "./Message/Message";
 
 
 function nextShouldBePartial(thisMsg, lastMsg) {
@@ -53,7 +53,9 @@ function Chat({ currentRoom }) {
         return () => {global.matrix.removeListener("Room.timeline", onEvent)};
     }, [currentRoom, setMessageList, updateMessageList]);
 
-    // Convert message events into message components
+    if (!timeline.current) {return null}
+
+    // Render timeline
     var messages = [];
     const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId()) : null;
     messageList.forEach((event, index) => {
@@ -74,20 +76,16 @@ function Chat({ currentRoom }) {
             );
         }
         
-        // Determine whether last message was by same user
-        if (border === null && nextShouldBePartial(event, prevEvent)) {
-            messages.push(
-                <PartialMessage event={event} key={event.getId()}/>
-            );
-        } else {
-            messages.push(
-                <Message event={event} key={event.getId()}/>
-            );
-        }
+        // Pass to handler to generate message
+        messages.push(
+            <TimelineEvent event={event} partial={
+                border === null && nextShouldBePartial(event, prevEvent)
+            } key={event.getId()}/>
+        )
 
     });
     // If rendered last message in channel, add a day border and 30vh of padding
-    if (messageList.length !== 0 && timeline.current?.canLoad === false) {
+    if (messageList.length !== 0 && timeline.current.canLoad === false) {
         const text = dateToDateStr(messageList[0].getDate());
         messages.unshift(
             <div style={{height: "30vh"}} key="padding"></div>,
@@ -95,7 +93,6 @@ function Chat({ currentRoom }) {
         );
     }
 
-    if (!timeline.current) {return null}
     return (
         <ChatScroll timeline={timeline} updateMessageList={updateMessageList}>
             <div className="chat">

@@ -6,7 +6,7 @@ import { classList, getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
 import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml } from "@mdi/js";
-import MessageContent from "./MessageTypes";
+import MessageContent, { EditMarker, MessageText } from "./MessageTypes";
 import Icon from "@mdi/react";
 
 function messageIsSame(oldProps, newProps) {
@@ -18,7 +18,21 @@ function messageIsSame(oldProps, newProps) {
     );
 }
 
-export const Message = memo(({ event }) => {
+export function TimelineEvent({ event, partial=false }) {
+    if (event.getType() === "m.room.message") {
+        if (event.getContent().msgtype === "m.emote") {
+            return (<EmoteMsg event={event} partial={partial} />)
+        }
+
+        if (partial) {
+            return (<PartialMessage event={event} />)
+        } else {
+            return (<Message event={event} />)
+        }
+    }
+}
+
+const Message = memo(({ event }) => {
     const [hover, setHover] = useState(false);
     const setUserPopup = useContext(userPopupCtx);
 
@@ -49,7 +63,7 @@ export const Message = memo(({ event }) => {
     );
 }, messageIsSame)
 
-export const PartialMessage = memo(({ event }) => {
+const PartialMessage = memo(({ event }) => {
     const [hover, setHover] = useState(false);
 
     return (
@@ -61,6 +75,38 @@ export const PartialMessage = memo(({ event }) => {
             </div>
             <div className="message__text">
                 <MessageContent event={event} />
+            </div>
+            <MessageButtons event={event} setHover={setHover} />
+        </div>
+    )
+}, messageIsSame)
+
+const EmoteMsg = memo(({ event, partial }) => {
+    const [hover, setHover] = useState(false);
+    const setUserPopup = useContext(userPopupCtx);
+
+    const author = tryGetUser(event.getSender());
+    if (!author) {return;}
+
+    function userPopup(e) {
+        setUserPopup({parent: e.target, user: author})
+    }
+
+    return (
+        <div className={classList("message--partial", {"message--hover": hover, "message--emote--partial": partial})}>
+            <div className="message--partial__offset">
+                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
+                    <span className="message-timestamp">{dateToTime(event.getDate())}</span>
+                </Tooltip>
+            </div>
+            <div className="message__text message__content message--emote__content">
+                &#x2217;&nbsp;
+                <span className="message__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
+                    {author.displayName}
+                </span>
+                {" "}
+                <MessageText eventContent={event.getContent()} />
+                <EditMarker event={event} />
             </div>
             <MessageButtons event={event} setHover={setHover} />
         </div>

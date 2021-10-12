@@ -29,16 +29,22 @@ export default function MessageContent({ event }) {
     return (
         <div className="message__content">
             {content}
-            {event.replacingEventId() && 
-                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.replacingEventDate())}>
-                    <div className="message__content__edited">(edited)</div>
-                </Tooltip>
-            }
+            <EditMarker event={event} />
         </div>
     );
 }
 
-function MessageText({ eventContent }) {
+export function EditMarker({ event }) {
+    return (<>
+        {event.replacingEventId() && 
+            <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.replacingEventDate())}>
+                <div className="message__content__edited">(edited)</div>
+            </Tooltip>
+        }
+    </>)
+}
+
+export function MessageText({ eventContent }) {
     const content = eventContent.body;
     const useMarkdown = eventContent.format === "org.matrix.custom.html";
 
