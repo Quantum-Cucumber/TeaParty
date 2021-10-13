@@ -15,14 +15,17 @@ const settings_pages = [
         icon: mdiBrush,
         render: () => {
             const currentTheme = Settings.getSetting("theme");
-            return (
+            return (<>
                 <Section name="Theme">
                     <ThemeSelect initial={currentTheme} themeList={[
                         {label: "Dark", theme: "dark"},
                         {label: "Light", theme: "light"}
                     ]}/>
                 </Section>
-            );
+                <Section name="Events">
+                    <Toggle label="Show deleted events" setting="showRedactedEvents" />
+                </Section>
+            </>);
         },
     },
     {

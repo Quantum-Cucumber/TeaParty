@@ -26,6 +26,12 @@ export default function MessageContent({ event }) {
             )
     }
 
+    if (event.isRedacted()) {
+        content = (
+            <RedactedMessage />
+        )
+    }
+
     return (
         <div className="message__content">
             {content}
@@ -96,4 +102,12 @@ function MessageImage({ eventContent }) {
         <img src={thumbnail} alt={eventContent.body} className="message__content__image" onClick={() => {setShowOverlay(true)}} />
         <ImagePopup sourceUrl={sourceUrl} setRender={setShowOverlay} render={showOverlay} name={eventContent.body}/>
     </>)
+}
+
+function RedactedMessage() {
+    return (
+        <div className="message__content--redacted">
+            Redacted
+        </div>
+    )
 }

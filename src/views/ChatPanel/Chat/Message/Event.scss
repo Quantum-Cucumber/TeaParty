@@ -90,7 +90,7 @@
             user-select: none;
         }
 
-        &--unknown {
+        &--unknown, &--redacted {
             color: var(--text-greyed);
             width: fit-content;
         }

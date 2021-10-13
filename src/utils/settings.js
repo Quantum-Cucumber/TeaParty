@@ -1,11 +1,15 @@
+import { EventEmitter } from "events";
+
 const default_settings = {
     theme: "dark",
     groupBreadcrumbs: {},
     devMode: false,
+    showRedactedEvents: false,
 }
 
-class SettingsManager {
+class SettingsManager extends EventEmitter {
     constructor() {
+        super();
         this.settings = {};
         this._loadSettings();
     }
@@ -22,6 +26,7 @@ class SettingsManager {
     updateSetting(key, value) {
         this.settings[key] = value;
         localStorage.setItem("settings", JSON.stringify(this.settings));
+        this.emit("settingUpdated", key, value);
     }
 
     // Custom handlers

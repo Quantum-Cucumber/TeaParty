@@ -1,3 +1,4 @@
+import Settings from "../../../utils/settings";
 import { debounce } from "../../../utils/utils";
 
 const msgLoadCount = 30;
@@ -11,7 +12,7 @@ export function shouldDisplayEvent(event) {
     return (
         _isMessage(event) && 
         !_isEdit(event) &&  // Edits will update the original event object
-        !event.isRedacted()
+        (!event.isRedacted() || Settings.getSetting("showRedactedEvents"))
     )
 }
 
