@@ -1,6 +1,6 @@
 import { getSetting, updateSetting } from "../../utils/settings";
 import { debounce } from "../../utils/utils";
-import { shouldDisplayEvent } from "../ChatPanel/Chat/messageTimeline";
+import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
 
 function _isJoined(room) {
     return room?.getMyMembership() === "join";

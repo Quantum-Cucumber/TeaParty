@@ -15,7 +15,7 @@ export function shouldDisplayEvent(event) {
     )
 }
 
-export default class messageTimeline {
+export default class eventTimeline {
     constructor(roomId) {
         this.roomId = roomId;
         this.room = global.matrix.getRoom(this.roomId);
@@ -31,7 +31,7 @@ export default class messageTimeline {
     }
 
     async getMore() {
-        // Only get scrollback if there are messages still to get
+        // Only get scrollback if there are events still to get
         if (this.room.oldState.paginationToken !== null) {
             await global.matrix.scrollback(this.room, msgLoadCount);
         } else {
@@ -40,17 +40,20 @@ export default class messageTimeline {
     }
 
     onEvent(event, toStartOfTimeline) {
+        /* Basically just to update unread flag ig?? */
+        
         // Only process messages for current room
         if (event.getRoomId() !== this.roomId) {return}
 
         // Mark timeline as unread if new message received and not from current user
-        if (!toStartOfTimeline && _isMessage(event) && event.getSender() !== this.userId) {
+        if (!toStartOfTimeline && shouldDisplayEvent(event) && event.getSender() !== this.userId) {
             console.log("mark unread")
             this.read = false;
         }
     }
 
-    getMessages() {
+    getEvents() {
+        /* Filter events that will update the state of the chat */
         let compiled = this.timeline.filter((event) => {
             return _isMessage(event)  // && !_isEdit(event)
         })
@@ -62,10 +65,10 @@ export default class messageTimeline {
     debouncedRead = debounce((event) => {global.matrix.sendReadReceipt(event)}, 500);
     markAsRead() {
         if (!this.read) {
-            const messages = this.getMessages()
-            if (messages.length === 0) {return}
+            const events = this.getEvents()
+            if (events.length === 0) {return}
 
-            const event = messages[messages.length - 1];
+            const event = events[events.length - 1];
             // Spec says not to send read receipts for own events
             if (event.getSender() === global.matrix.getUserId()) {return}
 

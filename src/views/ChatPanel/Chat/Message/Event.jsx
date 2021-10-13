@@ -1,4 +1,4 @@
-import "./Message.scss";
+import "./Event.scss";
 import { useContext, memo, useState, useEffect } from "react";
 import { Avatar, Member, userPopupCtx } from "../../../../components/user";
 import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Modal, TextCopy } from "../../../../components/interface";

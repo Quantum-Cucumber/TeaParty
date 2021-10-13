@@ -1,10 +1,10 @@
 import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback, memo } from "react";
 import { Loading } from "../../../components/interface";
-import messageTimeline, { shouldDisplayEvent } from "./messageTimeline";
+import eventTimeline, { shouldDisplayEvent } from "./eventTimeline";
 import { useBindEscape, useDebouncedState } from "../../../utils/utils";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
-import { TimelineEvent } from "./Message/Message";
+import { TimelineEvent } from "./Message/Event";
 
 
 function nextShouldBePartial(thisMsg, lastMsg) {
@@ -21,22 +21,22 @@ function nextShouldBePartial(thisMsg, lastMsg) {
 
 function Chat({ currentRoom }) {
     const timeline = useRef();
-    const [messageList, setMessageList] = useDebouncedState([], 200);
+    const [eventList, setEventList] = useDebouncedState([], 200);
 
-    const updateMessageList = useCallback(() => {
-        if (!timeline.current) {setMessageList([])};
-        setMessageList(timeline.current.getMessages());
-    }, [setMessageList]);
+    const updateEventList = useCallback(() => {
+        if (!timeline.current) {setEventList([])};
+        setEventList(timeline.current.getEvents());
+    }, [setEventList]);
 
     // Add event listener when room is changed
     useEffect(() => {
         timeline.current = null;
-        setMessageList([]);
+        setEventList([]);
         // No listener when no selected room
         if (!currentRoom) {return};
 
         console.info("Load room: ", currentRoom)
-        timeline.current = new messageTimeline(currentRoom);
+        timeline.current = new eventTimeline(currentRoom);
 
         // Set up timeline event handler
         function onEvent(event, eventRoom, toStartOfTimeline) {
@@ -44,41 +44,42 @@ function Chat({ currentRoom }) {
             
             // Pass event to timeline handler and refresh message list
             timeline.current.onEvent(event, toStartOfTimeline);
-            updateMessageList();
+            updateEventList();
         }
         global.matrix.on("Room.timeline", onEvent);
 
-        updateMessageList();
+        updateEventList();
 
         // Remove listener on unmount (room change)
         return () => {global.matrix.removeListener("Room.timeline", onEvent)};
-    }, [currentRoom, setMessageList, updateMessageList]);
+    }, [currentRoom, setEventList, updateEventList]);
 
     if (!timeline.current) {return null}
 
     // Render timeline
-    var messages = [];
+    console.log("render")
+    var events = [];
     const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId()) : null;
-    messageList.forEach((event, index) => {
-        if (!shouldDisplayEvent(event)) {return};
+    eventList.filter((event) => {return shouldDisplayEvent(event)})
+    .forEach((event, index, filteredEvents) => {
+        const prevEvent = filteredEvents[index - 1];
         event = event.toSnapshot();
-        const prevEvent = messageList[index - 1]; 
 
         if (lastRead && prevEvent?.getId() === lastRead) {
-            messages.push(
+            events.push(
                 <UnreadBorder key="unread"/>
             );
         }
 
         const border = dayBorder(event, prevEvent);
         if (border !== null) {
-            messages.push(
-                <MessageBorder text={border} color="var(--text-greyed)" key={border}/>
+            events.push(
+                <EventBorder text={border} color="var(--text-greyed)" key={border}/>
             );
         }
         
         // Pass to handler to generate message
-        messages.push(
+        events.push(
             <TimelineEvent event={event} partial={
                 border === null && nextShouldBePartial(event, prevEvent)
             } key={event.getId()}/>
@@ -86,24 +87,24 @@ function Chat({ currentRoom }) {
 
     });
     // If rendered last message in channel, add a day border and 30vh of padding
-    if (messageList.length !== 0 && timeline.current.canLoad === false) {
-        const text = dateToDateStr(messageList[0].getDate());
-        messages.unshift(
+    if (eventList.length !== 0 && timeline.current.canLoad === false) {
+        const text = dateToDateStr(eventList[0].getDate());
+        events.unshift(
             <div style={{height: "30vh"}} key="padding"></div>,
-            <MessageBorder text={text} color="var(--text-greyed)" key={text}/>
+            <EventBorder text={text} color="var(--text-greyed)" key={text}/>
         );
     }
 
     return (
-        <ChatScroll timeline={timeline} updateMessageList={updateMessageList}>
+        <ChatScroll timeline={timeline} updateEventList={updateEventList}>
             <div className="chat">
-                {messages}
+                {events}
             </div>
         </ChatScroll>
     );
 }
 
-function ChatScroll({ children, timeline, updateMessageList }) {
+function ChatScroll({ children, timeline, updateEventList }) {
     const atBottom = useRef(true);
     const scrollPos = useRef(false);
     const scrollRef = useRef();
@@ -119,15 +120,15 @@ function ChatScroll({ children, timeline, updateMessageList }) {
 
     // Callback to load more messages
     const loadMore = useCallback(() => {
-        // Don't try and load new messages if we are still waiting for a batch
+        // Don't try and load new events if we are still waiting for a batch
         if (isLoading.current) {return}
 
         isLoading.current = true;
         timeline.current.getMore().then(() => {
-            updateMessageList();
+            updateEventList();
             isLoading.current = false;
         });
-    }, [timeline, updateMessageList]);
+    }, [timeline, updateEventList]);
 
     // When children are modified, if scroll was at the bottom, stay there
     useEffect(() => {
@@ -136,11 +137,11 @@ function ChatScroll({ children, timeline, updateMessageList }) {
         } 
     }, [children]);
 
-    // When new messages load
+    // When new events load
     useEffect(() => {
         restoreScrollPos();
 
-        // If still able to see the loading cog, load more messages
+        // If still able to see the loading cog, load more events
         if (isAtTop() && !isLoading.current) {
             loadMore();
         }
@@ -169,7 +170,7 @@ function ChatScroll({ children, timeline, updateMessageList }) {
         timeline.current.isReading = false;  // ^
         saveScrollPos();  // Save scroll position in case it will be restored
 
-        // When we can see the loading wheel and are able to load messages
+        // When we can see the loading wheel and are able to load events
         if (timeline.current.canLoad && isAtTop() && !isLoading.current) {
             loadMore();
         } 
@@ -177,7 +178,7 @@ function ChatScroll({ children, timeline, updateMessageList }) {
         else if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
             atBottom.current = true;
             
-            // Mark messages as read when scrolled to the bottom, if the page is opened
+            // Mark event as read when scrolled to the bottom, if the page is opened
             if (document.hasFocus()) {
                 timeline.current.isReading = true;
                 markAsRead()
@@ -194,7 +195,7 @@ function ChatScroll({ children, timeline, updateMessageList }) {
 }
 
 
-function MessageBorder({ text, color }) {
+function EventBorder({ text, color }) {
     return (
         <div className="chat__border" style={{"--color": color}}>
             <div className="chat__border__line"></div>
@@ -211,7 +212,7 @@ function UnreadBorder() {
     useBindEscape(setVisible, false);
 
 
-    return visible && <MessageBorder text="New Messages" color="var(--error)"/>;
+    return visible && <EventBorder text="New Messages" color="var(--error)"/>;
 }
 
 export default memo(Chat);
