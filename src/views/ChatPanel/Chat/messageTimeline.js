@@ -1,3 +1,5 @@
+import { debounce } from "../../../utils/utils";
+
 const msgLoadCount = 30;
 
 export default class messageTimeline {
@@ -48,7 +50,9 @@ export default class messageTimeline {
         return compiled;
     }
 
-    async markAsRead() {
+    // Avoid spamming read receipts
+    debouncedRead = debounce((event) => {global.matrix.sendReadReceipt(event)}, 500);
+    markAsRead() {
         if (!this.read) {
             const messages = this.getMessages()
             if (messages.length === 0) {return}
@@ -58,7 +62,7 @@ export default class messageTimeline {
             if (event.getSender() === global.matrix.getUserId()) {return}
 
             this.read = true;
-            await global.matrix.sendReadReceipt(event);
+            this.debouncedRead(event)
         }
     }
 

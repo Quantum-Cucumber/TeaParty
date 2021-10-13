@@ -358,14 +358,19 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, children }) {
 
 export function TextCopy({ text, children }) {
     const [tooltip, setTooltip] = useState("Copy");
+    const timerId = useRef();
 
     function copyText() {
         navigator.clipboard.writeText(text);
         setTooltip("Copied");
-        const timerId = setTimeout(() => {setTooltip("Copy")}, 1000);
-
-        return () => {clearTimeout(timerId)}
+        timerId.current = setTimeout(() => {setTooltip("Copy")}, 1000);
     }
+    // Clear timeout on unmount
+    useEffect(() => {
+        return () => {
+            clearTimeout(timerId.current)
+        }
+    }, [])
 
     return (
         <div className="copy-text">
