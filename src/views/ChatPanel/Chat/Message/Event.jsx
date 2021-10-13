@@ -87,7 +87,7 @@ function PartialMessage({ event }) {
     )
 }
 
-function EmoteMsg ({ event, partial }) {
+function EmoteMsg({ event, partial }) {
     const setUserPopup = useContext(userPopupCtx);
 
     const author = tryGetUser(event.getSender());
@@ -100,13 +100,18 @@ function EmoteMsg ({ event, partial }) {
     return (
         <div className={classList("message--partial", {"message--emote--partial": partial})}>
             <div className="message--partial__offset">
-                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
-                    <span className="message-timestamp">{dateToTime(event.getDate())}</span>
-                </Tooltip>
+                { partial ?
+                    <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
+                        <span className="message-timestamp">{dateToTime(event.getDate())}</span>
+                    </Tooltip>
+                :
+                    <Avatar user={author} subClass="message__avatar__crop message--emote__avatar data__user-popup" clickFunc={userPopup} />
+                }
             </div>
+
             <div className="message__text message__content message--emote__content">
                 &#x2217;&nbsp;
-                <span className="message__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
+                <span className="message__author  data__user-popup" onClick={userPopup}>
                     {author.displayName}
                 </span>
                 {" "}

@@ -1,8 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm"
 import { ImagePopup, Tooltip } from "../../../../components/interface";
 import { messageTimestampFull } from "../../../../utils/datetime";
+import { mdiChatRemove } from "@mdi/js";
+import Icon from "@mdi/react";
+import { tryGetUser } from "../../../../utils/matrix-client";
+import { userPopupCtx } from "../../../../components/user";
 
 export default function MessageContent({ event }) {
     const eventContent = event.getContent();
@@ -28,7 +32,7 @@ export default function MessageContent({ event }) {
 
     if (event.isRedacted()) {
         content = (
-            <RedactedMessage />
+            <RedactedMessage event={event} />
         )
     }
 
@@ -104,10 +108,27 @@ function MessageImage({ eventContent }) {
     </>)
 }
 
-function RedactedMessage() {
+function RedactedMessage({ event }) {
+    const setUserPopup = useContext(userPopupCtx);
+
+    const redaction = event.getRedactionEvent();
+    const reason = redaction?.content?.reason;
+    const redactUser = tryGetUser(redaction?.sender);
+
+    function userPopup(e) {
+        setUserPopup({parent: e.target, user: redactUser})
+    }
+
     return (
-        <div className="message__content--redacted">
-            Redacted
-        </div>
+        <Tooltip text={"Reason: " + (reason ? reason : "None given")} dir="top" x="mouse" delay={0.8}>
+            <div className="message__content--redacted">
+                <Icon path={mdiChatRemove} color="var(--text-greyed)" size="1em" className="message__content--redacted__icon" />
+                &nbsp;Redacted by
+                {" "}
+                <span className="message__content--redacted__user data__user-popup" onClick={userPopup}>
+                    {redactUser.displayName}
+                </span>
+            </div>
+        </Tooltip>
     )
 }

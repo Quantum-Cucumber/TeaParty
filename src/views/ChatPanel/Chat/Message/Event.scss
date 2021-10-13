@@ -90,9 +90,25 @@
             user-select: none;
         }
 
-        &--unknown, &--redacted {
+        &--unknown {
             color: var(--text-greyed);
             width: fit-content;
+        }
+        &--redacted {
+            width: fit-content;
+            color: var(--text-greyed);
+
+            &__icon {
+                display: inline-block;
+                vertical-align: text-bottom;
+            }
+
+            &__user {
+                cursor: pointer;
+                &:hover {
+                    text-decoration: underline;
+                }
+            }
         }
     }
 }
@@ -131,6 +147,7 @@
 }
 
 .message--emote {
+    align-items: center;
     &__content {
         font-style: italic;
         & > p:first-of-type {
@@ -140,6 +157,14 @@
         .message__author {
             font-weight: normal !important;  /* idk if I like this */
         }
+    }
+
+    &__avatar {
+        $size: 1.75rem;
+        height: $size;
+        width: $size;
+        border-radius: 35%;
+        margin: 0;
     }
 }
 

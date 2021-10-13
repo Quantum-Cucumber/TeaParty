@@ -5,6 +5,7 @@ import eventTimeline, { shouldDisplayEvent } from "./eventTimeline";
 import { useBindEscape, useDebouncedState } from "../../../utils/utils";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
 import { TimelineEvent } from "./Message/Event";
+import Settings from "../../../utils/settings";
 
 
 function nextShouldBePartial(thisMsg, lastMsg) {
@@ -53,11 +54,20 @@ function Chat({ currentRoom }) {
         // Remove listener on unmount (room change)
         return () => {global.matrix.removeListener("Room.timeline", onEvent)};
     }, [currentRoom, setEventList, updateEventList]);
+    // Settings listener
+    useEffect(() => {
+        function settingUpdate(setting) {
+            if (setting === "showRedactedEvents") {
+                updateEventList();
+            }
+        }
+        Settings.on("settingUpdate", settingUpdate);
+        return () => {Settings.removeListener("settingUpdate", settingUpdate)}
+    }, [updateEventList])
 
     if (!timeline.current) {return null}
 
     // Render timeline
-    console.log("render")
     var events = [];
     const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId()) : null;
     eventList.filter((event) => {return shouldDisplayEvent(event)})

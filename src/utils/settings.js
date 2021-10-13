@@ -26,13 +26,12 @@ class SettingsManager extends EventEmitter {
     updateSetting(key, value) {
         this.settings[key] = value;
         localStorage.setItem("settings", JSON.stringify(this.settings));
-        this.emit("settingUpdated", key, value);
+        this.emit("settingUpdate", key, value);
     }
 
     // Custom handlers
 
     setTheme(theme = null) {
-        console.log(this)
         // If called without a theme, load the theme from storage
         if (theme !== null) {
             this.updateSetting("theme", theme);
