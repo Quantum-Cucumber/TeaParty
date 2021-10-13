@@ -1,17 +1,33 @@
 @use "../../../../utils/common";
-$message-margin-top: 10px;
 
-/* Base message */
+
+/* Base Event */
+.event {
+    margin-top: 10px;
+    &--partial {
+        margin-top: 0;
+    }
+
+    position: relative;
+}
+.event:hover, .event--hover{
+    background-color: var(--bg-focus);
+
+    .message__buttons {
+        display: flex;
+    }
+}
+
+
+/* Message */
 .message, .message--partial {
     flex: none;
     display: flex;
     flex-direction: row;
-    position: relative;
 }
 .message {
     padding: 0 15px;
     box-sizing: border-box;
-    margin-top: $message-margin-top;
 
     &__avatar__crop {
         width: 40px;
@@ -115,24 +131,15 @@ $message-margin-top: 10px;
 }
 
 .message--emote {
-    font-style: italic;
-
-    &--partial {
-        margin-top: $message-margin-top;
-    }
-
     &__content {
+        font-style: italic;
         & > p:first-of-type {
             display: inline;
         }
-    }
-}
 
-.message:hover, .message--partial:hover, .message--hover{
-    background-color: var(--bg-focus);
-
-    .message__buttons {
-        display: flex;
+        .message__author {
+            font-weight: normal !important;  /* idk if I like this */
+        }
     }
 }
 
@@ -186,7 +193,12 @@ $message-margin-top: 10px;
         background-color: var(--bg-focus);
     }
     ul, ol {
-        padding-left: 1rem;
+        padding-left: 0;
+        list-style-position: inside;
+
+        li {
+            text-indent: 0.75em;
+        }
     }
     /* Code block */
     p > code:only-child, pre > code:only-child {

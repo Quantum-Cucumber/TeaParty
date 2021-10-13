@@ -1,7 +1,7 @@
 import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback, memo } from "react";
 import { Loading } from "../../../components/interface";
-import messageTimeline from "./messageTimeline";
+import messageTimeline, { shouldDisplayEvent } from "./messageTimeline";
 import { useBindEscape, useDebouncedState } from "../../../utils/utils";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
 import { TimelineEvent } from "./Message/Message";
@@ -24,13 +24,14 @@ function Chat({ currentRoom }) {
     const [messageList, setMessageList] = useDebouncedState([], 200);
 
     const updateMessageList = useCallback(() => {
+        if (!timeline.current) {setMessageList([])};
         setMessageList(timeline.current.getMessages());
     }, [setMessageList]);
 
     // Add event listener when room is changed
     useEffect(() => {
-        setMessageList([]);
         timeline.current = null;
+        setMessageList([]);
         // No listener when no selected room
         if (!currentRoom) {return};
 
@@ -59,7 +60,7 @@ function Chat({ currentRoom }) {
     var messages = [];
     const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId()) : null;
     messageList.forEach((event, index) => {
-        if (!timeline.current.shouldDisplayEvent(event)) {return};
+        if (!shouldDisplayEvent(event)) {return};
         event = event.toSnapshot();
         const prevEvent = messageList[index - 1]; 
 

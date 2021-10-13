@@ -2,6 +2,19 @@ import { debounce } from "../../../utils/utils";
 
 const msgLoadCount = 30;
 
+function _isMessage(event) {
+    return event.getType() === "m.room.message";
+}
+function _isEdit(event) {return event.isRelation("m.replace")}
+
+export function shouldDisplayEvent(event) {
+    return (
+        _isMessage(event) && 
+        !_isEdit(event) &&  // Edits will update the original event object
+        !event.isRedacted()
+    )
+}
+
 export default class messageTimeline {
     constructor(roomId) {
         this.roomId = roomId;
@@ -26,17 +39,12 @@ export default class messageTimeline {
         }
     }
 
-    _isMessage(event) {
-        return event.getType() === "m.room.message" && !event.isRedacted();
-    }
-    _isEdit(event) {return event.isRelation("m.replace")}
-
     onEvent(event, toStartOfTimeline) {
         // Only process messages for current room
         if (event.getRoomId() !== this.roomId) {return}
 
         // Mark timeline as unread if new message received and not from current user
-        if (!toStartOfTimeline && this._isMessage(event) && event.getSender() !== this.userId) {
+        if (!toStartOfTimeline && _isMessage(event) && event.getSender() !== this.userId) {
             console.log("mark unread")
             this.read = false;
         }
@@ -44,7 +52,7 @@ export default class messageTimeline {
 
     getMessages() {
         let compiled = this.timeline.filter((event) => {
-            return this._isMessage(event)  // && !this._isEdit(event)
+            return _isMessage(event)  // && !_isEdit(event)
         })
         
         return compiled;
@@ -64,9 +72,5 @@ export default class messageTimeline {
             this.read = true;
             this.debouncedRead(event)
         }
-    }
-
-    shouldDisplayEvent(event) {
-        return this._isMessage(event) && !this._isEdit(event);
     }
 }

@@ -20,7 +20,7 @@ function MemberList({ currentRoom, setUserPopup }) {
 
     useEffect(() => {
         setLoadedMembers(membersPerPage);  // Reset loaded member count
-        memberScroll.current.scrollTop = 0;  // Scroll to top of member list
+        setMembers([]);  // Reset member list
 
         function memberUpdated(event, member) {
             if (member.roomId === currentRoom) {

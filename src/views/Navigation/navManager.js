@@ -1,5 +1,6 @@
 import { getSetting, updateSetting } from "../../utils/settings";
 import { debounce } from "../../utils/utils";
+import { shouldDisplayEvent } from "../ChatPanel/Chat/messageTimeline";
 
 function _isJoined(room) {
     return room?.getMyMembership() === "join";
@@ -14,9 +15,9 @@ function _getUnreads(room) {
     for (const event of events) {
         // If reached read event, all events are read, so quit the for/of
         if (event.getId() === lastRead) {break}
-        // If event is a message (and we havent reached the read event), this event is unread
+        // If event is is to be displayed (and we havent reached the read event), this event is unread
         // Ignore messages from the logged in user since those will be read anyway
-        if (event.getType() === "m.room.message" && event.getSender() !== userId) {
+        if (shouldDisplayEvent(event) && event.getSender() !== userId) {
             read = false;
             break;
         }

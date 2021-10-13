@@ -10,31 +10,40 @@ import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXm
 import MessageContent, { EditMarker, MessageText } from "./MessageTypes";
 import Icon from "@mdi/react";
 
-function messageIsSame(oldProps, newProps) {
-    const oldMsg = oldProps.event;
-    const newMsg = newProps.event;
+function eventIsSame(oldProps, newProps) {
+    const oldEvent = oldProps.event;
+    const newEvent = newProps.event;
 
     return (
-        oldMsg.replacingEventId() === newMsg.replacingEventId()
+        oldEvent.replacingEventId() === newEvent.replacingEventId()
     );
 }
 
-export function TimelineEvent({ event, partial=false }) {
+export const TimelineEvent = memo(({ event, partial=false }) => {
+    const [hover, setHover] = useState(false);
+    
+    let eventEntry;
     if (event.getType() === "m.room.message") {
         if (event.getContent().msgtype === "m.emote") {
-            return (<EmoteMsg event={event} partial={partial} />)
+            eventEntry = (<EmoteMsg event={event} partial={partial} />);
         }
-
-        if (partial) {
-            return (<PartialMessage event={event} />)
+        
+        else if (partial) {
+            eventEntry = (<PartialMessage event={event} />);
         } else {
-            return (<Message event={event} />)
+            eventEntry = (<Message event={event} />);
         }
     }
-}
 
-const Message = memo(({ event }) => {
-    const [hover, setHover] = useState(false);
+    return (
+        <div className={classList("event", {"event--hover": hover}, {"event--partial": partial})}>
+            {eventEntry}
+            <EventButtons event={event} setHover={setHover} />
+        </div>
+    );
+}, eventIsSame)
+
+function Message({ event }) {
     const setUserPopup = useContext(userPopupCtx);
 
     const author = tryGetUser(event.getSender());
@@ -45,7 +54,7 @@ const Message = memo(({ event }) => {
     }
 
     return (
-        <div className={classList("message", {"message--hover": hover})}>
+        <div className="message">
             <Avatar user={author} subClass="message__avatar__crop data__user-popup" clickFunc={userPopup} />
             <div className="message__text">
                 <div className="message__info">
@@ -59,16 +68,13 @@ const Message = memo(({ event }) => {
                 </div>
                 <MessageContent event={event} />
             </div>
-            <MessageButtons event={event} setHover={setHover} />
         </div>
     );
-}, messageIsSame)
+}
 
-const PartialMessage = memo(({ event }) => {
-    const [hover, setHover] = useState(false);
-
+function PartialMessage({ event }) {
     return (
-        <div className={classList("message--partial", {"message--hover": hover})}>
+        <div className="message--partial">
             <div className="message--partial__offset">
                 <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
                     <span className="message-timestamp">{dateToTime(event.getDate())}</span>
@@ -77,13 +83,11 @@ const PartialMessage = memo(({ event }) => {
             <div className="message__text">
                 <MessageContent event={event} />
             </div>
-            <MessageButtons event={event} setHover={setHover} />
         </div>
     )
-}, messageIsSame)
+}
 
-const EmoteMsg = memo(({ event, partial }) => {
-    const [hover, setHover] = useState(false);
+function EmoteMsg ({ event, partial }) {
     const setUserPopup = useContext(userPopupCtx);
 
     const author = tryGetUser(event.getSender());
@@ -94,7 +98,7 @@ const EmoteMsg = memo(({ event, partial }) => {
     }
 
     return (
-        <div className={classList("message--partial", {"message--hover": hover, "message--emote--partial": partial})}>
+        <div className={classList("message--partial", {"message--emote--partial": partial})}>
             <div className="message--partial__offset">
                 <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
                     <span className="message-timestamp">{dateToTime(event.getDate())}</span>
@@ -109,12 +113,11 @@ const EmoteMsg = memo(({ event, partial }) => {
                 <MessageText eventContent={event.getContent()} />
                 <EditMarker event={event} />
             </div>
-            <MessageButtons event={event} setHover={setHover} />
         </div>
     )
-}, messageIsSame)
+}
 
-function MessageButtons(props) {
+function EventButtons(props) {
     const setPopup = useContext(contextMenuCtx);
 
     return (
@@ -140,7 +143,6 @@ const messageOptions = {
         bodyClass: "overlay__modal--read",
         render: ({ event, setUserPopup }) => {
             const readBy = getMembersRead(event);
-            console.log(readBy);
             return (<>
                 {
                     readBy.map((member) => {
