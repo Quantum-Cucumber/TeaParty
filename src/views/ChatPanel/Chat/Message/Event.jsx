@@ -98,7 +98,7 @@ function EmoteMsg({ event, partial }) {
     }
 
     return (
-        <div className={classList("message--partial", {"message--emote--partial": partial})}>
+        <div className={classList("message--partial", "message--emote", {"message--emote--partial": partial})}>
             <div className="message--partial__offset">
                 { partial ?
                     <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
