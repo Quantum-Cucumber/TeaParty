@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Loading, Option } from "../../components/interface";
 import { mdiClose, mdiBrush, mdiLock, mdiHammerWrench } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import { setTheme, getSetting } from "../../utils/settings";
+import Settings from "../../utils/settings";
 import { logoutMatrix } from "../../utils/matrix-client";
 import { msToDate } from "../../utils/datetime";
 import { classList, useBindEscape } from "../../utils/utils";
@@ -14,10 +14,10 @@ const settings_pages = [
         title: "Appearance",
         icon: mdiBrush,
         render: () => {
-            const currentTheme = getSetting("theme");
+            const currentTheme = Settings.getSetting("theme");
             return (
                 <Section name="Theme">
-                    <ThemeSelect initial={currentTheme} setter={setTheme} themeList={[
+                    <ThemeSelect initial={currentTheme} themeList={[
                         {label: "Dark", theme: "dark"},
                         {label: "Light", theme: "light"}
                     ]}/>
@@ -98,14 +98,14 @@ function SettingsPage({ setPage }) {
     );
 }
 
-function ThemeSelect({ initial, setter, themeList }) {
+function ThemeSelect({ initial, themeList }) {
     const [selected, Select] = useState(initial);
 
     function Theme({ label, name }) {
         return (
             <div
                 className={classList("theme", name, {"theme--selected": selected === name})}
-                onClick={() => {setter(name); Select(name)}}
+                onClick={() => {Settings.setTheme(name); Select(name)}}
             >
                 <div className="theme__colours">
                     <div className="theme__bg"></div>

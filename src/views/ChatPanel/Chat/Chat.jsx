@@ -21,7 +21,7 @@ function nextShouldBePartial(thisMsg, lastMsg) {
 
 function Chat({ currentRoom }) {
     const timeline = useRef();
-    const [eventList, setEventList] = useDebouncedState([], 200);
+    const [eventList, setEventList] = useDebouncedState([], 400);
 
     const updateEventList = useCallback(() => {
         if (!timeline.current) {setEventList([])};

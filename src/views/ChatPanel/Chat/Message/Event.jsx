@@ -4,7 +4,7 @@ import { Avatar, Member, userPopupCtx } from "../../../../components/user";
 import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Modal, TextCopy } from "../../../../components/interface";
 import { classList, getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
-import { getSetting } from "../../../../utils/settings";
+import Settings from "../../../../utils/settings";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
 import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml } from "@mdi/js";
 import MessageContent, { EditMarker, MessageText } from "./MessageTypes";
@@ -161,7 +161,7 @@ const messageOptions = {
     },
     source: {
         path: mdiXml,
-        condition: () => {return getSetting("devMode") === true},
+        condition: () => {return Settings.getSetting("devMode") === true},
         title: "Event Source",
         label: "View source",
         render: ({ trueEvent }) => {

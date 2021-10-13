@@ -1,4 +1,4 @@
-import { getSetting, updateSetting } from "../../utils/settings";
+import Settings from "../../utils/settings";
 import { debounce } from "../../utils/utils";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
 
@@ -37,7 +37,7 @@ export default class navManager {
 
         this.roomToGroup = new Map();  // room => group
         // Create map from saved breadcrumbs object
-        this.groupBreadcrumbs = new Map(Object.entries(getSetting("groupBreadcrumbs")));  // group => selected room
+        this.groupBreadcrumbs = new Map(Object.entries(Settings.getSetting("groupBreadcrumbs")));  // group => selected room
         this.currentGroup = null;
         this.currentRooms = [];
         this.selectedRoom = null;
@@ -306,6 +306,6 @@ export default class navManager {
         this.groupBreadcrumbs.set(this.currentGroup, room);
         // Convert map to object to be saved
         const crumbObj = Object.fromEntries(this.groupBreadcrumbs);
-        updateSetting("groupBreadcrumbs", crumbObj);
+        Settings.updateSetting("groupBreadcrumbs", crumbObj);
     }
 }

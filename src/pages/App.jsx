@@ -4,12 +4,12 @@ import './root.scss';
 import Login from "./Login/Login";
 import Client from "./Client/Client";
 import { logged_in } from "../utils/matrix-client";
-import { setTheme } from "../utils/settings";
+import Settings from "../utils/settings";
 
 function App() {
     // Load theme
     useEffect(() => {
-        setTheme();
+        Settings.setTheme();
     }, [])
 
     return (

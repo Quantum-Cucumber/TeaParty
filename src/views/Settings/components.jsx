@@ -1,6 +1,6 @@
 import { useReducer } from "react";
 import { useEffect } from "react/cjs/react.development";
-import { getSetting, updateSetting } from "../../utils/settings";
+import Settings from "../../utils/settings";
 import { classList } from "../../utils/utils";
 
 export function Section({ name, children }) {
@@ -16,10 +16,10 @@ export function Section({ name, children }) {
 
 export function Toggle({ label, setting }) {
     /* Directly toggles a boolean setting, interacting with the settings.js util */
-    const [state, toggleState] = useReducer((current) => {return !current}, getSetting(setting));
+    const [state, toggleState] = useReducer((current) => {return !current}, Settings.getSetting(setting));
 
     useEffect(() => {
-        updateSetting(setting, state);
+        Settings.updateSetting(setting, state);
     }, [setting, state])
 
     return (
