@@ -48,7 +48,7 @@ export function EditMarker({ event }) {
     return (<>
         {event.replacingEventId() && 
             <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.replacingEventDate())}>
-                <div className="message__content__edited">(edited)</div>
+                <div className="event__body__edited">(edited)</div>
             </Tooltip>
         }
     </>)

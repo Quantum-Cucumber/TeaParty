@@ -93,8 +93,7 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
 
         // Constrain to screen height
         if (rect.bottom > window.innerHeight) {
-            positionMe.style.top = "auto";
-            positionMe.style.bottom = `${offset}px`;
+            positionMe.style.top = `${window.innerHeight - offset - rect.height}px`;
         }
 
         // Render on other side of parent if off the screen
@@ -103,7 +102,7 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
                 "left": "right", "right": "left",
                 "align-left": "align-right", "align-right": "align-left",
             }
-            positionFloating(positionMe, referenceNode, inverseX[x], y, offset);
+            positionFloating(positionMe, referenceNode, inverseX[x], null, offset);
         }
     }
 

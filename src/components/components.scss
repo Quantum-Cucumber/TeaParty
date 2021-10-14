@@ -14,7 +14,6 @@
     height: 100%;
     aspect-ratio: 1;
     flex: 0 0 auto;
-    margin-right: 10px;
     background-color: transparent !important;
 }
 .avatar {
@@ -37,6 +36,10 @@
 }
 
 .user {
+    &__avatar {
+        margin-right: 0.5em;
+    }
+    
     &__username {
     color: var(--text);
     }

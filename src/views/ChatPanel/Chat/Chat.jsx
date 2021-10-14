@@ -4,7 +4,7 @@ import { Loading } from "../../../components/interface";
 import eventTimeline, { shouldDisplayEvent } from "./eventTimeline";
 import { useBindEscape, useDebouncedState } from "../../../utils/utils";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
-import { TimelineEvent } from "./Message/Event";
+import { TimelineEvent } from "./Events/Event";
 import Settings from "../../../utils/settings";
 
 
@@ -67,7 +67,9 @@ function Chat({ currentRoom }) {
 
     if (!timeline.current) {return null}
 
-    // Render timeline
+
+    /* Render timeline */
+    
     var events = [];
     const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId()) : null;
     eventList.filter((event) => {return shouldDisplayEvent(event)})
@@ -84,7 +86,7 @@ function Chat({ currentRoom }) {
         const border = dayBorder(event, prevEvent);
         if (border !== null) {
             events.push(
-                <EventBorder text={border} color="var(--text-greyed)" key={border}/>
+                <EventBorder text={border} color="var(--text-greyed)" key={event.getDate().toISOString()}/>
             );
         }
         

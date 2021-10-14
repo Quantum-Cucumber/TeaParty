@@ -7,7 +7,7 @@ import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../
 import Settings from "../../../../utils/settings";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
 import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml } from "@mdi/js";
-import MessageContent, { EditMarker, MessageText } from "./MessageTypes";
+import MessageContent, { EditMarker, MessageText } from "./MessageContent";
 import Icon from "@mdi/react";
 
 function eventIsSame(oldProps, newProps) {
@@ -19,9 +19,7 @@ function eventIsSame(oldProps, newProps) {
     );
 }
 
-export const TimelineEvent = memo(({ event, partial=false }) => {
-    const [hover, setHover] = useState(false);
-    
+export const TimelineEvent = memo(({ event, partial=false }) => {    
     let eventEntry;
     if (event.getType() === "m.room.message") {
         if (event.getContent().msgtype === "m.emote") {
@@ -35,13 +33,38 @@ export const TimelineEvent = memo(({ event, partial=false }) => {
         }
     }
 
+    return eventEntry;
+}, eventIsSame)
+
+function MessageWrapper({ event, partial=false, compact=false, children }) {
+    const setUserPopup = useContext(userPopupCtx);
+    const [hover, setHover] = useState(false);
+
+    const author = tryGetUser(event.getSender());
+    if (!author) {return;}
+
+    function userPopup(e) {
+        setUserPopup({parent: e.target, user: author})
+    }
+
     return (
         <div className={classList("event", {"event--hover": hover}, {"event--partial": partial})}>
-            {eventEntry}
+            <div className="event__offset">
+                { partial ?
+                    <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
+                        <span className="event__timestamp">{dateToTime(event.getDate())}</span>
+                    </Tooltip>
+                :
+                    <Avatar user={author} subClass={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} clickFunc={userPopup} />
+                }
+            </div>
+            <div className="event__body">
+                {children}
+            </div>
             <EventButtons event={event} setHover={setHover} />
         </div>
-    );
-}, eventIsSame)
+    )
+}
 
 function Message({ event }) {
     const setUserPopup = useContext(userPopupCtx);
@@ -54,36 +77,26 @@ function Message({ event }) {
     }
 
     return (
-        <div className="message">
-            <Avatar user={author} subClass="message__avatar__crop data__user-popup" clickFunc={userPopup} />
-            <div className="message__text">
-                <div className="message__info">
-                    <span className="message__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
-                        {author.displayName}
-                    </span>
+        <MessageWrapper event={event}>
+            <div className="message__info">
+                <span className="message__info__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
+                    {author.displayName}
+                </span>
 
-                    <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
-                        <span className="message-timestamp">{messageTimestamp(event.getDate())}</span>
-                    </Tooltip>
-                </div>
-                <MessageContent event={event} />
+                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
+                    <span className="event__timestamp">{messageTimestamp(event.getDate())}</span>
+                </Tooltip>
             </div>
-        </div>
+            <MessageContent event={event} />
+        </MessageWrapper>
     );
 }
 
 function PartialMessage({ event }) {
     return (
-        <div className="message--partial">
-            <div className="message--partial__offset">
-                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
-                    <span className="message-timestamp">{dateToTime(event.getDate())}</span>
-                </Tooltip>
-            </div>
-            <div className="message__text">
-                <MessageContent event={event} />
-            </div>
-        </div>
+        <MessageWrapper event={event} partial>
+            <MessageContent event={event} />
+        </MessageWrapper>
     )
 }
 
@@ -98,27 +111,17 @@ function EmoteMsg({ event, partial }) {
     }
 
     return (
-        <div className={classList("message--partial", partial ? "message--emote--partial" : "message--emote")}>
-            <div className="message--partial__offset">
-                { partial ?
-                    <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
-                        <span className="message-timestamp">{dateToTime(event.getDate())}</span>
-                    </Tooltip>
-                :
-                    <Avatar user={author} subClass="message__avatar__crop message--emote__avatar data__user-popup" clickFunc={userPopup} />
-                }
-            </div>
-
-            <div className="message__text message__content message--emote__content">
+        <MessageWrapper event={event} partial={partial} compact>
+            <div className="message__content message--emote__content">
                 &#x2217;&nbsp;
-                <span className="message__author  data__user-popup" onClick={userPopup}>
+                <span className="message__author data__user-popup" onClick={userPopup}>
                     {author.displayName}
                 </span>
                 {" "}
                 <MessageText eventContent={event.getContent()} />
                 <EditMarker event={event} />
             </div>
-        </div>
+        </MessageWrapper>
     )
 }
 
@@ -126,13 +129,13 @@ function EventButtons(props) {
     const setPopup = useContext(contextMenuCtx);
 
     return (
-        <div className="message__buttons">
+        <div className="event__buttons">
             {/*<Button subClass="message__buttons__entry" path={mdiReply} size="100%" tipDir="top" tipText="Reply" />
             <Button subClass="message__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction" />*/}
-            <Button subClass="message__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
+            <Button subClass="event__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
                 clickFunc={(e) => {
                     setPopup(
-                        <MoreOptions parent={e.target.closest(".message__buttons__entry")} {...props} />
+                        <MoreOptions parent={e.target.closest(".event__buttons__entry")} {...props} />
                     );
                 }}
             />
