@@ -8,11 +8,29 @@ function _isMessage(event) {
 }
 function _isEdit(event) {return event.isRelation("m.replace")}
 
+function _isJoin(event) {
+    return (
+        event.getType() === "m.room.member" &&
+        event.getContent()?.membership === "join"
+    )
+}
+function _isLeave(event) {
+    return (
+        event.getType() === "m.room.member" &&
+        event.getContent()?.membership === "leave" &&
+        event.getContent()?.membership === "ban"
+    )
+}
+
 export function shouldDisplayEvent(event) {
     return (
-        _isMessage(event) && 
-        !_isEdit(event) &&  // Edits will update the original event object
-        (!event.isRedacted() || Settings.getSetting("showRedactedEvents"))
+        (   // If m.room.message should be displayed
+            _isMessage(event) && 
+            !_isEdit(event) &&  // Edits will update the original event object
+            (!event.isRedacted() || Settings.getSetting("showRedactedEvents"))
+        ) ||
+        // Join/leave events
+        (_isJoin(event) && Settings.getSetting("showJoinEvents")) || (_isLeave(event) && Settings.getSetting("showLeaveEvents"))
     )
 }
 
@@ -56,7 +74,7 @@ export default class eventTimeline {
     getEvents() {
         /* Filter events that will update the state of the chat */
         let compiled = this.timeline.filter((event) => {
-            return _isMessage(event)  // && !_isEdit(event)
+            return _isMessage(event) || shouldDisplayEvent(event);
         })
         
         return compiled;

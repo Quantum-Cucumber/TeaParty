@@ -132,22 +132,6 @@ $event-offset: 2.75em;
             color: var(--text-greyed);
             width: fit-content;
         }
-        &--redacted {
-            width: fit-content;
-            color: var(--text-greyed);
-
-            &__icon {
-                display: inline-block;
-                vertical-align: text-bottom;
-            }
-
-            &__user {
-                cursor: pointer;
-                &:hover {
-                    text-decoration: underline;
-                }
-            }
-        }
     }
 }
 
@@ -164,6 +148,25 @@ $event-offset: 2.75em;
         font-style: italic;
         & > p:first-of-type {
             display: inline;
+        }
+    }
+}
+
+/* Event specific */
+.event--compact-event {
+    width: fit-content;
+    color: var(--text-greyed);
+
+    &__icon {
+        display: inline-block;
+        vertical-align: text-bottom;
+        margin-right: 0.2em;
+    }
+
+    &__user {
+        cursor: pointer;
+        &:hover {
+            text-decoration: underline;
         }
     }
 }

@@ -5,6 +5,8 @@ const default_settings = {
     groupBreadcrumbs: {},
     devMode: false,
     showRedactedEvents: false,
+    showJoinEvents: false,
+    showLeaveEvents: false,
 }
 
 class SettingsManager extends EventEmitter {

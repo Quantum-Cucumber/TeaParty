@@ -121,11 +121,11 @@ function RedactedMessage({ event }) {
 
     return (
         <Tooltip text={"Reason: " + (reason ? reason : "None given")} dir="top" x="mouse" delay={0.8}>
-            <div className="message__content--redacted">
-                <Icon path={mdiChatRemove} color="var(--text-greyed)" size="1em" className="message__content--redacted__icon" />
+            <div className="event--compact-event">
+                <Icon path={mdiChatRemove} color="var(--text-greyed)" size="1em" className=".event--compact-event__icon" />
                 &nbsp;Redacted by
                 {" "}
-                <span className="message__content--redacted__user data__user-popup" onClick={userPopup}>
+                <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
                     {redactUser.displayName}
                 </span>
             </div>

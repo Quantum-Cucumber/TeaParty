@@ -6,7 +6,7 @@ import { classList, getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import Settings from "../../../../utils/settings";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
-import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml } from "@mdi/js";
+import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml } from "@mdi/js";
 import MessageContent, { EditMarker, MessageText } from "./MessageContent";
 import Icon from "@mdi/react";
 
@@ -20,6 +20,7 @@ function eventIsSame(oldProps, newProps) {
 }
 
 export const TimelineEvent = memo(({ event, partial=false }) => {    
+    console.log(event.getType())
     let eventEntry;
     if (event.getType() === "m.room.message") {
         if (event.getContent().msgtype === "m.emote") {
@@ -31,12 +32,15 @@ export const TimelineEvent = memo(({ event, partial=false }) => {
         } else {
             eventEntry = (<Message event={event} />);
         }
+    } 
+    else if (event.getType() === "m.room.member") {
+        eventEntry = (<MembershipEvent event={event} partial={partial} />);
     }
 
     return eventEntry;
 }, eventIsSame)
 
-function MessageWrapper({ event, partial=false, compact=false, children }) {
+function EventWrapper({ event, partial=false, compact=false, children }) {
     const setUserPopup = useContext(userPopupCtx);
     const [hover, setHover] = useState(false);
 
@@ -77,7 +81,7 @@ function Message({ event }) {
     }
 
     return (
-        <MessageWrapper event={event}>
+        <EventWrapper event={event}>
             <div className="message__info">
                 <span className="message__info__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
                     {author.displayName}
@@ -88,15 +92,15 @@ function Message({ event }) {
                 </Tooltip>
             </div>
             <MessageContent event={event} />
-        </MessageWrapper>
+        </EventWrapper>
     );
 }
 
 function PartialMessage({ event }) {
     return (
-        <MessageWrapper event={event} partial>
+        <EventWrapper event={event} partial>
             <MessageContent event={event} />
-        </MessageWrapper>
+        </EventWrapper>
     )
 }
 
@@ -111,7 +115,7 @@ function EmoteMsg({ event, partial }) {
     }
 
     return (
-        <MessageWrapper event={event} partial={partial} compact>
+        <EventWrapper event={event} partial={partial} compact>
             <div className="message__content message--emote__content">
                 &#x2217;&nbsp;
                 <span className="message__author data__user-popup" onClick={userPopup}>
@@ -121,7 +125,53 @@ function EmoteMsg({ event, partial }) {
                 <MessageText eventContent={event.getContent()} />
                 <EditMarker event={event} />
             </div>
-        </MessageWrapper>
+        </EventWrapper>
+    )
+}
+
+function MembershipEvent({ event, partial }) {
+    const setUserPopup = useContext(userPopupCtx);
+
+    const content = event.getContent();
+    const membership = content.membership;
+    const userId = event.getStateKey();
+    const user = tryGetUser(userId);
+
+    function userPopup(e) {
+        setUserPopup({parent: e.target, user: user})
+    }
+
+    let icon;
+    let membershipText;
+    switch (membership) {
+        case "join":
+            icon = mdiAccountPlus;
+            membershipText = "joined the room";
+            break;
+        case "ban":
+            icon = mdiAccountCancel;
+            membershipText = "was banned from the room";
+            break;
+        case "leave":
+            icon = mdiAccountRemove;
+            membershipText = "left the room";
+            break;
+        default: 
+            break;
+    }
+
+    console.log(userId, membershipText)
+    if (!userId || !membershipText) {return null};
+    return (
+        <EventWrapper event={event} partial={partial} compact>
+            <div className="event--compact-event">
+                <Icon path={icon} color="var(--text-greyed)" size="1em" className="event--compact-event__icon" />
+                <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
+                    {content.displayName || user.displayName}
+                </span>
+                {" " + membershipText}
+            </div>
+        </EventWrapper>
     )
 }
 

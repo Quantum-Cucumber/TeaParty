@@ -57,7 +57,7 @@ function Chat({ currentRoom }) {
     // Settings listener
     useEffect(() => {
         function settingUpdate(setting) {
-            if (setting === "showRedactedEvents") {
+            if (setting === "showRedactedEvents" || setting === "showJoinEvents" || setting === "showLeaveEvents") {
                 updateEventList();
             }
         }
