@@ -23,12 +23,11 @@ export function Toggle({ label, setting }) {
     }, [setting, state])
 
     return (
-        <div className="settings__toggle">
+        <div className="settings__toggle" onClick={toggleState}>
             <div className="settings__toggle__label">
                 {label}
             </div>
-            <div className={classList("settings__toggle__switch", {"settings__toggle__switch--on": state})}
-                 onClick={toggleState}>
+            <div className={classList("settings__toggle__switch", {"settings__toggle__switch--on": state})}>
                 <div className="settings__toggle__switch__indicator"></div>
             </div>
         </div>

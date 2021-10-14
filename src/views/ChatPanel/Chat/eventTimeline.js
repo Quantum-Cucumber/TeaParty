@@ -25,7 +25,7 @@ export default class eventTimeline {
     }
     canLoad = true;
     read = false;
-    isReading = true;  // An override variable for read. true when user is at bottom of the chat
+    isReading = false;  // An override variable for read. true when user is at bottom of the chat
 
     isRead() {
         return (this.read || this.isReading);

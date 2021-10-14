@@ -146,7 +146,7 @@
     padding-top: 0.15rem;
 }
 
-.message--emote {
+.message--emote, .message--emote--partial {
     align-items: center;
 
     &__content {
@@ -167,6 +167,9 @@
         border-radius: 35%;
         margin: 0;
     }
+}
+.message--emote .message--partial__offset {
+    justify-content: flex-end;
 }
 
 .message__buttons {

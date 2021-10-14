@@ -6,8 +6,8 @@ function _isJoined(room) {
     return room?.getMyMembership() === "join";
 }
 
-function _getUnreads(room) {
-    /* Determine if there are unread events or notifications */
+function getUnreads(room) {
+    /* Determine if there are unread events or notifications for the given room */
     const userId = global.matrix.getUserId();
     const events = room.getLiveTimeline().getEvents().slice().reverse();  // Get events youngest to oldest
     const lastRead = room.getEventReadUpTo(userId);
@@ -96,7 +96,7 @@ export default class navManager {
             if (room.isSpaceRoom()) {
                 unreads = this.groupUnreads(room.roomId);
             } else {
-                unreads = _getUnreads(room);
+                unreads = getUnreads(room);
             }
 
             return {
@@ -109,7 +109,7 @@ export default class navManager {
     groupUnreads(groupKey) {
         // Get unreads for all children
         let children = this.getRoomsFromGroup(groupKey).map((child) => {
-            return _getUnreads(child);
+            return getUnreads(child);
         });
         // In case space has no joined children
         if (children.length === 0) {children = [{read: true, notifications: 0}]}
