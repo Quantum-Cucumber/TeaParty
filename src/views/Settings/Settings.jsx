@@ -26,6 +26,7 @@ const settings_pages = [
                     <Toggle label="Show deleted events" setting="showRedactedEvents" />
                     <Toggle label="Show member join events" setting="showJoinEvents" />
                     <Toggle label="Show member leave events" setting="showLeaveEvents" />
+                    <Toggle label="Show room edit events" setting="showRoomEdits" />
                 </Section>
             </>);
         },

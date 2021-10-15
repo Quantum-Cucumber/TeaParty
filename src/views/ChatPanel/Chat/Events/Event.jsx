@@ -1,13 +1,16 @@
 import "./Event.scss";
 import { useContext, memo, useState, useEffect } from "react";
+import MessageContent, { EditMarker, MessageText } from "./MessageContent";
 import { Avatar, Member, userPopupCtx } from "../../../../components/user";
 import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Modal, TextCopy } from "../../../../components/interface";
+
 import { classList, getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import Settings from "../../../../utils/settings";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
-import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiAccountMinus, mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml } from "@mdi/js";
-import MessageContent, { EditMarker, MessageText } from "./MessageContent";
+import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent } from "../../../../utils/event-grouping";
+
+import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiAccountMinus, mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiPencil, mdiImage, mdiTextBox, mdiPin, mdiShield } from "@mdi/js";
 import Icon from "@mdi/react";
 
 function eventIsSame(oldProps, newProps) {
@@ -21,7 +24,7 @@ function eventIsSame(oldProps, newProps) {
 
 export const TimelineEvent = memo(({ event, partial=false }) => {    
     let eventEntry;
-    if (event.getType() === "m.room.message") {
+    if (isMessageEvent(event)) {
         if (event.getContent().msgtype === "m.emote") {
             eventEntry = (<EmoteMsg event={event} partial={partial} />);
         }
@@ -32,8 +35,14 @@ export const TimelineEvent = memo(({ event, partial=false }) => {
             eventEntry = (<Message event={event} />);
         }
     } 
-    else if (event.getType() === "m.room.member") {
+    else if (isJoinEvent(event) || isLeaveEvent(event)) {
         eventEntry = (<MembershipEvent event={event} partial={partial} />);
+    }
+    else if (isRoomEditEvent(event)) {
+        eventEntry = (<RoomEditEvent event={event} partial={partial} />);
+    } 
+    else if (isPinEvent(event)) {
+        eventEntry = (<PinEvent event={event} partial={partial} />);
     }
 
     return eventEntry;
@@ -128,17 +137,31 @@ function EmoteMsg({ event, partial }) {
     )
 }
 
-function MembershipEvent({ event, partial }) {
+function IconEvent({ event, partial, userId, icon, text }) {
     const setUserPopup = useContext(userPopupCtx);
-
-    const content = event.getContent();
-    const membership = content.membership;
-    const userId = event.getStateKey();
     const user = tryGetUser(userId);
 
     function userPopup(e) {
         setUserPopup({parent: e.target, user: user})
     }
+    
+    return (
+        <EventWrapper event={event} partial={partial} compact>
+            <div className="event--compact-event">
+                <Icon path={icon} color="var(--text-greyed)" size="1em" className="event--compact-event__icon" />
+                <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
+                    {user.displayName}
+                </span>
+                {text}
+            </div>
+        </EventWrapper>
+    )
+}
+
+function MembershipEvent({ event, partial }) {
+    const content = event.getContent();
+    const membership = content.membership;
+    const userId = event.getStateKey();
 
     let icon;
     let membershipText;
@@ -166,15 +189,50 @@ function MembershipEvent({ event, partial }) {
 
     if (!userId || !membershipText) {return null};
     return (
-        <EventWrapper event={event} partial={partial} compact>
-            <div className="event--compact-event">
-                <Icon path={icon} color="var(--text-greyed)" size="1em" className="event--compact-event__icon" />
-                <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
-                    {content.displayName || user.displayName}
-                </span>
-                {" " + membershipText}
-            </div>
-        </EventWrapper>
+        <IconEvent event={event} partial={partial} userId={userId} icon={icon} text={" " + membershipText} />
+    )
+}
+
+function RoomEditEvent({ event, partial }) {
+    const type = event.getType();
+    const userId = event.getSender();
+    const content = event.getContent();
+
+    let icon;
+    let what;  // The property that was edited
+    switch (type) {
+        case "m.room.name":
+            icon = mdiPencil;
+            what = "name to: " + content.name;
+            break;
+        case "m.room.avatar":
+            icon = mdiImage;
+            what = "icon";
+            break;
+        case "m.room.topic":
+            icon = mdiTextBox;
+            what = "topic to: " + content.topic;
+            break;
+        case "m.room.server_acl":
+            icon = mdiShield;
+            what = "ACL";
+            break;
+        default: 
+            break;
+    }
+
+    if (!userId || !what) {return null};
+    return (
+        <IconEvent event={event} partial={partial} userId={userId} icon={icon} text={" changed the room " + what} />
+    )
+}
+
+function PinEvent({ event, partial }) {
+    const userId = event.getSender();
+
+    if (!userId) {return null};
+    return (
+        <IconEvent event={event} partial={partial} userId={userId} icon={mdiPin} text="changed the room pins" />
     )
 }
 

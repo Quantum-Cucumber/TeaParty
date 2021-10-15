@@ -7,6 +7,7 @@ const default_settings = {
     showRedactedEvents: false,
     showJoinEvents: false,
     showLeaveEvents: false,
+    showRoomEdits: false,
 }
 
 class SettingsManager extends EventEmitter {

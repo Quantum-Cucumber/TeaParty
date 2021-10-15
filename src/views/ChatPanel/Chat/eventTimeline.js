@@ -1,39 +1,21 @@
 import Settings from "../../../utils/settings";
 import { debounce } from "../../../utils/utils";
+import { isMessageEvent, isEditEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent } from "../../../utils/event-grouping";
 
 const msgLoadCount = 30;
 
-function _isMessage(event) {
-    return event.getType() === "m.room.message";
-}
-function _isEdit(event) {return event.isRelation("m.replace")}
-
-function _isJoin(event) {
-    return (
-        event.getType() === "m.room.member" &&
-        event.getContent()?.membership === "join" &&
-        event.getPrevContent()?.membership !== "join"  // If current and previous membership is join, the member object was updated
-    )
-}
-function _isLeave(event) {
-    return (
-        event.getType() === "m.room.member" && (
-            event.getContent()?.membership === "leave" ||
-            event.getContent()?.membership === "ban"
-        ) &&
-        event.getPrevContent()?.membership === "join"
-    )
-}
 
 export function shouldDisplayEvent(event) {
     return (
         (   // If m.room.message should be displayed
-            _isMessage(event) && 
-            !_isEdit(event) &&  // Edits will update the original event object
+            isMessageEvent(event) && 
+            !isEditEvent(event) &&  // Edits will update the original event object
             (!event.isRedacted() || Settings.getSetting("showRedactedEvents"))
         ) ||
         // Join/leave events
-        (_isJoin(event) && Settings.getSetting("showJoinEvents")) || (_isLeave(event) && Settings.getSetting("showLeaveEvents"))
+        (isJoinEvent(event) && Settings.getSetting("showJoinEvents")) || (isLeaveEvent(event) && Settings.getSetting("showLeaveEvents")) ||
+        (isRoomEditEvent(event) && Settings.getSetting("showRoomEdits")) ||
+        isPinEvent(event)
     )
 }
 
@@ -77,7 +59,8 @@ export default class eventTimeline {
     getEvents() {
         /* Filter events that will update the state of the chat */
         let compiled = this.timeline.filter((event) => {
-            return _isMessage(event) || shouldDisplayEvent(event);
+            // isMessageEvent also counts message redactions/edits
+            return isMessageEvent(event) || shouldDisplayEvent(event);
         })
         
         return compiled;
