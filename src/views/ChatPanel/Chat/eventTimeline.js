@@ -11,14 +11,17 @@ function _isEdit(event) {return event.isRelation("m.replace")}
 function _isJoin(event) {
     return (
         event.getType() === "m.room.member" &&
-        event.getContent()?.membership === "join"
+        event.getContent()?.membership === "join" &&
+        event.getPrevContent()?.membership !== "join"  // If current and previous membership is join, the member object was updated
     )
 }
 function _isLeave(event) {
     return (
-        event.getType() === "m.room.member" &&
-        event.getContent()?.membership === "leave" &&
-        event.getContent()?.membership === "ban"
+        event.getType() === "m.room.member" && (
+            event.getContent()?.membership === "leave" ||
+            event.getContent()?.membership === "ban"
+        ) &&
+        event.getPrevContent()?.membership === "join"
     )
 }
 

@@ -45,12 +45,13 @@ $event-offset: 2.75em;
         flex-direction: column;
         justify-content: space-around;
         overflow: hidden;
+        overflow-wrap: break-word;
 
         &__edited {
             color: var(--text-greyed);
-            font-size: 0.7rem;
+            font-size: 0.7rem !important;
             display: inline-block;
-            margin-right: 100%;  /* Force newline */
+            margin-right: 100% !important;  /* Force newline */
             user-select: none;
         }
     }
@@ -125,12 +126,13 @@ $event-offset: 2.75em;
     &__content {
         width: 100%;
         overflow-wrap: break-word;
-        padding-right: 58px;
+        padding-right: 60px;
         box-sizing: border-box;
 
         &--unknown {
             color: var(--text-greyed);
             width: fit-content;
+            max-width: 100%;
         }
     }
 }
@@ -155,6 +157,7 @@ $event-offset: 2.75em;
 /* Event specific */
 .event--compact-event {
     width: fit-content;
+    max-width: 100%;
     color: var(--text-greyed);
 
     &__icon {

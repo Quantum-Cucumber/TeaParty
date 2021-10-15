@@ -292,6 +292,7 @@
     background-color: var(--bg-dark);
     border-radius: 15px;
     z-index: 120;
+    overflow-wrap: break-word;
 
     // Slide in animation
     animation: slide-in 0.2s ease-in-out 0s 1,

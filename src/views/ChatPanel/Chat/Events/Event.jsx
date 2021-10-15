@@ -6,7 +6,7 @@ import { classList, getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import Settings from "../../../../utils/settings";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
-import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml } from "@mdi/js";
+import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiAccountMinus, mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml } from "@mdi/js";
 import MessageContent, { EditMarker, MessageText } from "./MessageContent";
 import Icon from "@mdi/react";
 
@@ -20,7 +20,6 @@ function eventIsSame(oldProps, newProps) {
 }
 
 export const TimelineEvent = memo(({ event, partial=false }) => {    
-    console.log(event.getType())
     let eventEntry;
     if (event.getType() === "m.room.message") {
         if (event.getContent().msgtype === "m.emote") {
@@ -153,14 +152,18 @@ function MembershipEvent({ event, partial }) {
             membershipText = "was banned from the room";
             break;
         case "leave":
-            icon = mdiAccountRemove;
-            membershipText = "left the room";
+            if (userId === event.getSender()) {  // User left
+                icon = mdiAccountMinus;
+                membershipText = "left the room";
+            } else {  // User kicked
+                icon = mdiAccountRemove;
+                membershipText = "was kicked";
+            }
             break;
         default: 
             break;
     }
 
-    console.log(userId, membershipText)
     if (!userId || !membershipText) {return null};
     return (
         <EventWrapper event={event} partial={partial} compact>

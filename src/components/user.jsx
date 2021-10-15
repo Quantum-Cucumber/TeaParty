@@ -65,7 +65,6 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
         const padding = 10;
         const popup = popupRef.current;
 
-        console.log("position")
         positionFloating(popup, parent, "right", "align-top", padding, undefined, true);
 
         // Trigger the slide animation
