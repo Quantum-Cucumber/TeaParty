@@ -1,5 +1,4 @@
 import "./components.scss";
-import { get_username } from "../utils/matrix-client";
 import { getUserColour, acronym, classList } from "../utils/utils";
 import { useEffect, useRef, useCallback, useLayoutEffect, createContext } from "react";
 import { useBindEscape } from '../utils/utils';
@@ -31,14 +30,15 @@ export function Avatar({ user, subClass, clickFunc }) {
     );
 }
 
-export function Member({ user, subClass = null, clickFunc }) {
+export function Member({ member, subClass = null, clickFunc }) {
     /* A component containing the user avatar, user localpart/displayname */
+    const user = global.matrix.getUser(member.userId);
 
     return (
         <div className={classList("user", subClass)} onClick={clickFunc}>
             <Avatar subClass="user__avatar" user={user} />
             <div className="user__text-box">
-                <span className="user__text user__username">{get_username(user)}</span>
+                <span className="user__text user__username">{member.name}</span>
             </div>
         </div>
     );

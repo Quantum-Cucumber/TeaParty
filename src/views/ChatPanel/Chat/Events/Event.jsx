@@ -7,7 +7,7 @@ import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Modal, TextCopy }
 import { classList, getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
 import Settings from "../../../../utils/settings";
-import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
+import { getMember, getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
 import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent } from "../../../../utils/event-grouping";
 
 import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiAccountMinus, mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiPencil, mdiImage, mdiTextBox, mdiPin, mdiShield } from "@mdi/js";
@@ -92,7 +92,7 @@ function Message({ event }) {
         <EventWrapper event={event}>
             <div className="message__info">
                 <span className="message__info__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
-                    {author.displayName}
+                    {getMember(event.getSender(), event.getRoomId()).name}
                 </span>
 
                 <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
@@ -117,7 +117,6 @@ function EmoteMsg({ event, partial }) {
 
     const author = tryGetUser(event.getSender());
     if (!author) {return;}
-
     function userPopup(e) {
         setUserPopup({parent: e.target, user: author})
     }
@@ -127,7 +126,7 @@ function EmoteMsg({ event, partial }) {
             <div className="message__content message--emote__content">
                 &#x2217;&nbsp;
                 <span className="message__author data__user-popup" onClick={userPopup}>
-                    {author.displayName}
+                    {getMember(event.getSender(), event.getRoomId()).name}
                 </span>
                 {" "}
                 <MessageText eventContent={event.getContent()} />
@@ -140,7 +139,6 @@ function EmoteMsg({ event, partial }) {
 function IconEvent({ event, partial, userId, icon, text }) {
     const setUserPopup = useContext(userPopupCtx);
     const user = tryGetUser(userId);
-
     function userPopup(e) {
         setUserPopup({parent: e.target, user: user})
     }
@@ -150,7 +148,7 @@ function IconEvent({ event, partial, userId, icon, text }) {
             <div className="event--compact-event">
                 <Icon path={icon} color="var(--text-greyed)" size="1em" className="event--compact-event__icon" />
                 <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
-                    {user.displayName}
+                    {getMember(event.getSender(), event.getRoomId()).name}
                 </span>
                 {text}
             </div>

@@ -5,7 +5,7 @@ import { Icon } from "@mdi/react";
 import { Button, Tooltip, Loading, Option, Modal } from "../../components/interface";
 import { Avatar } from "../../components/user";
 import { acronym, useBindEscape, classList } from "../../utils/utils";
-import { get_username, get_homeserver } from "../../utils/matrix-client";
+import { getHomeserver } from "../../utils/matrix-client";
 
 function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, roomNav, invites }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
@@ -154,8 +154,8 @@ function MyUser({ user }) {
             <Avatar subClass="user__avatar" user={user}></Avatar>
             <Tooltip text={tooltipText} dir="top" x="mouse" delay={0.5}>
                 <div className="user__text-box">
-                    <span className="user__text user__username">{get_username(user)}</span>
-                    <span className="user__text user__homeserver">{get_homeserver(user)}</span>
+                    <span className="user__text user__username">{user.displayName}</span>
+                    <span className="user__text user__homeserver">{getHomeserver(user)}</span>
                 </div>
             </Tooltip>
         </div>

@@ -1,7 +1,5 @@
 import * as matrixsdk from "matrix-js-sdk";
 
-const localpart_regex = /@(.*?):/
-
 export const logged_in = () => { return localStorage.getItem("token") !== null };
 
 async function discover_base_url(homeserver) {
@@ -86,16 +84,6 @@ export async function buildMatrix() {
     await global.matrix.startClient();
 }
 
-export function get_username(user) {
-    /* Gets the localpart of the user ID or their displayname if set */
-    const localpart = user.userId.match(localpart_regex)[1];
-    return user.displayName ? user.displayName : localpart;
-}
-export function get_homeserver(user) {
-    /* Split user ID at first : to get homeserver portion */
-    return user.userId.split(/:(.+)/)[1];
-}
-
 export async function logoutMatrix() {
     // Stop client if started
     if (global.matrix !== undefined) {
@@ -111,13 +99,22 @@ export async function logoutMatrix() {
 
 export function tryGetUser(userId) {
     /* Sometimes the user mightn't be cached, so make a pretend user object */
-
     var user = global.matrix.getUser(userId);
     if (!user) {
         user = {displayName: userId, userId: userId};
     }
 
     return user;
+}
+
+export function getMember(userId, roomId) {
+    const room = global.matrix.getRoom(roomId);
+    const member = room.getMember(userId);
+    return member;
+}
+export function getHomeserver(user) {
+    /* Split user ID at first : to get homeserver portion */
+    return user.userId.split(/:(.+)/)[1];
 }
 
 export function powerLevelText(userId, roomId) {

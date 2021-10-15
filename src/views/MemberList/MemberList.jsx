@@ -64,7 +64,9 @@ function MemberList({ currentRoom, setUserPopup }) {
         }
 
         return (
-            <Member user={user} key={member.userId} subClass="member-list__member data__user-popup" clickFunc={clickFunc} />
+            <Member member={member} key={member.userId}
+                subClass="member-list__member data__user-popup" clickFunc={clickFunc} 
+            />
         );
     });
 
