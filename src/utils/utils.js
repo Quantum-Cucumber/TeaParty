@@ -104,4 +104,18 @@ export function useDebouncedState(initial, delay) {
     // Appears like useState. The current state value and the function to add to the queue
     return [debouncedState, queueState];
 }
-  
+
+export function friendlyList(list, max=null, plural, singular) {
+    if (!singular) {singular = plural}
+    if (list.length === 0) {return ""}
+
+    if (max !== null && list.length > max) {
+        const remainder = list.length - max;
+        list.splice(max, remainder, `${remainder} ${remainder === 1 ? "other" : "others"}`)
+    }
+
+    if (list.length === 1) {return list[0] + (singular ? ` ${singular}` : "")}
+
+    const last = list.pop();
+    return list.join(", ") + ` and ${last}` + (plural ? ` ${plural}` : "");
+}

@@ -112,9 +112,13 @@ export function getMember(userId, roomId) {
     const member = room.getMember(userId);
     return member;
 }
+// These two mimic matrix-js-sdk's way of extracting this info
+export function getLocalpart(user) {
+    return user.userId.split(":")[0].substring(1);
+}
 export function getHomeserver(user) {
     /* Split user ID at first : to get homeserver portion */
-    return user.userId.split(/:(.+)/)[1];
+    return user.userId.replace(/^.*?:/, '');
 }
 
 export function powerLevelText(userId, roomId) {

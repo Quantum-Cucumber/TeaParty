@@ -78,7 +78,7 @@
     color: var(--text);
     padding: 5px 10px;
     border-radius: 10px;
-    width: max-content;
+    max-width: 250px;
     pointer-events: none;
     
     position: fixed;
@@ -157,7 +157,7 @@
         text-overflow: ellipsis;
         white-space: nowrap;
         flex: 1;
-        margin-left: 8px;
+        margin: 0 8px;
     }
 
     &--danger {

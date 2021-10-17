@@ -3,6 +3,7 @@ import Chat from "./Chat/Chat";
 import { useEffect, useState } from "react";
 import Icon from "@mdi/react";
 import { mdiAlert } from "@mdi/js";
+import { friendlyList } from "../../utils/utils";
 
 
 export default function ChatPanel({currentRoom}) {
@@ -78,15 +79,11 @@ function TypingIndicator({currentRoom}) {
         }
     } else {
         const typingList = [...typing];
-        if (typingList.length === 1) {
-            text = typingList[0] + " is typing...";
-        }
-        else if (typingList.length > 3) {
+        if (typingList.length > 3) {
             text = "Several people are typing...";
         }
         else if (typingList.length !== 0) {  // Between 2 and 3 people
-            const last = typingList.slice(typingList.length - 1);
-            text = typingList.slice(0, typingList.length - 1).join(", ") + ` and ${last} are typing...`;
+            text = friendlyList(typingList, null, "are", "is") + " typing...";
         }
     }
 

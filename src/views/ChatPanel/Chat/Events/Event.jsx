@@ -3,6 +3,7 @@ import { useContext, memo, useState, useEffect } from "react";
 import MessageContent, { EditMarker, MessageText } from "./MessageContent";
 import { Avatar, Member, userPopupCtx } from "../../../../components/user";
 import { Button, Tooltip, contextMenuCtx, ContextMenu, Option, Modal, TextCopy } from "../../../../components/interface";
+import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
 
 import { classList, getUserColour } from "../../../../utils/utils";
 import { dateToTime, messageTimestamp, messageTimestampFull } from "../../../../utils/datetime";
@@ -10,7 +11,7 @@ import Settings from "../../../../utils/settings";
 import { getMember, getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
 import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent } from "../../../../utils/event-grouping";
 
-import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiAccountMinus, mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiPencil, mdiImage, mdiTextBox, mdiPin, mdiShield } from "@mdi/js";
+import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiAccountMinus, mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiPencil, mdiImage, mdiTextBox, mdiPin, mdiShield, mdiEmoticon } from "@mdi/js";
 import Icon from "@mdi/react";
 
 function eventIsSame(oldProps, newProps) {
@@ -18,12 +19,13 @@ function eventIsSame(oldProps, newProps) {
     const newEvent = newProps.event;
 
     return (
+        // Edits
         oldEvent.replacingEventId() === newEvent.replacingEventId()
     );
 }
 
 export const TimelineEvent = memo(({ event, partial=false }) => {    
-    let eventEntry;
+    let eventEntry = null;
     if (isMessageEvent(event)) {
         if (event.getContent().msgtype === "m.emote") {
             eventEntry = (<EmoteMsg event={event} partial={partial} />);
@@ -53,12 +55,28 @@ function EventWrapper({ event, partial=false, compact=false, children }) {
     const [hover, setHover] = useState(false);
 
     const author = tryGetUser(event.getSender());
-    if (!author) {return;}
-
     function userPopup(e) {
         setUserPopup({parent: e.target, user: author})
     }
 
+    // Reactions
+    const [reactionsRelation, setReactionsRelation] = useState(getEventReactions(event));
+    useEffect(() => {
+        // No need to listen for relation creation if relation exists
+        if (reactionsRelation) {return}
+
+        function updateReactionRelation() {
+            setReactionsRelation(getEventReactions(event));
+            event.removeListener("Event.relationsCreated", updateReactionRelation);
+        }
+        event.on("Event.relationsCreated", updateReactionRelation);
+
+        return () => {
+            event.removeListener("Event.relationsCreated", updateReactionRelation);
+        }
+    }, [event, reactionsRelation])
+
+    if (!author) {return}
     return (
         <div className={classList("event", {"event--hover": hover}, {"event--partial": partial})}>
             <div className="event__offset">
@@ -72,9 +90,136 @@ function EventWrapper({ event, partial=false, compact=false, children }) {
             </div>
             <div className="event__body">
                 {children}
+                {reactionsRelation && <Reactions reactionsRelation={reactionsRelation} />}
             </div>
-            <EventButtons event={event} setHover={setHover} />
+            <EventButtons event={event} setHover={setHover} reactions={reactionsRelation} />
         </div>
+    )
+}
+
+
+function EventButtons(props) {
+    const setPopup = useContext(contextMenuCtx);
+
+    return (
+        <div className="event__buttons">
+            {/*<Button subClass="message__buttons__entry" path={mdiReply} size="100%" tipDir="top" tipText="Reply" />
+            <Button subClass="message__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction" />*/}
+            <Button subClass="event__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
+                clickFunc={(e) => {
+                    setPopup(
+                        <MoreOptions parent={e.target.closest(".event__buttons__entry")} {...props} />
+                    );
+                }}
+            />
+        </div>
+    )
+}
+
+const messageOptions = {
+    reacts: {
+        path: mdiEmoticon,
+        condition: ({ reactions }) => {
+            return reactions ? true : false
+        },
+        title: "Reactions",
+        label: "Reactions",
+        bodyClass: "overlay__modal--reacts",
+        render: ({ reactions, setUserPopup }) => {
+            return (
+                <ReactionViewer reactions={reactions} setUserPopup={setUserPopup} />
+            )
+        },
+    },
+    read: {
+        path: mdiCheckAll,
+        label: "Read receipts",
+        title: "Read By",
+        bodyClass: "overlay__modal--read",
+        render: ({ event, setUserPopup }) => {
+            const readBy = getMembersRead(event);
+            return (<>
+                {
+                    readBy.map((member) => {
+                        const user = global.matrix.getUser(member.userId);
+                        return (
+                            <Member member={member} key={member.userId} subClass="data__user-popup" clickFunc={
+                                (e) => {
+                                    setUserPopup({user: user, parent: e.target.closest(".user")});
+                                }
+                            } />
+                        )
+                    })
+                }
+            </>)
+        },
+    },
+    source: {
+        path: mdiXml,
+        condition: () => {return Settings.getSetting("devMode") === true},
+        label: "View source",
+        title: "Event Source",
+        render: ({ trueEvent }) => {
+            const eventJSON = JSON.stringify(trueEvent.toJSON(), null, 4);
+            return (<>
+               <TextCopy text={trueEvent.getId()}>
+                    <b>Event ID:</b> {trueEvent.getId()}
+                </TextCopy>
+                <TextCopy text={trueEvent.getRoomId()}>
+                    <b>Room ID:</b> {trueEvent.getRoomId()}
+                </TextCopy>
+                <br />
+                <code className="codeblock">
+                    <TextCopy text={eventJSON}>
+                        {eventJSON}
+                    </TextCopy>
+                </code> 
+            </>)
+        },
+    },
+}
+
+function MoreOptions({ parent, event, setHover, reactions }) {
+    const [currentModal, selectModal] = useState(null);
+    const hide = () => {selectModal(null)};
+    const setUserPopup = useContext(userPopupCtx);
+
+    // Maintain the :hover effect on the selected message when this menu is rendered
+    useEffect(() => {
+        setHover(true);
+        return () => {setHover(false)};
+    }, [setHover])
+
+    let modal;
+    if (messageOptions[currentModal]) {
+        const {title, render, modalClass, bodyClass} = messageOptions[currentModal];
+        const trueEvent = event.replacingEvent() || event;
+
+        modal = (
+            <Modal title={title} hide={hide} modalClass={modalClass} bodyClass={bodyClass}>
+                {render({ trueEvent, event, setUserPopup, reactions})}
+            </Modal>
+        );
+    }
+
+    return (
+        <ContextMenu parent={parent} x="left" y="align-top">
+            {
+                Object.keys(messageOptions).filter((key) => {
+                    const condition = messageOptions[key].condition;
+                    return condition ? condition({event, reactions}) : true;
+                }).map((key) => {
+                    const {path, label} = messageOptions[key];
+
+                    return (
+                        <Option text={label} select={() => {selectModal(key)}} key={key} compact>
+                            <Icon path={path} size="1em" color="var(--text)" />
+                        </Option>
+                    )
+                })
+            }
+            {modal}
+        </ContextMenu>
     )
 }
 
@@ -140,7 +285,7 @@ function IconEvent({ event, partial, userId, icon, text }) {
     const setUserPopup = useContext(userPopupCtx);
     const user = tryGetUser(userId);
     function userPopup(e) {
-        setUserPopup({parent: e.target, user: user})
+        setUserPopup({parent: e.target, user})
     }
     
     return (
@@ -148,7 +293,7 @@ function IconEvent({ event, partial, userId, icon, text }) {
             <div className="event--compact-event">
                 <Icon path={icon} color="var(--text-greyed)" size="1em" className="event--compact-event__icon" />
                 <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
-                    {getMember(event.getSender(), event.getRoomId()).name}
+                    {getMember(userId, event.getRoomId()).name}
                 </span>
                 {text}
             </div>
@@ -231,116 +376,5 @@ function PinEvent({ event, partial }) {
     if (!userId) {return null};
     return (
         <IconEvent event={event} partial={partial} userId={userId} icon={mdiPin} text="changed the room pins" />
-    )
-}
-
-function EventButtons(props) {
-    const setPopup = useContext(contextMenuCtx);
-
-    return (
-        <div className="event__buttons">
-            {/*<Button subClass="message__buttons__entry" path={mdiReply} size="100%" tipDir="top" tipText="Reply" />
-            <Button subClass="message__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction" />*/}
-            <Button subClass="event__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
-                clickFunc={(e) => {
-                    setPopup(
-                        <MoreOptions parent={e.target.closest(".event__buttons__entry")} {...props} />
-                    );
-                }}
-            />
-        </div>
-    )
-}
-
-const messageOptions = {
-    read: {
-        path: mdiCheckAll,
-        title: "Read By",
-        label: "Read receipts",
-        bodyClass: "overlay__modal--read",
-        render: ({ event, setUserPopup }) => {
-            const readBy = getMembersRead(event);
-            return (<>
-                {
-                    readBy.map((member) => {
-                        const user = member.user || global.matrix.getUser(member.userId);
-                        return (
-                            <Member user={user} key={member.userId} subClass="data__user-popup" clickFunc={
-                                (e) => {
-                                    setUserPopup({user: user, parent: e.target.closest(".user")});
-                                }
-                            } />
-                        )
-                    })
-                }
-            </>)
-        },
-    },
-    source: {
-        path: mdiXml,
-        condition: () => {return Settings.getSetting("devMode") === true},
-        title: "Event Source",
-        label: "View source",
-        render: ({ trueEvent }) => {
-            const eventJSON = JSON.stringify(trueEvent.toJSON(), null, 4);
-            return (<>
-               <TextCopy text={trueEvent.getId()}>
-                    <b>Event ID:</b> {trueEvent.getId()}
-                </TextCopy>
-                <TextCopy text={trueEvent.getRoomId()}>
-                    <b>Room ID:</b> {trueEvent.getRoomId()}
-                </TextCopy>
-                <br />
-                <code className="codeblock">
-                    <TextCopy text={eventJSON}>
-                        {eventJSON}
-                    </TextCopy>
-                </code> 
-            </>)
-        },
-    },
-}
-
-function MoreOptions({ parent, event, setHover }) {
-    const [currentModal, selectModal] = useState(null);
-    const hide = () => {selectModal(null)};
-    const setUserPopup = useContext(userPopupCtx);
-
-    // Maintain the :hover effect on the selected message when this menu is rendered
-    useEffect(() => {
-        setHover(true);
-        return () => {setHover(false)};
-    }, [setHover])
-
-    let modal;
-    if (messageOptions[currentModal]) {
-        const {title, render, modalClass, bodyClass} = messageOptions[currentModal];
-        const trueEvent = event.replacingEvent() || event;
-
-        modal = (
-            <Modal title={title} hide={hide} modalClass={modalClass} bodyClass={bodyClass}>
-                {render({ trueEvent, event, setUserPopup})}
-            </Modal>
-        );
-    }
-
-    return (
-        <ContextMenu parent={parent} x="left" y="align-top">
-            {
-                Object.keys(messageOptions).filter((key) => {
-                    const condition = messageOptions[key].condition;
-                    return condition ? condition() : true;
-                }).map((key) => {
-                    const {path, label} = messageOptions[key];
-
-                    return (
-                        <Option text={label} select={() => {selectModal(key)}} key={key} compact>
-                            <Icon path={path} size="1em" color="var(--text)" />
-                        </Option>
-                    )
-                })
-            }
-            {modal}
-        </ContextMenu>
     )
 }

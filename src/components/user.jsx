@@ -2,7 +2,7 @@ import "./components.scss";
 import { getUserColour, acronym, classList } from "../utils/utils";
 import { useEffect, useRef, useCallback, useLayoutEffect, createContext } from "react";
 import { useBindEscape } from '../utils/utils';
-import { powerLevelText } from "../utils/matrix-client";
+import { getLocalpart, powerLevelText } from "../utils/matrix-client";
 import { positionFloating, TextCopy } from "./interface";
 
 export function Avatar({ user, subClass, clickFunc }) {
@@ -87,7 +87,7 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
     return (
         <div className="user-popup" ref={popupRef}>
             <Avatar user={user} subClass="user-popup__avatar" />
-            <div className="user-popup__display-name">{user.rawDisplayName}</div>
+            <div className="user-popup__display-name">{user.rawDisplayName || getLocalpart(user)}</div>
             <div className="user-popup__text">
                 <TextCopy text={user.userId} />
             </div>

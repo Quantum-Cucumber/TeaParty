@@ -6,10 +6,9 @@ $event-offset: 2.75em;
 /* Base Event */
 .event {
     margin-top: 10px;
-    padding: 0 $horizontal-padding;
+    padding: 2px $horizontal-padding;
     &--partial {
         margin-top: 0;
-        padding: 2px $horizontal-padding;
     }
     box-sizing: border-box;
 
@@ -56,10 +55,39 @@ $event-offset: 2.75em;
         }
     }
 }
+.event__reactions {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    margin-top: 0.4em;
+    font-size: 0.95em;
+
+    &__reaction {
+        flex: none;
+        user-select: none;
+        /*cursor: pointer;*/
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        background-color: var(--bg-focus);
+        padding: 0.1em 0.5em;
+        margin-right: 0.4em;
+        border-radius: 0.5em;
+
+        &:hover {
+            box-shadow: 0px 0px 0px 1px var(--text-greyed) inset;
+        }
+        &--selected {
+            background-color: var(--primary);
+        }
+    }
+}
 .event__timestamp {
     color: var(--text-greyed);
     font-size: 0.8em;
-    line-height: 1em;
+    line-height: 1rem;
 }
 /* Event variations */
 .event--partial {
@@ -302,6 +330,36 @@ $event-offset: 2.75em;
 
 .overlay__modal--read {
     width: 400px;
+    .user {
+        height: 2.5rem;
+        padding: 5px;
+        border-radius: 5px;
+
+        &:hover {
+            background-color: var(--bg);
+        }
+    }
+}
+
+.overlay__modal--reacts {
+    display: flex;
+    flex-direction: row;
+    width: 400px;
+    overflow: hidden;
+
+    &__emotes {
+        border-right: 2px solid var(--text-greyed);
+        padding-right: 0.5rem;
+        margin-right: 0.5rem;
+        overflow: hidden auto;
+        @include common.scroll-style(var(--bg-focus));
+    }
+    &__users {
+        flex: 1 1 auto;
+        overflow: hidden scroll;
+        @include common.scroll-style(var(--bg-focus));
+    }
+
     .user {
         height: 2.5rem;
         padding: 5px;

@@ -23,7 +23,6 @@ export default class eventTimeline {
     constructor(roomId) {
         this.roomId = roomId;
         this.room = global.matrix.getRoom(this.roomId);
-        this.timeline = this.room?.getLiveTimeline().getEvents();
         this.userId = global.matrix.getUserId();
     }
     canLoad = true;
@@ -58,9 +57,12 @@ export default class eventTimeline {
 
     getEvents() {
         /* Filter events that will update the state of the chat */
-        let compiled = this.timeline.filter((event) => {
+        let compiled = this.room?.getLiveTimeline().getEvents().filter((event) => {
             // isMessageEvent also counts message redactions/edits
-            return isMessageEvent(event) || shouldDisplayEvent(event);
+            return (
+                isMessageEvent(event) || shouldDisplayEvent(event) || 
+                event.getType() === "m.room.redaction" || event.getType() === "m.reaction"
+            );
         })
         
         return compiled;
