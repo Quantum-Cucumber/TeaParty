@@ -105,6 +105,32 @@ export function useDebouncedState(initial, delay) {
     return [debouncedState, queueState];
 }
 
+export function useDownloadUrl(url) {
+    const [blobUrl, setBlobUrl] = useState();
+    function download(e) {
+        if (!url || blobUrl) {return}
+        e.preventDefault();
+
+        mediaToBlob(url)
+        .then((blob) => { 
+            setBlobUrl(blob)
+
+            e.target.closest("a").click();
+        })
+
+    }
+    
+    useEffect(() => {
+        return () => {
+            if (blobUrl) {
+                URL.revokeObjectURL(blobUrl);
+            }
+        }
+    }, [blobUrl])
+
+    return [blobUrl, download];
+}
+
 export function friendlyList(list, max=null, plural, singular) {
     if (!singular) {singular = plural}
     if (list.length === 0) {return ""}
@@ -118,4 +144,25 @@ export function friendlyList(list, max=null, plural, singular) {
 
     const last = list.pop();
     return list.join(", ") + ` and ${last}` + (plural ? ` ${plural}` : "");
+}
+
+export function bytesToFriendly(bytes) {
+    if (isNaN(bytes)) {return "? B"}
+    if (bytes < 1000) {return `${bytes} B`}
+    const units = ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];  // Yottabyte support is crucial
+
+    const power = Math.floor(Math.log(bytes) / Math.log(1000)); // Root 1024
+    const value = Math.round(bytes / Math.pow(1000, power) * 100) / 100;  // Math.round(n*100)/100 to get <2 d.p.
+    return  `${value} ${units[power - 1]}`;
+}
+
+export async function mediaToBlob(url) {
+    try {
+        const response = await fetch(url);
+        const blob = await response.blob();
+        return URL.createObjectURL(blob);
+    } 
+    catch {
+        return url;
+    }
 }

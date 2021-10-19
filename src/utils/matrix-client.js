@@ -151,13 +151,15 @@ export function getMembersRead(event) {
 
     var readUpTo = [];
     for (var i=0; i < roomEvents.length; i++) {  // Progress through timeline
-        readUpTo.push(...room.getReceiptsForEvent(roomEvents[i]))  // Add each user to array
-
+        readUpTo.push(...room.getReceiptsForEvent(roomEvents[i]).map((receipt) => receipt.userId))  // Add each user to array
+        // This event's author has likely read the events above it
+        // Primarily for events the current user sent
+        readUpTo.push(roomEvents[i].getSender());
         if (eventId === roomEvents[i].getId()) {break}  // Stop loop when we find the event
     }
-    readUpTo = [...new Set(readUpTo)];  // Dedup array    
+    readUpTo = [...new Set(readUpTo)];  // Dedup array
 
     return readUpTo.map((read) => {
-        return room.getMember(read.userId);
+        return room.getMember(read);
     })
 }

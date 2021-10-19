@@ -2,7 +2,7 @@ import "./components.scss";
 import Icon from '@mdi/react';
 import { mdiLoading, mdiDownload, mdiOpenInNew, mdiClose, mdiContentCopy } from "@mdi/js";
 import { useState, cloneElement, useRef, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
-import { classList, useBindEscape } from '../utils/utils';
+import { classList, useBindEscape, useDownloadUrl } from '../utils/utils';
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
     return (
@@ -272,40 +272,8 @@ export function Modal(props) {
     )
 }
 
-
-async function mediaToBlob(url) {
-    try {
-        const response = await fetch(url);
-        const blob = await response.blob();
-        return URL.createObjectURL(blob);
-    } 
-    catch {
-        return url;
-    }
-}
-
 export function ImagePopup({ sourceUrl, render, setRender, name }) {
-    const [blobUrl, setBlobUrl] = useState();
-    
-    useEffect(() => {
-        return () => {
-            if (blobUrl) {
-                URL.revokeObjectURL(blobUrl);
-            }
-        }
-    }, [blobUrl])
-
-    function download(e) {
-        if (!sourceUrl || blobUrl) {return}
-        e.preventDefault()
-
-        mediaToBlob(sourceUrl)
-        .then((url) => {
-            setBlobUrl(url);
-
-            e.target.closest("a").click();
-        })
-    }
+    const [blobUrl, download] = useDownloadUrl(sourceUrl);
 
     return (
         <Overlay click={() => {setRender(false)}} render={render} fade={0.15}

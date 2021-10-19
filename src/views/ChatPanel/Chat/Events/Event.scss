@@ -21,6 +21,9 @@ $event-offset: 2.75em;
     .event__buttons {
         display: flex;
     }
+    .event__reactions__reaction {
+        box-shadow: 0px 0px 0px 1px var(--bg) inset;
+    }
 }
 /* Event parts */
 .event {
@@ -75,12 +78,11 @@ $event-offset: 2.75em;
         padding: 0.1em 0.5em;
         margin-right: 0.4em;
         border-radius: 0.5em;
-
         &:hover {
-            box-shadow: 0px 0px 0px 1px var(--text-greyed) inset;
+            background-color: var(--bg);
         }
         &--selected {
-            background-color: var(--primary);
+            background-color: var(--primary) !important;
         }
     }
 }
@@ -140,13 +142,13 @@ $event-offset: 2.75em;
             overflow: hidden;
             white-space: nowrap;
             flex: 0 1 auto;
+            margin-right: 1ex;
             
             &:hover {
                 text-decoration: underline;
             }
         }
         .event__timestamp {
-            margin-left: 1ex;
             flex: none;
         }
     }
@@ -315,6 +317,52 @@ $event-offset: 2.75em;
     max-height: 240px;
 }
 
+.message__content__file {
+    width: 100%;
+    max-width: 300px;
+    height: 3rem;
+    margin-top: 0.25rem;
+    padding: 0.2rem 0.5rem;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    background-color: var(--bg-focus);
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+
+    &__icon {
+        flex: none;
+        margin-right: 0.3rem;
+    }
+    &__text {
+        flex: 1 1 auto;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+
+        &__name {
+            font-size: 0.9rem;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        &__size {
+            color: var(--text-greyed);
+            font-size: 0.8rem;
+            overflow: hidden;
+            white-space: nowrap;
+            user-select: none;
+        }
+    }
+    &__download {
+        flex: 0;
+        margin: 0 0.3rem;
+    }
+}
+
 .overlay__body code {
     flex: 1 1 auto;
     position: relative;
@@ -346,13 +394,19 @@ $event-offset: 2.75em;
     flex-direction: row;
     width: 400px;
     overflow: hidden;
-
     &__emotes {
         border-right: 2px solid var(--text-greyed);
         padding-right: 0.5rem;
         margin-right: 0.5rem;
         overflow: hidden auto;
         @include common.scroll-style(var(--bg-focus));
+
+        .option {
+            aspect-ratio: 1;
+        }
+    }
+    .option__text {
+        margin: 0;
     }
     &__users {
         flex: 1 1 auto;
