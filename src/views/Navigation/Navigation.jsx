@@ -2,7 +2,7 @@ import "./Navigation.scss";
 import { useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import { Button, Tooltip, Loading, Option, Modal } from "../../components/interface";
+import { Button, Tooltip, Loading, Option, Modal, Resize } from "../../components/interface";
 import { Avatar } from "../../components/user";
 import { acronym, useBindEscape, classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
@@ -23,22 +23,24 @@ function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, ro
                 }
                 <GroupList roomNav={roomNav} setGroup={setGroup} groupList={groupList} currentGroup={currentGroup} />
             </div>
-            <div className="column column--rooms">
-                <div className="column--rooms__label">{currentGroup.name}</div>
-                <div className="column--rooms__holder scroll--hover">
-                    {roomPanel ?
-                        <RoomList rooms={roomPanel} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> :
-                        <div className="column--rooms__holder__loading"><Loading size="30px" /></div>
-                    }
-                </div>
+            <Resize initialSize={260} side="right" minSize="60px" collapseSize={100}>
+                <div className="column column--rooms">
+                    <div className="column--rooms__label">{currentGroup.name}</div>
+                    <div className="column--rooms__holder scroll--hover">
+                        {roomPanel ?
+                            <RoomList rooms={roomPanel} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> :
+                            <div className="column--rooms__holder__loading"><Loading size="30px" /></div>
+                        }
+                    </div>
 
-                <div className="client__user-bar">
-                    <MyUser user={global.matrix.getUser(global.matrix.getUserId())} />
-                    <div className="client__user-bar__options-box">
-                        <Button path={mdiCog} clickFunc={() => {setPage("settings")}} subClass="client__user-bar__options" size="24px" tipDir="top" tipText="Settings" />
+                    <div className="client__user-bar">
+                        <MyUser />
+                        <div className="client__user-bar__options-box">
+                            <Button path={mdiCog} clickFunc={() => {setPage("settings")}} subClass="client__user-bar__options" size="24px" tipDir="top" tipText="Settings" />
+                        </div>
                     </div>
                 </div>
-            </div>
+            </Resize>
         </>
     );
 }
@@ -138,10 +140,12 @@ function RoomList({ rooms, currentGroup, currentRoom, selectRoom }) {
     return elements;
 }
 
-function MyUser({ user }) {
+function MyUser() {
     const defaultText = "Copy user ID";
     const clickedText = "Copied";
     const [tooltipText, setTooltipText] = useState(defaultText);
+
+    const user = global.matrix.getUser(global.matrix.getUserId());
 
     function click() {
         navigator.clipboard.writeText(user.userId);
@@ -149,17 +153,15 @@ function MyUser({ user }) {
         setTimeout(() => setTooltipText(defaultText), 1000);
     }
 
-    return (
-        <div className="user client__user-bar__profile" onClick={click}>
+    return (<>
             <Avatar subClass="user__avatar" user={user}></Avatar>
             <Tooltip text={tooltipText} dir="top" x="mouse" delay={0.5}>
-                <div className="user__text-box">
+                <div className="user__text-box" onClick={click}>
                     <span className="user__text user__username">{user.displayName}</span>
                     <span className="user__text user__homeserver">{getHomeserver(user)}</span>
                 </div>
             </Tooltip>
-        </div>
-    );
+    </>);
 }
 
 function InvitesIcon({ invLen, invites }) {

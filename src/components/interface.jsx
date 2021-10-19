@@ -1,8 +1,8 @@
 import "./components.scss";
-import Icon from '@mdi/react';
-import { mdiLoading, mdiDownload, mdiOpenInNew, mdiClose, mdiContentCopy } from "@mdi/js";
 import { useState, cloneElement, useRef, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
 import { classList, useBindEscape, useDownloadUrl } from '../utils/utils';
+import Icon from '@mdi/react';
+import { mdiLoading, mdiDownload, mdiOpenInNew, mdiClose, mdiContentCopy } from "@mdi/js";
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
     return (
@@ -343,6 +343,71 @@ export function TextCopy({ text, children }) {
         <div className="copy-text">
         {children || text}&nbsp;
         <Button subClass="copy-text__button" path={mdiContentCopy} size="100%" tipDir="top" tipText={tooltip} clickFunc={copyText} />
+        </div>
+    )
+}
+
+export function Resize({ children, initialSize, side, minSize = "0px", collapseSize = 0 }) {
+    const [dragging, setDrag] = useState(false);
+    const [size, setSize] = useState(initialSize);
+    const container = useRef();
+
+    function mouseDown(e) {
+        e.preventDefault();
+        setDrag(true);
+    }
+    const mouseUp = useCallback(() => {
+        setDrag(false)
+    }, [setDrag])
+
+    const mouseMove = useCallback((e) => {
+        if (!container.current) {return}
+
+        const bounding = container.current.getBoundingClientRect();
+        switch (side) {
+            case "top":
+                setSize(bounding.bottom - e.clientY);
+                break;
+            case "right":
+                setSize(e.clientX - bounding.left);
+                break;
+            case "bottom":
+                setSize(e.clientY - bounding.top);
+                break;
+            case "left":
+                setSize(bounding.right - e.clientX);
+                break;
+            default:
+                break;
+        }
+    }, [setSize, side])
+
+    useEffect(() => {
+        if (!container.current) {return}
+
+        if (dragging) {
+            document.addEventListener("mousemove", mouseMove)
+            document.addEventListener("mouseup", mouseUp)
+        }
+
+        return () => {  // Will fire when dragging changes
+            document.removeEventListener("mousemove", mouseMove)
+            document.addEventListener("mouseup", mouseUp)
+        }
+    }, [dragging, mouseMove, mouseUp])
+
+
+    let style;
+    if (side === "left" || side === "right") {
+        style = {width: size >= collapseSize ? size : minSize , minWidth: minSize};
+    } 
+    else if (side === "top" || side === "bottom") {
+        style = {height: size >= collapseSize ? size : minSize, minHeight: minSize};
+    }
+    return (
+        <div className={`resizable resizable--${side}`} style={{...style}} ref={container}>
+            {children}
+            <div className="resizable__handle" onMouseDown={mouseDown}></div>
         </div>
     )
 }

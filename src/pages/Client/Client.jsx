@@ -1,7 +1,7 @@
 import "./Client.scss";
 import { useEffect, useState, useRef } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
-import { contextMenuCtx, Loading, Overlay } from "../../components/interface";
+import { contextMenuCtx, Loading, Overlay, Resize } from "../../components/interface";
 import { UserPopup, userPopupCtx } from "../../components/user";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
@@ -65,9 +65,11 @@ function Client() {
             <div className="column column--chat">
                 <ChatPanel currentRoom={currentRoom} />
             </div>
-            <div className="column column--right">
-                <MemberList currentRoom={currentRoom} setUserPopup={setUserPopup} />
-            </div>
+            <Resize side="left" initialSize={300} collapseSize={150}>
+                <div className="column column--right">
+                    <MemberList currentRoom={currentRoom} setUserPopup={setUserPopup} />
+                </div>
+            </Resize>
             <UserPopup parent={userPopupInfo?.parent} user={userPopupInfo?.user} setUserPopup={setUserPopup} room={currentRoom} />
             
             <Overlay dim={false} render={page === "settings"} mountAnimation="page__zoom-in 0.1s ease 0s 1" unmountAnimation="page__zoom-out 0.1s ease 0s 1">

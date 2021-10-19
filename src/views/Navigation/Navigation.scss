@@ -4,7 +4,6 @@ $border: 2px solid var(--bg-dark);
 /* Rooms panel */
 .column--rooms {
     flex: 0 0 auto;
-    width: 260px;
     background-color: var(--bg-focus);
     position: relative;
     display: flex;
@@ -15,6 +14,10 @@ $border: 2px solid var(--bg-dark);
         border-bottom: $border;
         padding: 15px 18px;
         font-size: 1.1rem;
+        
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
 
     &__holder {
@@ -78,10 +81,10 @@ $border: 2px solid var(--bg-dark);
     flex: 0 0 auto;
     font-size: 0.9rem;
     border-top: $border;
+    overflow: hidden;
 
-    &__profile {
-        height: 100%;
-        flex: 1 1 auto;
+    > .user__text-box {
+        cursor: pointer;
     }
 
     &__options-box {

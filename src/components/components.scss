@@ -1,4 +1,5 @@
 @use "../utils/common";
+@use "sass:math";
 
 /* User */
 .user {
@@ -51,6 +52,7 @@
         text-overflow: ellipsis;
         overflow: hidden;
         user-select: none;
+        white-space: nowrap;
     }
 }
 
@@ -394,5 +396,53 @@
                 color: var(--text);
             }
         }
+    }
+}
+
+/* Resize */
+.resizable {
+    $size: 10px;
+    position: relative;
+
+    &--left, &--right {
+        > * {
+            width: 100%;
+        }
+        .resizable__handle {
+            height: 100%;
+            width: $size;
+            top: 0;
+        }
+    }
+    &--top, &--bottom {
+        > * {
+            height: 100%;
+        }
+        .resizable__handle {
+            width: 100%;
+            height: $size;
+            left: 0;
+        }
+    }
+    &__handle {        
+        position: absolute;
+        z-index: 1;
+    }
+
+    &--top &__handle{
+        top: - math.div($size, 2);
+        cursor: row-resize;
+    }
+    &--right &__handle{
+        right: - math.div($size, 2);
+        cursor: col-resize;
+    }
+    &--bottom &__handle{
+        bottom: - math.div($size, 2);
+        cursor: row-resize;
+    }
+    &--left &__handle{
+        left: - math.div($size, 2);
+        cursor: col-resize;
     }
 }
