@@ -81,9 +81,11 @@ function EventWrapper({ event, partial=false, compact=false, children }) {
         <div className={classList("event", {"event--hover": hover}, {"event--partial": partial})}>
             <div className="event__offset">
                 { partial ?
-                    <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
-                        <span className="event__timestamp">{dateToTime(event.getDate())}</span>
-                    </Tooltip>
+                    <div className="event__timestamp-align">
+                        <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
+                                <span className="event__timestamp">{dateToTime(event.getDate())}</span>
+                        </Tooltip>
+                    </div>
                 :
                     <Avatar user={author} subClass={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} clickFunc={userPopup} />
                 }

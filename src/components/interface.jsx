@@ -397,15 +397,11 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
     }, [dragging, mouseMove, mouseUp])
 
 
-    let style;
-    if (side === "left" || side === "right") {
-        style = {width: size >= collapseSize ? size : minSize , minWidth: minSize};
-    } 
-    else if (side === "top" || side === "bottom") {
-        style = {height: size >= collapseSize ? size : minSize, minHeight: minSize};
-    }
+    const dimension = side === "left" || side === "right" ? "width" : "height"
+    const collapse = size < collapseSize;
+    const style = {[dimension]: collapse ? minSize : size , [`min${dimension}`]: minSize};
     return (
-        <div className={`resizable resizable--${side}`} style={{...style}} ref={container}>
+        <div className={classList("resizable", "resizable--"+side, {"resizable--collapsed": collapse})} style={style} ref={container}>
             {children}
             <div className="resizable__handle" onMouseDown={mouseDown}></div>
         </div>

@@ -427,6 +427,10 @@
     &__handle {        
         position: absolute;
         z-index: 1;
+
+        &:active {
+            background-image: linear-gradient(90deg, transparent, var(--border), transparent);
+        }
     }
 
     &--top &__handle{

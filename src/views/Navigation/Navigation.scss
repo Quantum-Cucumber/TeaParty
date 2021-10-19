@@ -38,6 +38,15 @@ $border: 2px solid var(--bg-dark);
         }
     }
 }
+.resizable--collapsed {
+    .column--rooms__holder {
+        padding-top: 15px;
+    }
+
+    .column--rooms__label {
+        display: none;
+    }
+}
 
 .room__icon__crop {
     width: 1.5rem;
