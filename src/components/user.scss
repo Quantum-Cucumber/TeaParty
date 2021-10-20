@@ -1,0 +1,55 @@
+
+/* User */
+.user {
+    display: flex;
+    flex-direction: row;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.avatar__crop {
+    border-radius: 30%;
+    overflow: hidden;
+    height: 100%;
+    aspect-ratio: 1;
+    flex: 0 0 auto;
+    background-color: transparent !important;
+}
+.avatar {
+    width: 100%;
+    height: 100%;
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+    color: var(--bg);
+}
+
+.user__text-box {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-evenly;
+    overflow-x: hidden;
+}
+
+.user {
+    &__avatar {
+        margin-right: 0.5em;
+    }
+    
+    &__username {
+    color: var(--text);
+    }
+    &__homeserver {
+        color: var(--text-greyed);
+    }
+    
+    &__text {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        user-select: none;
+        white-space: nowrap;
+    }
+}

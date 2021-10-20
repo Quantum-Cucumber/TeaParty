@@ -16,10 +16,23 @@
 }
 
 @mixin codeblock {
+    /* As a mixin to be reused in message contents and in .codeblock */
     display: block;
     padding: 0.4rem 0.5rem;
     box-sizing: border-box;
     border: 1px solid var(--border);
     border-radius: 0.25rem;
     margin: 2px 0;
+}
+
+$z-map: (
+    tooltip: 50,
+    overlay: 20,  /* Fade overlay for modal */
+    modal: 21,
+    popup: 40,  /* For user popup/context menu */
+    resize-handle: 1, /* Needs to just be on top of the sibling div */
+);
+
+@function z-index($key) {
+    @return map-get($z-map, $key);
 }

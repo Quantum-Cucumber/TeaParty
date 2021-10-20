@@ -1,9 +1,11 @@
-import "./components.scss";
+import "./user.scss";
 import { getUserColour, acronym, classList } from "../utils/utils";
 import { useEffect, useRef, useCallback, useLayoutEffect, createContext } from "react";
 import { useBindEscape } from '../utils/utils';
 import { getLocalpart, powerLevelText } from "../utils/matrix-client";
-import { positionFloating, TextCopy } from "./interface";
+import { positionFloating } from "./popups";
+import { TextCopy } from "./wrappers";
+
 
 export function Avatar({ user, subClass, clickFunc }) {
     // Get mxc:// url 

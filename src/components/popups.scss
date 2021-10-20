@@ -1,74 +1,4 @@
 @use "../utils/common";
-@use "sass:math";
-
-/* User */
-.user {
-    display: flex;
-    flex-direction: row;
-    cursor: pointer;
-    overflow: hidden;
-}
-
-.avatar__crop {
-    border-radius: 30%;
-    overflow: hidden;
-    height: 100%;
-    aspect-ratio: 1;
-    flex: 0 0 auto;
-    background-color: transparent !important;
-}
-.avatar {
-    width: 100%;
-    height: 100%;
-    user-select: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-weight: bold;
-    color: var(--bg);
-}
-
-.user__text-box {
-    flex: 1 1 auto;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-evenly;
-    overflow-x: hidden;
-}
-
-.user {
-    &__avatar {
-        margin-right: 0.5em;
-    }
-    
-    &__username {
-    color: var(--text);
-    }
-    &__homeserver {
-        color: var(--text-greyed);
-    }
-    
-    &__text {
-        text-overflow: ellipsis;
-        overflow: hidden;
-        user-select: none;
-        white-space: nowrap;
-    }
-}
-
-/* Button */
-
-.mdi-icon {
-    cursor: pointer;
-    color: var(--text);
-    display: block;
-    
-    &:hover {
-    opacity: 0.7;
-    }
-}
-
-/* Tooltip */
 
 .tooltip {
     $offset: 10px;
@@ -86,7 +16,7 @@
     position: fixed;
     top: 0px;
     left: 0px;
-    z-index: 500;
+    z-index: common.z-index("tooltip");
 
     /* Visibility */
     visibility: hidden;
@@ -125,88 +55,14 @@
     }
 }
 
-/* Selectable */
-
-.option {
-    width: 100%;
-    padding: 8px;
-    box-sizing: border-box;
-    border-radius: 10px;
-    cursor: pointer;
-    user-select: none;
-    /* Vertically center children */
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    overflow: hidden;
-
-    &:not(:last-child) {
-        margin-bottom: 3px;
-    }
-
-    &:hover, &--selected {
-        background-color: var(--primary);
-
-        .option__notification, .option__unread {
-            background-color: var(--text);
-            color: var(--primary);
-        }
-    }
-
-    &__text {
-        display: inline-block;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        flex: 1;
-        margin: 0 8px;
-    }
-
-    &--danger {
-        color: var(--error);
-        background-color: none;
-
-        &:hover {
-            background-color: var(--error);
-            color: var(--text);
-        }
-    }
-    &--compact {
-        padding: 5px 8px;
-        border-radius: 5px;
-    }
-
-    &__notification {
-        flex: none;
-        background-color: var(--primary);
-        border-radius: 0.6rem;
-        padding: 2px;
-        height: 1.3rem;
-        line-height: 1.3rem;
-        aspect-ratio: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    &__unread {
-        flex: none;
-        height: 8px;
-        width: 8px;
-        background-color: var(--primary);
-        margin-right: 5px;
-        border-radius: 50%;
-    }
-}
 
 
-/* Overlay */
 .overlay {
     position: fixed;
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 100;
+    z-index: common.z-index("overlay");
     top: 0;
     bottom: 0;
     left: 0;
@@ -221,7 +77,7 @@
         position: fixed;
     }
     &__modal {
-        z-index: 101;
+        z-index: common.z-index("modal");
         position: relative;
 
         &--bg {
@@ -286,14 +142,14 @@
     }
 }
 
-/* User popup */
+
 .user-popup {
     position: fixed;
     padding: 16px;
     width: 250px;
     background-color: var(--bg-dark);
     border-radius: 15px;
-    z-index: 120;
+    z-index: common.z-index("popup");
     overflow-wrap: break-word;
 
     // Slide in animation
@@ -348,7 +204,7 @@
     }
 }
 
-/* Image popup */
+
 .image-popup {
     max-height: 70vh;
     max-width: 70vw;
@@ -361,7 +217,7 @@
         right: 0;
         position: absolute;
 
-        .mdi-icon {
+        .button__icon {
             margin: 0.1rem;
             padding: 0.1rem;
         }
@@ -371,82 +227,10 @@
 /* Context menu holder */
 .context-menu {
     position: fixed;
+    z-index: common.z-index("popup");
     border-radius: 8px;
     padding: 6px;
     background-color: var(--bg-dark);
     width: 150px;
 }
 
-/* Copy text */
-.copy-text {
-    &:hover > &__button {
-        display: inline-block;
-    }
-
-    &__button {
-        display: none;
-        height: 0.9em;
-        vertical-align: middle;
-        font-family: var(--font-standard);
-
-        & > .mdi-icon {
-            color: var(--text-greyed);
-
-            &:hover {
-                color: var(--text);
-            }
-        }
-    }
-}
-
-/* Resize */
-.resizable {
-    $size: 10px;
-    position: relative;
-
-    &--left, &--right {
-        > * {
-            width: 100%;
-        }
-        .resizable__handle {
-            height: 100%;
-            width: $size;
-            top: 0;
-        }
-    }
-    &--top, &--bottom {
-        > * {
-            height: 100%;
-        }
-        .resizable__handle {
-            width: 100%;
-            height: $size;
-            left: 0;
-        }
-    }
-    &__handle {        
-        position: absolute;
-        z-index: 1;
-
-        &:active {
-            background-image: linear-gradient(90deg, transparent, var(--border), transparent);
-        }
-    }
-
-    &--top &__handle{
-        top: - math.div($size, 2);
-        cursor: row-resize;
-    }
-    &--right &__handle{
-        right: - math.div($size, 2);
-        cursor: col-resize;
-    }
-    &--bottom &__handle{
-        bottom: - math.div($size, 2);
-        cursor: row-resize;
-    }
-    &--left &__handle{
-        left: - math.div($size, 2);
-        cursor: col-resize;
-    }
-}

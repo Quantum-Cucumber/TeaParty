@@ -1,8 +1,12 @@
 import "./Client.scss";
 import { useEffect, useState, useRef } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
-import { contextMenuCtx, Loading, Overlay, Resize } from "../../components/interface";
+
+import { contextMenuCtx, Overlay } from "../../components/popups";
+import { Loading } from "../../components/elements";
 import { UserPopup, userPopupCtx } from "../../components/user";
+import { Resize } from "../../components/wrappers";
+
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
 import ChatPanel from "../../views/ChatPanel/ChatPanel";

@@ -2,8 +2,12 @@ import "./Navigation.scss";
 import { useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import { Button, Tooltip, Loading, Option, Modal, Resize } from "../../components/interface";
+
+import { Button, Option, Loading } from "../../components/elements";
+import { Tooltip, Modal } from "../../components/popups";
+import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
+
 import { acronym, useBindEscape, classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
 

@@ -1,13 +1,18 @@
+import "./MessageContent.scss";
 import { useState, useEffect, useContext } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm"
-import { Button, ImagePopup, Tooltip } from "../../../../components/interface";
+
+import { Button } from "../../../../components/elements";
+import { ImagePopup, Tooltip } from "../../../../components/popups";
+import { userPopupCtx } from "../../../../components/user";
+
 import { messageTimestampFull } from "../../../../utils/datetime";
 import { bytesToFriendly, useDownloadUrl } from "../../../../utils/utils";
+import { tryGetUser } from "../../../../utils/matrix-client";
+
 import { mdiChatRemove, mdiDownload, mdiFileDocumentOutline } from "@mdi/js";
 import Icon from "@mdi/react";
-import { tryGetUser } from "../../../../utils/matrix-client";
-import { userPopupCtx } from "../../../../components/user";
 
 export default function MessageContent({ event }) {
     const eventContent = event.getContent();

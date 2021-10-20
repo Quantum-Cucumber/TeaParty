@@ -1,6 +1,6 @@
 import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback, memo } from "react";
-import { Loading } from "../../../components/interface";
+import { Loading } from "../../../components/elements";
 import eventTimeline, { shouldDisplayEvent } from "./eventTimeline";
 import { useBindEscape, useDebouncedState } from "../../../utils/utils";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";

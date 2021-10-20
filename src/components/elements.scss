@@ -1,0 +1,82 @@
+.button__icon {
+    cursor: pointer;
+    color: var(--text);
+    display: block;
+    
+    &:hover {
+        opacity: 0.7;
+    }
+}
+
+
+.option {
+    width: 100%;
+    padding: 8px;
+    box-sizing: border-box;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    /* Vertically center children */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    overflow: hidden;
+
+    &:not(:last-child) {
+        margin-bottom: 3px;
+    }
+
+    &:hover, &--selected {
+        background-color: var(--primary);
+
+        .option__notification, .option__unread {
+            background-color: var(--text);
+            color: var(--primary);
+        }
+    }
+
+    &__text {
+        display: inline-block;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        flex: 1;
+        margin: 0 8px;
+    }
+
+    &--danger {
+        color: var(--error);
+        background-color: none;
+
+        &:hover {
+            background-color: var(--error);
+            color: var(--text);
+        }
+    }
+    &--compact {
+        padding: 5px 8px;
+        border-radius: 5px;
+    }
+
+    &__notification {
+        flex: none;
+        background-color: var(--primary);
+        border-radius: 0.6rem;
+        padding: 2px;
+        height: 1.3rem;
+        line-height: 1.3rem;
+        aspect-ratio: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &__unread {
+        flex: none;
+        height: 8px;
+        width: 8px;
+        background-color: var(--primary);
+        margin-right: 5px;
+        border-radius: 50%;
+    }
+}

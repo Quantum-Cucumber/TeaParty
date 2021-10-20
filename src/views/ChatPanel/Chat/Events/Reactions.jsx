@@ -1,6 +1,10 @@
+import "./Reactions.scss";
 import { useReducer, useEffect, useState } from "react";
-import { Option, Tooltip } from "../../../../components/interface";
+
+import { Option } from "../../../../components/elements";
+import { Tooltip } from "../../../../components/popups"
 import { Member } from "../../../../components/user";
+
 import { getMember } from "../../../../utils/matrix-client";
 import { classList, friendlyList } from "../../../../utils/utils";
 

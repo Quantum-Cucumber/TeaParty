@@ -1,6 +1,6 @@
 import "./Settings.scss";
 import { useEffect, useState } from "react";
-import { Loading, Option } from "../../components/interface";
+import { Loading, Option } from "../../components/elements";
 import { mdiClose, mdiBrush, mdiLock, mdiHammerWrench } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import Settings from "../../utils/settings";

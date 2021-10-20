@@ -2,7 +2,8 @@ import "./Login.scss";
 import { Link, useHistory } from "react-router-dom";
 import { useRef, useState } from "react";
 import { attemptLogin } from "../../utils/matrix-client";
-import { Loading, Overlay } from "../../components/interface";
+import { Loading } from "../../components/elements";
+import { Overlay } from "../../components/popups";
 
 
 function input_valid(target, fieldName) {

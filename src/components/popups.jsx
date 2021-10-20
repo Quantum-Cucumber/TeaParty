@@ -1,28 +1,10 @@
-import "./components.scss";
-import { useState, cloneElement, useRef, useEffect, useLayoutEffect, useCallback, createContext, useContext } from 'react';
+import "./popups.scss";
+import { useState, useEffect, useRef, useCallback, createContext, useContext, useLayoutEffect, cloneElement } from "react";
+import { Button } from "./elements";
 import { classList, useBindEscape, useDownloadUrl } from '../utils/utils';
-import Icon from '@mdi/react';
-import { mdiLoading, mdiDownload, mdiOpenInNew, mdiClose, mdiContentCopy } from "@mdi/js";
+import Icon from "@mdi/react";
+import { mdiDownload, mdiClose, mdiOpenInNew } from "@mdi/js";
 
-export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
-    return (
-        <div className={subClass} onClick={clickFunc}>
-            {tipText ?
-                <Tooltip text={tipText} dir={tipDir}>
-                    <Icon path={path} className="mdi-icon" size={size} />
-                </Tooltip> 
-                :
-                <Icon path={path} className="mdi-icon" size={size} />
-            }
-        </div>
-    );
-}
-
-export function Loading({ size }) {
-    return (
-        <Icon path={mdiLoading} color="var(--primary)" size={size} spin={1.2}/>
-    );
-}
 
 export function positionFloating(positionMe, referenceNode, x, y, offset=0, mouseEvent=null, constrain=false) {
     const referenceRect = referenceNode.getBoundingClientRect();;
@@ -173,28 +155,6 @@ export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
     );
 }
 
-export function Option({ text, k, selected, select = ()=>{}, danger=false, compact=false, unread=false, notification=0, children }) {
-    const className = classList("option",
-                                {"option--selected": k ? selected===k : null}, 
-                                {"option--danger": danger},
-                                {"option--compact": compact}) 
-
-    var indicator = null;
-    if (notification > 0) {
-        indicator = (<div className="option__notification">{notification}</div>);
-    } else if (unread) {
-        indicator = (<div className="option__unread"></div>);
-    }
-
-    return (
-        <div className={className} onClick={() => select(k)}>
-            {children}
-            <div className="option__text">{text}</div>
-            {indicator}
-        </div>
-    );
-}
-
 export function Overlay({ children, opacity = "85%", click, modalClass, dim = true, 
                           fade = 0, render = true, mountAnimation, unmountAnimation }) {
     /* click refers to the onClick function for the dim bg
@@ -319,91 +279,6 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, children }) {
     return (
         <div className="context-menu" ref={setMenu}>
             {children}
-        </div>
-    )
-}
-
-export function TextCopy({ text, children }) {
-    const [tooltip, setTooltip] = useState("Copy");
-    const timerId = useRef();
-
-    function copyText() {
-        navigator.clipboard.writeText(text);
-        setTooltip("Copied");
-        timerId.current = setTimeout(() => {setTooltip("Copy")}, 1000);
-    }
-    // Clear timeout on unmount
-    useEffect(() => {
-        return () => {
-            clearTimeout(timerId.current)
-        }
-    }, [])
-
-    return (
-        <div className="copy-text">
-        {children || text}&nbsp;
-        <Button subClass="copy-text__button" path={mdiContentCopy} size="100%" tipDir="top" tipText={tooltip} clickFunc={copyText} />
-        </div>
-    )
-}
-
-export function Resize({ children, initialSize, side, minSize = "0px", collapseSize = 0 }) {
-    const [dragging, setDrag] = useState(false);
-    const [size, setSize] = useState(initialSize);
-    const container = useRef();
-
-    function mouseDown(e) {
-        e.preventDefault();
-        setDrag(true);
-    }
-    const mouseUp = useCallback(() => {
-        setDrag(false)
-    }, [setDrag])
-
-    const mouseMove = useCallback((e) => {
-        if (!container.current) {return}
-
-        const bounding = container.current.getBoundingClientRect();
-        switch (side) {
-            case "top":
-                setSize(bounding.bottom - e.clientY);
-                break;
-            case "right":
-                setSize(e.clientX - bounding.left);
-                break;
-            case "bottom":
-                setSize(e.clientY - bounding.top);
-                break;
-            case "left":
-                setSize(bounding.right - e.clientX);
-                break;
-            default:
-                break;
-        }
-    }, [setSize, side])
-
-    useEffect(() => {
-        if (!container.current) {return}
-
-        if (dragging) {
-            document.addEventListener("mousemove", mouseMove)
-            document.addEventListener("mouseup", mouseUp)
-        }
-
-        return () => {  // Will fire when dragging changes
-            document.removeEventListener("mousemove", mouseMove)
-            document.addEventListener("mouseup", mouseUp)
-        }
-    }, [dragging, mouseMove, mouseUp])
-
-
-    const dimension = side === "left" || side === "right" ? "width" : "height"
-    const collapse = size < collapseSize;
-    const style = {[dimension]: collapse ? minSize : size , [`min${dimension}`]: minSize};
-    return (
-        <div className={classList("resizable", "resizable--"+side, {"resizable--collapsed": collapse})} style={style} ref={container}>
-            {children}
-            <div className="resizable__handle" onMouseDown={mouseDown}></div>
         </div>
     )
 }
