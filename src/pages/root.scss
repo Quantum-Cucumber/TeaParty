@@ -3,7 +3,9 @@
 /* Colour themes */
 .dark {
     --primary: #5e72d1;
+    --primary-hover: #5e71d1c7;
     --bg: #494a51;
+    --bg-hover: #3a3b4394;
     --bg-focus: #3a3b43;
     --bg-dark: #2a2b31;
     --text: #e6e6e6;
@@ -25,7 +27,9 @@
 
 .light {
     --primary: #df79d4;
+    --primary-hover: #df79d499;
     --bg: #efefef;
+    --bg-hover: #efefef94;
     --bg-focus: #e1e1e1;
     --bg-dark: #d3d3d3;
     --text: #404040;

@@ -26,9 +26,13 @@
         margin-bottom: 3px;
     }
 
+    &:hover {
+        background-color: var(--primary-hover);
+    }
+    &--selected {
+        background-color: var(--primary) !important;
+    }
     &:hover, &--selected {
-        background-color: var(--primary);
-
         .option__notification, .option__unread {
             background-color: var(--text);
             color: var(--primary);
@@ -49,7 +53,7 @@
         background-color: none;
 
         &:hover {
-            background-color: var(--error);
+            background-color: var(--error) !important;
             color: var(--text);
         }
     }

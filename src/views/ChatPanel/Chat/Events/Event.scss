@@ -17,7 +17,7 @@ $event-offset: 2.75em;
     position: relative;
 }
 .event:hover, .event--hover{
-    background-color: var(--bg-focus);
+    background-color: var(--bg-hover);
 
     .event__buttons {
         display: flex;
