@@ -1,5 +1,5 @@
 import "./Login.scss";
-import { Link, useHistory } from "react-router-dom";
+import { /*Link,*/ useHistory } from "react-router-dom";
 import { useRef, useState } from "react";
 import { attemptLogin } from "../../utils/matrix-client";
 import { Loading } from "../../components/elements";
@@ -36,8 +36,8 @@ function Login({ type = "Login" }) {
             showOverlay(true);
             attemptLogin(usernameRef.current.value, hs, passwordRef.current.value).then(() => {
                 console.info("Redirecting to app");
-                history.push("/app");
-                history.go(0);
+                history.push("/");
+                history.goForward();
             }).catch((err) => {
                 showOverlay(false);
                 var errText;
@@ -72,11 +72,11 @@ function Login({ type = "Login" }) {
                 </div>
 
                 <button className="modal__button" onClick={buttonClicked}>{type}</button>
-                {type === "Login" ?
+                {/*type === "Login" ?
                     <Link to="/register">Register</Link>
                     :
                     <Link to="/login">Login</Link>
-                }
+                */}
             </div>
         </div>
     );

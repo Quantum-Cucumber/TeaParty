@@ -15,12 +15,15 @@ function App() {
     return (
         <BrowserRouter>
             <Switch>
-                <Route path="/app">
-                    {logged_in() ? <Client /> : <Redirect to="/login" />}
+                <Route path="/:roomId?" exact children={({ match }) => {
+                    return (
+                        logged_in() ? <Client urlRoom={match.params.roomId} /> : <Redirect to="/login" />
+                    )
+                }}>
                 </Route>
-                <Route path="/register">
+                {/*<Route path="/register">
                     {logged_in() ? <Redirect to="/app" /> : <Login type="Register" />}
-                </Route>
+                </Route>*/}
                 <Route path="/login">
                     {logged_in() ? <Redirect to="/app" /> : <Login />}
                 </Route>

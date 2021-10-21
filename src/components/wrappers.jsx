@@ -69,7 +69,7 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
             default:
                 break;
         }
-    }, [setSize, side])
+    }, [side])
 
     // When size changes, check whether it should be collapsed due to being less than collapseSize
     useEffect(() => {
@@ -89,13 +89,18 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
         if (dragging) {
             document.addEventListener("mousemove", mouseMove)
             document.addEventListener("mouseup", mouseUp)
-        }
-
-        return () => {  // Will fire when dragging changes
+        } else {
             document.removeEventListener("mousemove", mouseMove)
-            document.addEventListener("mouseup", mouseUp)
+            document.removeEventListener("mouseup", mouseUp)
         }
     }, [dragging, mouseMove, mouseUp])
+    // Remove listeners on unmount
+    useEffect(() => {
+        return () => {
+            document.removeEventListener("mousemove", mouseMove)
+            document.removeEventListener("mouseup", mouseUp)
+        }
+    }, [mouseMove, mouseUp])
 
     // Whether to change the width or height of the container
     const dimension = side === "left" || side === "right" ? "width" : "height"
