@@ -53,6 +53,7 @@
 /* Universal styles */
 body, html, #root {
     --font-standard: Arial, Helvetica, sans-serif;
+
     font-family: var(--font-standard);
     color: var(--text);
     height: 100%;
@@ -67,7 +68,7 @@ a {
 }
 
 *::selection {
-    background-color: var(--primary);
+    background-color: var(--primary-hover);
     color: var(--text)
 }
 
@@ -75,6 +76,15 @@ a {
     @include common.codeblock;
     background-color: var(--bg-dark);
     white-space: pre-wrap;
+}
+
+.header {
+    height: 45px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    box-shadow: 0 1px 2px var(--bg-dark);
+    z-index: common.z-index("header");
 }
 
 /* Scrollbars :] */

@@ -30,9 +30,9 @@ $z-map: (
     overlay: 20,  /* Fade overlay for modal */
     modal: 21,
     popup: 40,  /* For user popup/context menu */
-    resize-handle: 1, /* Needs to just be on top of the sibling div */
+    resize-handle: 5, /* Needs to just be on top of the sibling div */
+    header: 1, /* header shadow needs to sit above the scroll bar */
 );
-
 @function z-index($key) {
     @return map-get($z-map, $key);
 }

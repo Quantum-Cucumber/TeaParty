@@ -29,7 +29,7 @@ function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, ro
             </div>
             <Resize initialSize={260} side="right" minSize="60px" collapseSize={100}>
                 <div className="column column--rooms">
-                    <div className="column--rooms__label">{currentGroup.name}</div>
+                    <div className="header column--rooms__label">{currentGroup.name}</div>
                     <div className="column--rooms__holder scroll--hover">
                         {roomPanel ?
                             <RoomList rooms={roomPanel} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> :

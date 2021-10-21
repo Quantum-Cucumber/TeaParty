@@ -25,6 +25,7 @@ function Client() {
     const [invites, setInvites] = useState([]);  // Passed into navmanager and navigation pane
     const [userPopupInfo, setUserPopup] = useState(null);  // Manage how the userpopup is displayed
     const [contextMenu, setContextMenu] = useState();  // Centralise displaying context menus
+    const hideMemberListState = useState(false);
 
     useEffect(() => {
         if (roomNav.current) {
@@ -67,19 +68,22 @@ function Client() {
              currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav} invites={invites}
             />
             <div className="column column--chat">
-                <ChatPanel currentRoom={currentRoom} />
+                <ChatPanel currentRoom={currentRoom} hideMemberListState={hideMemberListState} />
             </div>
-            <Resize side="left" initialSize={300} collapseSize={150}>
+            <Resize side="left" initialSize={300} collapseSize={150} collapseState={hideMemberListState}>
                 <div className="column column--right">
                     <MemberList currentRoom={currentRoom} setUserPopup={setUserPopup} />
                 </div>
             </Resize>
-            <UserPopup parent={userPopupInfo?.parent} user={userPopupInfo?.user} setUserPopup={setUserPopup} room={currentRoom} />
+
             
             <Overlay dim={false} render={page === "settings"} mountAnimation="page__zoom-in 0.1s ease 0s 1" unmountAnimation="page__zoom-out 0.1s ease 0s 1">
                 <Settings setPage={setPage} />
             </Overlay>
+            
             {contextMenu}
+
+            <UserPopup parent={userPopupInfo?.parent} user={userPopupInfo?.user} setUserPopup={setUserPopup} room={currentRoom} />
         </div>
 
         </userPopupCtx.Provider>

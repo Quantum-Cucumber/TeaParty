@@ -48,7 +48,7 @@
             left: 100%;
             border-left-color: $color; 
     }
-    &--bottom ::before {
+    &--bottom::before {
             left: calc(50% - #{$arrow-size});
             bottom: 100%;
             border-bottom-color: $color; 

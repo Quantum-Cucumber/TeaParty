@@ -1,3 +1,14 @@
+.chat-header {
+    justify-content: flex-end;
+    flex: none;
+    background-color: var(--bg);
+    padding: 0 8px;
+
+    .button {
+        margin: 0 5px;
+    }
+}
+
 .chat-frame {
     flex: 1 1 auto;
     position: relative;

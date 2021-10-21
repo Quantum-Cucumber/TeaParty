@@ -29,15 +29,21 @@ export function TextCopy({ text, children }) {
     )
 }
 
-export function Resize({ children, initialSize, side, minSize = "0px", collapseSize = 0 }) {
+export function Resize({ children, initialSize, side, minSize = "0px", collapseSize = 0, collapseState }) {
     const [dragging, setDrag] = useState(false);
     const [size, setSize] = useState(initialSize);
     const container = useRef();
 
+    // If collapseState isn't passed, use our own state
+    const backupCollapseState = useState(false);
+    const [collapse, setCollapse] = collapseState ? collapseState : backupCollapseState;
+
+    // Fires when the slider is clicked
     function mouseDown(e) {
-        e.preventDefault();
+        e.preventDefault();  // Prevent text selection
         setDrag(true);
     }
+    // Fires when the mouse is released
     const mouseUp = useCallback(() => {
         setDrag(false)
     }, [setDrag])
@@ -45,6 +51,7 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
     const mouseMove = useCallback((e) => {
         if (!container.current) {return}
 
+        // Distance between the container's offset and the mouse as the width
         const bounding = container.current.getBoundingClientRect();
         switch (side) {
             case "top":
@@ -64,6 +71,18 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
         }
     }, [setSize, side])
 
+    // When size changes, check whether it should be collapsed due to being less than collapseSize
+    useEffect(() => {
+        setCollapse(size < collapseSize);
+    }, [size, collapseSize, setCollapse])
+    // When collapse is set to false, set size to initial
+    useEffect(() => {
+        if (!collapse) {
+            setSize(initialSize)
+        }
+    }, [collapse, initialSize])
+
+    // When the mouse is clicking the slider, bind the mousemove event. Unbind if that value changes
     useEffect(() => {
         if (!container.current) {return}
 
@@ -78,9 +97,8 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
         }
     }, [dragging, mouseMove, mouseUp])
 
-
+    // Whether to change the width or height of the container
     const dimension = side === "left" || side === "right" ? "width" : "height"
-    const collapse = size < collapseSize;
     const style = {[dimension]: collapse ? minSize : size , [`min${dimension}`]: minSize};
     return (
         <div className={classList("resizable", "resizable--"+side, {"resizable--collapsed": collapse})} style={style} ref={container}>
