@@ -9,7 +9,7 @@
 }
 
 
-.option {
+@mixin option {
     width: 100%;
     padding: 8px;
     box-sizing: border-box;
@@ -22,21 +22,8 @@
     align-items: center;
     overflow: hidden;
 
-    &:not(:last-child) {
-        margin-bottom: 3px;
-    }
-
     &:hover {
         background-color: var(--primary-hover);
-    }
-    &--selected {
-        background-color: var(--primary) !important;
-    }
-    &:hover, &--selected {
-        .option__notification, .option__unread {
-            background-color: var(--text);
-            color: var(--primary);
-        }
     }
 
     &__text {
@@ -46,6 +33,24 @@
         white-space: nowrap;
         flex: 1;
         margin: 0 8px;
+    }
+}
+
+.option {
+    @include option;
+
+    &:not(:last-child) {
+        margin-bottom: 3px;
+    }
+
+    &--selected {
+        background-color: var(--primary) !important;
+    }
+    &:hover, &--selected {
+        .option__notification, .option__unread {
+            background-color: var(--text);
+            color: var(--primary);
+        }
     }
 
     &--danger {
@@ -82,5 +87,28 @@
         background-color: var(--primary);
         margin-right: 5px;
         border-radius: 50%;
+    }
+}
+
+.dropdown {
+    @include option;
+
+    &__chevron {
+        flex: none;
+        transition: 0.15s;
+        margin-right: 4px;
+    }
+
+    &__content {
+        margin-top: 3px;
+        padding-left: calc(6px + (1.5rem / 2));
+        box-shadow: 2px 0 var(--text-greyed) inset;
+        margin-left: calc(6px + (1.5rem / 2));
+    }
+
+    &-wrapper {
+        &:not(:last-child) {
+            margin-bottom: 3px;
+        }
     }
 }

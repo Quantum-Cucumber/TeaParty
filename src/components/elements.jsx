@@ -2,7 +2,8 @@ import "./elements.scss";
 import { Tooltip } from "./popups";
 import { classList } from '../utils/utils';
 import Icon from '@mdi/react';
-import { mdiLoading } from "@mdi/js";
+import { mdiChevronDown, mdiLoading } from "@mdi/js";
+import { useReducer } from "react";
 
 
 export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
@@ -46,4 +47,23 @@ export function Option({ text, k, selected, select = ()=>{}, danger=false, compa
             {indicator}
         </div>
     );
+}
+
+export function DropDown({ icon, text, children }) {
+    const [open, toggleOpen] = useReducer((current) => !current, false);
+
+    return (
+        <div className="dropdown-wrapper">
+            <div className="dropdown" onClick={toggleOpen}>
+                <Icon path={mdiChevronDown} color={open ? "var(--text)" : "var(--text-greyed)"} size="1.5rem" className="dropdown__chevron" rotate={open ? 0 : -90} />
+                { icon }
+                <div className="dropdown__text">{text}</div>
+            </div>
+            { open &&
+                <div className="dropdown__content">
+                    {children}
+                </div>
+            }
+        </div>
+    )
 }

@@ -19,9 +19,6 @@ function Client({ urlRoom }) {
     // On first load, start syncing. Once synced, change state to reload as client
     const [synced, syncState] = useState(false);  // Whether to show the syncing page
 
-    const [roomPanel, setRooms] = useState([]);  // Populate the room list
-    const [groupList, setGroups] = useState([]);  // Populate the group list
-
     const [page, setPage] = useState();  // Used to set full screen pages
     const [userPopupInfo, setUserPopup] = useState(null);
     const [contextMenu, setContextMenu] = useState();
@@ -29,7 +26,7 @@ function Client({ urlRoom }) {
     const [currentRoom, selectRoom] = useState(urlRoom);  // The currently selected room
 
     const roomNav = useRef(null);  // Handles populating the groups and room list - navManager instance
-    const history = useHistory();
+    const history = useHistory();  // For altering the url
 
     const [invites, setInvites] = useState([]);  // Passed into navmanager and navigation pane
     const hideMemberListState = useState(false);
@@ -59,15 +56,15 @@ function Client({ urlRoom }) {
         buildMatrix().then(() => {
             global.matrix.once("sync", (state, oldState) => {
                 if (oldState === null && state === "PREPARED") {
-                    roomNav.current = new navManager(setGroups, setRooms, setInvites, selectRoom);
+                    roomNav.current = new navManager(setInvites, selectRoom);
                     syncState(true);
                 }
             })
         })
 
         return () => {
+            // roomNav.current.detachListeners();
             global.matrix.stopClient();
-            roomNav.current.detachListeners();
         }
     }, []);
     if (!synced) {
@@ -86,9 +83,7 @@ function Client({ urlRoom }) {
         <userPopupCtx.Provider value={setUserPopup}>
 
         <div className="client">
-            <Navigation groupList={groupList} roomPanel={roomPanel} setPage={setPage} 
-             currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav} invites={invites}
-            />
+            <Navigation setPage={setPage} currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav} invites={invites} />
             <div className="column column--chat">
                 <ChatPanel currentRoom={currentRoom} hideMemberListState={hideMemberListState} />
             </div>

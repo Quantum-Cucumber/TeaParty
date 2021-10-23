@@ -1,20 +1,26 @@
 import "./Navigation.scss";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
 import { Icon } from "@mdi/react";
 
-import { Button, Option, Loading } from "../../components/elements";
+import { Button, Option, DropDown, Loading } from "../../components/elements";
 import { Tooltip, Modal } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
 
+import { getChildRoomsFromGroup, getRootSpaces, getSpaceChildren } from "./navManager";
 import { acronym, useBindEscape, classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
 
-function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, roomNav, invites }) {
+function Navigation({ roomNav, setPage, currentRoom, selectRoom, invites }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
+    const [groupRooms, setGroupRooms] = useState(getChildRoomsFromGroup(currentGroup.key))
     // Get the total length of all the value arrays
     const invLen = Object.values(invites).reduce((x, invs) => {return x + invs.length}, 0);
+
+    useEffect(() => {
+        setGroupRooms(getChildRoomsFromGroup(currentGroup.key))
+    }, [currentGroup])
 
     return (
         <>
@@ -25,14 +31,14 @@ function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, ro
                     <div className="group__seperator"></div>
                     </>
                 }
-                <GroupList roomNav={roomNav} setGroup={setGroup} groupList={groupList} currentGroup={currentGroup} />
+                <GroupList roomNav={roomNav} setGroup={setGroup} currentGroup={currentGroup} />
             </div>
             <Resize initialSize={260} side="right" minSize="60px" collapseSize={100}>
                 <div className="column column--rooms">
                     <div className="header column--rooms__label">{currentGroup.name}</div>
                     <div className="column--rooms__holder scroll--hover">
-                        {roomPanel ?
-                            <RoomList rooms={roomPanel} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> :
+                        {groupRooms ?
+                            <RoomList rooms={groupRooms} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> :
                             <div className="column--rooms__holder__loading"><Loading size="30px" /></div>
                         }
                     </div>
@@ -50,9 +56,6 @@ function Navigation({ groupList, roomPanel, setPage, currentRoom, selectRoom, ro
 }
 
 function GroupList(props) {
-    // props = groupList, roomNav, setGroup, currentGroup
-    const { groupList } = props;
-
     var groups = [
         <Group {...props} groupName="Home" key="home" k="home" builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
@@ -62,16 +65,16 @@ function GroupList(props) {
         </Group>,
     ];
 
-    groupList.forEach((room) => {
-        const key = room.roomId;
-        const icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+    getRootSpaces().forEach((space) => {
+        const key = space.roomId;
+        const icon = space.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
         const image = icon ?
-            <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
-            <div className="room__icon">{acronym(room.name)}</div>;
+            <img className="room__icon" src={icon} alt={acronym(space.name)} /> :
+            <div className="room__icon">{acronym(space.name)}</div>;
 
         groups.push(
             <Group {...props}
-                groupName={room.name}
+                groupName={space.name}
                 key={key} k={key}
             >
                 {image}
@@ -82,8 +85,8 @@ function GroupList(props) {
     return groups;
 }
 function Group({ roomNav, setGroup, currentGroup, groupName, k, children, builtin = false }) {
-    const roomState = roomNav.current.groupUnreads(k);
-    const {read, notifications} = roomState;
+    const read = true;
+    const notifications = 0;
 
     return (
         <div className="group__holder">
@@ -122,26 +125,36 @@ function getRoomIcon(room, isDm = false) {
 }
 
 function RoomList({ rooms, currentGroup, currentRoom, selectRoom }) {
-    var elements = [];
-    rooms.forEach((roomState) => {
-        const room = roomState.room;
+    const elements = rooms.map((room) => {
         const key = room.roomId;
-        const icon = getRoomIcon(room, currentGroup.key === "directs");
-        const notifications = roomState.notifications;
-        const unreadDot = !roomState.read || notifications > 0;
-
-
-        elements.push(
-            <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom} 
-                    unread={unreadDot} notification={notifications}>
-                <div className="room__icon__crop">
-                    {icon}
-                </div>
-            </Option>
+        const icon = (
+            <div className="room__icon__crop">
+                {getRoomIcon(room, currentGroup.key === "directs")}
+            </div>
         );
+        const notifications = 0;
+        const unreadDot = false;
+
+        if (room.isSpaceRoom()) {
+            const children = getSpaceChildren(room);
+
+            return (
+                <DropDown key={key} icon={icon} text={room.name}>
+                    <RoomList rooms={children} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> 
+                </DropDown>
+            )
+        }
+        else {
+            return (
+                <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom} 
+                        unread={unreadDot} notification={notifications}>
+                    {icon}
+                </Option>
+            )
+        }
     });
 
-    return elements;
+    return elements.length !== 0 ? elements : "Nothing here :(";
 }
 
 function MyUser() {

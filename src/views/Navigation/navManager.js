@@ -1,5 +1,5 @@
 import Settings from "../../utils/settings";
-import { debounce } from "../../utils/utils";
+// import { debounce } from "../../utils/utils";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
 
 function _isJoined(room) {
@@ -28,65 +28,143 @@ function getUnreads(room) {
 }
 
 
+/* Room filters */
+
+function _getJoinedRooms() {
+    return global.matrix.getRooms().filter(_isJoined);
+}
+
+function _roomIdsToRoom(roomIds) {
+    return roomIds.map((roomId) => {
+        return global.matrix.getRoom(roomId);
+    }).filter((room) => {
+        return room;  // If invalid room ID, don't return an entry
+    })
+}
+
+export function getSpaceChildren(space) {
+    /* Get children of a given space object */
+    const childEvents = space.currentState.getStateEvents('m.space.child');
+    return _roomIdsToRoom(
+        childEvents.map((event) => {
+            return event.event.state_key;
+        })
+    )
+}
+
+function _getSpaces() {
+    return _getJoinedRooms().filter((room) => {
+        return room.isSpaceRoom();
+    });
+}
+
+export function getRootSpaces() {
+    /* Get all top level spaces */
+
+    const allSpaces = _getSpaces();  // List to iterate through
+    const rootSpaces = new Set(_getSpaces());
+
+    // Remove each child space from our list
+    allSpaces.forEach((space) => {
+        getChildSpaces(space)
+        .forEach((subSpace) => {
+            rootSpaces.delete(subSpace);
+        })
+    })
+
+    return [...rootSpaces.values()]
+}    
+function getChildSpaces(space) {
+    /* Get children of a space, that are spaces themselves */
+
+    const childRooms = getSpaceChildren(space);
+    return childRooms.filter((room) => {
+        return room && room.isSpaceRoom() && _isJoined(room);
+    })
+}
+
+export function getDirects() {
+    /* Get all rooms saved with m.direct */
+    const directInfo = global.matrix.getAccountData("m.direct").getContent();
+    const directs = new Set();
+
+    Object.values(directInfo).forEach((roomIds) => {
+        roomIds.forEach((directRoomId) => {
+            directs.add(directRoomId);  // Add each room to the set
+        })
+    });
+
+    return _roomIdsToRoom([...directs]);  // set => array of room Ids
+}
+
+export function getChildRoomsFromGroup(groupKey) {
+    switch(groupKey) {
+        case "home":
+            return [];
+        case "directs":
+            return getDirects();
+
+        default:  // Likely a space Id
+            const space = global.matrix.getRoom(groupKey);
+            return space ? getSpaceChildren(space) : [];
+    }
+}
+
+
+function _getInvitedRooms() {
+    var rooms = [];
+    var directs = [];
+    var spaces = [];
+    global.matrix.getVisibleRooms().forEach((room) => {
+        if (room.getMyMembership() === "invite") {
+            //m.room.member event for logged in user
+            const memberEvent = room.getMember(global.matrix.getUserId()).events.member;
+            const inviter = memberEvent.event.sender;
+
+            // Identify if invite is to a DM
+            if (memberEvent?.getContent()?.is_direct) {
+                directs.push({inviter: inviter, room: room});
+            }
+            // If space room
+            else if (room.isSpaceRoom()) {
+                spaces.push({inviter: inviter, room: room});
+            }
+            else {
+                rooms.push({inviter: inviter, room: room});
+            }
+            
+        }
+    });
+
+    return {Rooms: rooms, "Direct messages": directs, Spaces: spaces};
+}
+
+
+
+
 export default class navManager {
-    constructor(setGroups, setRooms, setInvites, selectRoom) {
-        this.setGroups = setGroups;
-        this.setRooms = setRooms;
+    constructor(setInvites, selectRoom) {
         this.setInvites = setInvites;
         this.selectRoom = selectRoom;
 
-        this.roomToGroup = new Map();  // room => group
         // Create map from saved breadcrumbs object
         this.groupBreadcrumbs = new Map(Object.entries(Settings.getSetting("groupBreadcrumbs")));  // group => selected room
         this.currentGroup = null;
-        this.currentRooms = [];
-        this.selectedRoom = null;
 
-        this._initRoomMap();
+        // this._startListeners();
 
-        this._startListeners();
-        this.setGroups(this._getGroups());
-        this.setInvites(this._getInvitedRooms());
+        this.setInvites(_getInvitedRooms());
         // When initialised, go to home by default
         this.groupSelected("home");
     }
 
 
-    getRoomsFromGroup(groupKey) {
-        var rooms = [];
-        switch(groupKey) {
-            case "home":
-                const spaceIds = this._getGroups().map((group) => {return group.roomId})
-
-                // Get rooms that are not in the space/directs map
-                global.matrix.getVisibleRooms().forEach((room) => {
-                    if (_isJoined(room)) {
-                        if (!this.roomToGroup.has(room.roomId) && !spaceIds.includes(room.roomId)) {
-                            rooms.push(room);
-                        }
-                    }
-                });
-                break;
-
-            default:
-                this.roomToGroup.forEach((groupId, roomId) => {
-                    const room = global.matrix.getRoom(roomId);
-                    if (groupId === groupKey && _isJoined(room)) {
-                        rooms.push(room);
-                    }
-                });
-        }
-        return rooms;
-    }
-
-
     groupSelected(groupKey) {
         this.currentGroup = groupKey;
-        const rooms = this.getRoomsFromGroup(groupKey);
-        this.setRooms(this._roomStates(rooms));
-        this.currentRooms = rooms;
+        // Get non-space rooms
+        const rooms = getChildRoomsFromGroup(groupKey).filter((room) => {return !room.isSpaceRoom});
 
-        this.selectRoom(this.groupBreadcrumbs.get(this.currentGroup) || this.currentRooms[0]?.roomId);
+        this.selectRoom(this.groupBreadcrumbs.get(this.currentGroup) || rooms[0]?.roomId);
     }
 
     _roomStates(rooms) {
@@ -108,7 +186,7 @@ export default class navManager {
 
     groupUnreads(groupKey) {
         // Get unreads for all children
-        let children = this.getRoomsFromGroup(groupKey).map((child) => {
+        let children = getChildRoomsFromGroup(groupKey).map((child) => {
             return getUnreads(child);
         });
         // In case space has no joined children
@@ -123,7 +201,7 @@ export default class navManager {
 
     /* Listeners */
 
-    _listeners = {
+    /*_listeners = {
         "Room.myMembership": this._membershipChange.bind(this),
         "accountData": this._accountData.bind(this), 
         "Room.name": this._roomRenamed.bind(this),
@@ -170,13 +248,13 @@ export default class navManager {
         // Joined room 
         if (state === "join") {
             if (room.isSpaceRoom()) {
-                this.setGroups(this._getGroups());
+                this.setGroups(getRootSpaces());
             } else {
                 // We don't know which group this belongs to, so reinitialise all the groups
                 this._initRoomMap();
 
                 // Check if the current group was updated, if so, refresh it
-                if (this.getRoomsFromGroup(this.currentGroup).includes(room)) {
+                if (getChildRoomsFromGroup(this.currentGroup).includes(room)) {
                     this.groupSelected(this.currentGroup);
                 }
             }
@@ -217,7 +295,7 @@ export default class navManager {
             this.groupSelected(this.currentGroup);
         }
         // Update group list
-        this.setGroups(this._getGroups());
+        this.setGroups(getRootSpaces());
     }
 
     // Read receipt
@@ -230,76 +308,10 @@ export default class navManager {
                 this.groupSelected(this.currentGroup);
             }
             // Update group list
-            this.setGroups(this._getGroups());
+            this.setGroups(getRootSpaces());
         }        
-    }
+    }*/
 
-    
-    /* Initial population of groups */
-
-    _initRoomMap() {
-        // Reset current map
-        this.roomToGroup.clear();
-
-        // Get room maps
-        this._getDirects();
-        const groups = this._getGroups();
-        groups.forEach((group) => {
-            this._getSpaceChildren(group.roomId);
-        });}
-
-    _getDirects() {
-        /* Get all direct rooms and add to mapping */
-        const directs = global.matrix.getAccountData("m.direct").getContent();
-        Object.values(directs).forEach((rooms) => {
-            rooms.forEach((directRoom) => {
-                this.roomToGroup.set(directRoom, "directs")
-            })
-        });
-    }
-
-    _getSpaceChildren(spaceId) {
-        const space = global.matrix.getRoom(spaceId);
-        const childEvents = space.currentState.getStateEvents('m.space.child');
-        childEvents.forEach((event) => {
-            const childId = event.event.state_key;
-            this.roomToGroup.set(childId, spaceId);
-        })
-    }
-
-    _getGroups() {
-        return global.matrix.getVisibleRooms().filter((room) => {
-            return _isJoined(room) && room.isSpaceRoom();
-        });
-    }
-
-    _getInvitedRooms() {
-        var rooms = [];
-        var directs = [];
-        var spaces = [];
-        global.matrix.getVisibleRooms().forEach((room) => {
-            if (room.getMyMembership() === "invite") {
-                //m.room.member event for logged in user
-                const memberEvent = room.getMember(global.matrix.getUserId()).events.member;
-                const inviter = memberEvent.event.sender;
-
-                // Identify if invite is to a DM
-                if (memberEvent?.getContent()?.is_direct) {
-                    directs.push({inviter: inviter, room: room});
-                }
-                // If space room
-                else if (room.isSpaceRoom()) {
-                    spaces.push({inviter: inviter, room: room});
-                }
-                else {
-                    rooms.push({inviter: inviter, room: room});
-                }
-                
-            }
-        });
-
-        return {Rooms: rooms, "Direct messages": directs, Spaces: spaces};
-    }
 
     /* Room breadcrumbs */
     roomSelected(room) {
