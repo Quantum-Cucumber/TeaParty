@@ -97,10 +97,31 @@ export function getDirects() {
     return _roomIdsToRoom([...directs]);  // set => array of room Ids
 }
 
+function getOrpanedRooms() {
+    /* Get rooms without a space that arent directs */
+    const rooms = new Set(_getJoinedRooms());
+
+    // Remove directs
+    getDirects().forEach((directRoom) => {
+        rooms.delete(directRoom);
+    })
+    // Remove spaces and their children
+    _getSpaces().forEach((space) => {
+        rooms.delete(space);
+
+        getSpaceChildren(space).forEach((space) => {
+            rooms.delete(space);
+        })
+    });
+
+    return [...rooms];
+}
+
+
 export function getChildRoomsFromGroup(groupKey) {
     switch(groupKey) {
         case "home":
-            return [];
+            return getOrpanedRooms();
         case "directs":
             return getDirects();
 
