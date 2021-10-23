@@ -28,7 +28,7 @@ export function Message({ event }) {
         <EventWrapper event={event}>
             <div className="message__info">
                 <span className="message__info__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
-                    {getMember(event.getSender(), event.getRoomId()).name}
+                    {getMember(event.getSender(), event.getRoomId())?.name}
                 </span>
 
                 <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
@@ -62,7 +62,7 @@ export function EmoteMsg({ event, partial }) {
             <div className="message__content message--emote__content">
                 &#x2217;&nbsp;
                 <span className="message__author data__user-popup" onClick={userPopup}>
-                    {getMember(event.getSender(), event.getRoomId()).name}
+                    {getMember(event.getSender(), event.getRoomId())?.name}
                 </span>
                 {" "}
                 <MessageText eventContent={event.getContent()} />
@@ -84,7 +84,7 @@ export function IconEvent({ event, partial, userId, icon, text }) {
             <div className="event--compact-event">
                 <Icon path={icon} color="var(--text-greyed)" size="1em" className="event--compact-event__icon" />
                 <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
-                    {getMember(userId, event.getRoomId()).name}
+                    {getMember(userId, event.getRoomId())?.name}
                 </span>
                 {text}
             </div>

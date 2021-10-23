@@ -25,7 +25,7 @@ function Chat({ currentRoom }) {
     const [eventList, setEventList] = useDebouncedState([], 400);
 
     const updateEventList = useCallback(() => {
-        if (!timeline.current) {setEventList([])};
+        if (!timeline.current) {setEventList([]); return};
         setEventList(timeline.current.getEvents());
     }, [setEventList]);
 

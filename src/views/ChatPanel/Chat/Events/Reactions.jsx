@@ -85,7 +85,7 @@ function Reaction({ emote, me, count, members }) {
         setSelected(me);
     }, [me])
 
-    const userNames = members.map((member) => {return member.name});
+    const userNames = members.map((member) => {return member?.name});
     const hover = friendlyList(userNames, 3) + " reacted with " + emote;
 
     return (
@@ -112,7 +112,8 @@ export function ReactionViewer({ reactions, setUserPopup }) {
         </div>
         <div className="overlay__modal--reacts__users">
             {reacted[selected].members.map((member) => {
-                const user = global.matrix.getUser(member.userId);
+                const user = global.matrix.getUser(member?.userId);
+                if (!user) {return null}
                 return (
                     <Member member={member} key={member.userId} subClass="data__user-popup" clickFunc={
                         (e) => {

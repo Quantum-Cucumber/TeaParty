@@ -146,7 +146,8 @@ const messageOptions = {
             return (<>
                 {
                     readBy.map((member) => {
-                        const user = global.matrix.getUser(member.userId);
+                        const user = global.matrix.getUser(member?.userId);
+                        if (!user) {return null}
                         return (
                             <Member member={member} key={member.userId} subClass="data__user-popup" clickFunc={
                                 (e) => {
