@@ -8,16 +8,25 @@ import { Tooltip, Modal } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
 
-import { getChildRoomsFromGroup, getRootSpaces, getSpaceChildren } from "./navManager";
+import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup } from "./RoomStates";
+import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { acronym, useBindEscape, classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
 
-function Navigation({ roomNav, setPage, currentRoom, selectRoom, invites }) {
+
+function Navigation({ setPage, currentRoom, selectRoom }) {
+    // Name will be displayed above the room list and can't (always) be inferred from the key
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
     const [groupRooms, setGroupRooms] = useState(getChildRoomsFromGroup(currentGroup.key))
-    // Get the total length of all the value arrays
-    const invLen = Object.values(invites).reduce((x, invs) => {return x + invs.length}, 0);
 
+    const [roomStates, invitedRooms] = useRoomStates();  // Manages room and invite updating
+    useGroupBreadcrumbs({currentGroup, currentRoom, selectRoom});  // Select the relevant room when a group is selected
+    
+
+    // Get the total length of all the value arrays
+    const invLen = Object.values(invitedRooms).reduce((x, invs) => {return x + invs.length}, 0);
+
+    // When a group is selected, load its rooms
     useEffect(() => {
         setGroupRooms(getChildRoomsFromGroup(currentGroup.key))
     }, [currentGroup])
@@ -27,20 +36,17 @@ function Navigation({ roomNav, setPage, currentRoom, selectRoom, invites }) {
             <div className="column column--groups scroll--hidden">
                 {invLen !== 0 && 
                     <>
-                    <InvitesIcon invites={invites} invLen={invLen} />
+                    <InvitesIcon invites={invitedRooms} invLen={invLen} />
                     <div className="group__seperator"></div>
                     </>
                 }
-                <GroupList roomNav={roomNav} setGroup={setGroup} currentGroup={currentGroup} />
+                <GroupList setGroup={setGroup} currentGroup={currentGroup} roomStates={roomStates} />
             </div>
             <Resize initialSize={260} side="right" minSize="60px" collapseSize={100}>
                 <div className="column column--rooms">
                     <div className="header column--rooms__label">{currentGroup.name}</div>
                     <div className="column--rooms__holder scroll--hover">
-                        {groupRooms ?
-                            <RoomList rooms={groupRooms} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> :
-                            <div className="column--rooms__holder__loading"><Loading size="30px" /></div>
-                        }
+                        <RoomList rooms={groupRooms} currentGroup={currentGroup} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} />
                     </div>
 
                     <div className="client__user-bar">
@@ -84,9 +90,10 @@ function GroupList(props) {
 
     return groups;
 }
-function Group({ roomNav, setGroup, currentGroup, groupName, k, children, builtin = false }) {
-    const read = true;
-    const notifications = 0;
+function Group({ setGroup, currentGroup, roomStates, groupName, k, children, builtin = false }) {
+    const roomState = roomStates[k];
+    const read = roomState?.read || true;
+    const notifications = roomState?.notification || 0;
 
     return (
         <div className="group__holder">
@@ -96,7 +103,6 @@ function Group({ roomNav, setGroup, currentGroup, groupName, k, children, builti
                     onClick={() => {
                         if (k !== currentGroup.key) {
                             setGroup({ name: groupName, key: k })
-                            roomNav.current.groupSelected(k);
                         }
                     }}
                 >
@@ -124,7 +130,7 @@ function getRoomIcon(room, isDm = false) {
     return icon;
 }
 
-function RoomList({ rooms, currentGroup, currentRoom, selectRoom }) {
+function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) {
     const elements = rooms.map((room) => {
         const key = room.roomId;
         const icon = (
@@ -132,8 +138,9 @@ function RoomList({ rooms, currentGroup, currentRoom, selectRoom }) {
                 {getRoomIcon(room, currentGroup.key === "directs")}
             </div>
         );
-        const notifications = 0;
-        const unreadDot = false;
+        const roomState = roomStates[room.roomId];
+        const notifications = roomState?.notification || 0;
+        const unreadDot = !roomState?.read || false;
 
         if (room.isSpaceRoom()) {
             const children = getSpaceChildren(room);

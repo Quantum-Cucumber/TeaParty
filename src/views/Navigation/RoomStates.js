@@ -1,10 +1,9 @@
+import { useState, useEffect, useRef } from "react";
+
 import Settings from "../../utils/settings";
 // import { debounce } from "../../utils/utils";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
-
-function _isJoined(room) {
-    return room?.getMyMembership() === "join";
-}
+import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms } from "../../utils/roomFilters";
 
 function getUnreads(room) {
     /* Determine if there are unread events or notifications for the given room */
@@ -25,96 +24,6 @@ function getUnreads(room) {
     
     const notifications = room.getUnreadNotificationCount("total");
     return {read: read, notifications: notifications}
-}
-
-
-/* Room filters */
-
-function _getJoinedRooms() {
-    return global.matrix.getRooms().filter(_isJoined);
-}
-
-function _roomIdsToRoom(roomIds) {
-    return roomIds.map((roomId) => {
-        return global.matrix.getRoom(roomId);
-    }).filter((room) => {
-        return room;  // If invalid room ID, don't return an entry
-    })
-}
-
-export function getSpaceChildren(space) {
-    /* Get children of a given space object */
-    const childEvents = space.currentState.getStateEvents('m.space.child');
-    return _roomIdsToRoom(
-        childEvents.map((event) => {
-            return event.event.state_key;
-        })
-    )
-}
-
-function _getSpaces() {
-    return _getJoinedRooms().filter((room) => {
-        return room.isSpaceRoom();
-    });
-}
-
-export function getRootSpaces() {
-    /* Get all top level spaces */
-
-    const allSpaces = _getSpaces();  // List to iterate through
-    const rootSpaces = new Set(_getSpaces());
-
-    // Remove each child space from our list
-    allSpaces.forEach((space) => {
-        getChildSpaces(space)
-        .forEach((subSpace) => {
-            rootSpaces.delete(subSpace);
-        })
-    })
-
-    return [...rootSpaces.values()]
-}    
-function getChildSpaces(space) {
-    /* Get children of a space, that are spaces themselves */
-
-    const childRooms = getSpaceChildren(space);
-    return childRooms.filter((room) => {
-        return room && room.isSpaceRoom() && _isJoined(room);
-    })
-}
-
-export function getDirects() {
-    /* Get all rooms saved with m.direct */
-    const directInfo = global.matrix.getAccountData("m.direct").getContent();
-    const directs = new Set();
-
-    Object.values(directInfo).forEach((roomIds) => {
-        roomIds.forEach((directRoomId) => {
-            directs.add(directRoomId);  // Add each room to the set
-        })
-    });
-
-    return _roomIdsToRoom([...directs]);  // set => array of room Ids
-}
-
-function getOrpanedRooms() {
-    /* Get rooms without a space that arent directs */
-    const rooms = new Set(_getJoinedRooms());
-
-    // Remove directs
-    getDirects().forEach((directRoom) => {
-        rooms.delete(directRoom);
-    })
-    // Remove spaces and their children
-    _getSpaces().forEach((space) => {
-        rooms.delete(space);
-
-        getSpaceChildren(space).forEach((space) => {
-            rooms.delete(space);
-        })
-    });
-
-    return [...rooms];
 }
 
 
@@ -153,23 +62,21 @@ function _getInvitedRooms() {
             else {
                 rooms.push({inviter: inviter, room: room});
             }
-            
         }
     });
 
-    return {Rooms: rooms, "Direct messages": directs, Spaces: spaces};
+    return {"Rooms": rooms, "Direct messages": directs, "Spaces": spaces};
 }
 
 
 
-
-export default class navManager {
-    constructor(setInvites, selectRoom) {
-        this.setInvites = setInvites;
+export class roomWatcher {
+    constructor(selectRoom, setInvites) {
         this.selectRoom = selectRoom;
+        this.setInvites = setInvites;
 
         // Create map from saved breadcrumbs object
-        this.groupBreadcrumbs = new Map(Object.entries(Settings.getSetting("groupBreadcrumbs")));  // group => selected room
+        this.groupBreadcrumbs = undefined;
         this.currentGroup = null;
 
         // this._startListeners();
@@ -177,15 +84,6 @@ export default class navManager {
         this.setInvites(_getInvitedRooms());
         // When initialised, go to home by default
         this.groupSelected("home");
-    }
-
-
-    groupSelected(groupKey) {
-        this.currentGroup = groupKey;
-        // Get non-space rooms
-        const rooms = getChildRoomsFromGroup(groupKey).filter((room) => {return !room.isSpaceRoom});
-
-        this.selectRoom(this.groupBreadcrumbs.get(this.currentGroup) || rooms[0]?.roomId);
     }
 
     _roomStates(rooms) {
@@ -330,15 +228,71 @@ export default class navManager {
             }
             // Update group list
             this.setGroups(getRootSpaces());
-        }        
+        }
     }*/
 
+}
+function _summariseRooms() {
+    const rooms = getJoinedRooms().filter((room) => !room.isSpaceRoom());  // Todo calculate space room notifications
+    const summarys = {};
 
-    /* Room breadcrumbs */
-    roomSelected(room) {
-        this.groupBreadcrumbs.set(this.currentGroup, room);
+    rooms.forEach((room) => {
+        const {read, notifications} = getUnreads(room);
+
+        summarys[room.roomId] = {
+            roomId: room.roomId,
+            name: room.name,
+            room: room,
+            read: read,
+            notifications: notifications,
+        }
+    })
+
+    return summarys;
+}
+
+export default function useRoomStates() {
+    /* Attach listeners  */
+    const [roomStates, setRoomStates] = useState(_summariseRooms());
+    const [invitedRooms, setInvites] = useState(_getInvitedRooms());
+
+    return [roomStates, invitedRooms];
+}
+
+export function useGroupBreadcrumbs({ currentGroup, currentRoom, selectRoom }) {
+    /* Tracks the last selected room for a given group. When the group is changed, select a relevant room */
+
+    const lastOpenedRoom = useRef(new Map(Object.entries(Settings.getSetting("groupBreadcrumbs"))));  // group => selected room;
+    const groupRef = useRef(currentGroup.key);  // To avoid updating the breadcrumb setter
+
+    // When the current room is changed, update the mapping with the new room
+    useEffect(() => {
+        if (!currentRoom) {return}  // If no room selected, don't save that
+
+        lastOpenedRoom.current.set(groupRef.current, currentRoom);
         // Convert map to object to be saved
-        const crumbObj = Object.fromEntries(this.groupBreadcrumbs);
+        const crumbObj = Object.fromEntries(lastOpenedRoom.current);
         Settings.updateSetting("groupBreadcrumbs", crumbObj);
-    }
+    }, [groupRef, currentRoom])
+
+    // When a different group is selected, open either the last opened room for that group, the first direct child or set as null 
+    useEffect(() => {
+        groupRef.current = currentGroup.key;
+
+        const lastRoom = lastOpenedRoom.current.get(groupRef.current);
+        if (lastRoom) {
+            selectRoom(lastRoom);
+        }
+        else {
+            // Get direct children that are not spaces
+            const children = getChildRoomsFromGroup(groupRef.current).filter((room) => !room.isSpaceRoom());
+            if (children.length !== 0) {
+                selectRoom(children[0]);
+            }
+            // No suitable room, select nothing
+            else {
+                selectRoom(null);
+            }
+        }
+    }, [currentGroup, selectRoom])
 }

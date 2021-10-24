@@ -1,0 +1,120 @@
+function _isJoined(room) {
+    return room?.getMyMembership() === "join";
+}
+export function getJoinedRooms() {
+    return global.matrix.getRooms().filter(_isJoined);
+}
+
+function _roomIdsToRoom(roomIds) {
+    return roomIds.map((roomId) => {
+        return global.matrix.getRoom(roomId);
+    }).filter((room) => {
+        return room;  // If invalid room ID, don't return an entry
+    })
+}
+
+export function getSpaceChildren(space) {
+    /* Get children of a given space object */
+    const childEvents = space.currentState.getStateEvents('m.space.child');
+    return _roomIdsToRoom(
+        childEvents.map((event) => {
+            return event.event.state_key;
+        })
+    )
+}
+
+function _getSpaces() {
+    /* Get all joined spaces */
+    return getJoinedRooms().filter((room) => {
+        return room.isSpaceRoom();
+    });
+}
+
+export function getRootSpaces() {
+    /* Get all top level spaces */
+
+    const allSpaces = _getSpaces();  // List to iterate through
+    const rootSpaces = new Set(_getSpaces());
+
+    // Remove each child space from our list
+    allSpaces.forEach((space) => {
+        getChildSpaces(space)
+        .forEach((subSpace) => {
+            rootSpaces.delete(subSpace);
+        })
+    })
+
+    return [...rootSpaces.values()]
+}    
+function getChildSpaces(space) {
+    /* Get children of a space, that are spaces themselves */
+
+    const childRooms = getSpaceChildren(space);
+    return childRooms.filter((room) => {
+        return room && room.isSpaceRoom() && _isJoined(room);
+    })
+}
+
+export function getDirects() {
+    /* Get all rooms saved under m.direct 
+       Assumes structure of - {userId: [roomId]}
+    */
+
+    const directInfo = global.matrix.getAccountData("m.direct").getContent();
+    const directs = new Set();
+
+    Object.values(directInfo).forEach((roomIds) => {
+        roomIds.forEach((directRoomId) => {
+            directs.add(directRoomId);  // Add each room to the set
+        })
+    });
+
+    return _roomIdsToRoom([...directs]);  // set => array of room Ids
+}
+
+export function getOrpanedRooms() {
+    /* Get rooms that are not spaces, space children, or directs */
+
+    const rooms = new Set(getJoinedRooms());
+
+    // Remove directs
+    getDirects().forEach((directRoom) => {
+        rooms.delete(directRoom);
+    })
+    // Remove spaces and their children
+    _getSpaces().forEach((space) => {
+        rooms.delete(space);
+
+        getSpaceChildren(space).forEach((space) => {
+            rooms.delete(space);
+        })
+    });
+
+    return [...rooms];
+}
+
+export function flatSubrooms(space) {
+    /* Traverse the room heirarchy and put all the (non-space) rooms into one list */
+
+    const traversedSpaces = new Set();  // To avoid circular spaces
+    const rooms = new Set();
+
+    function traverse(space) {
+        getSpaceChildren(space).forEach((room) => {
+            // For space rooms, mark as traversed and run this function on it again
+            if (room.isSpaceRoom()) {
+                if (!traversedSpaces.has(room)) {
+                    traversedSpaces.add(room);
+                    traverse(room);
+                }
+            }
+            // Add normal room to set
+            else {
+                rooms.add(room);
+            }
+        })
+    }
+    traverse(space);
+
+    return [...rooms];
+}

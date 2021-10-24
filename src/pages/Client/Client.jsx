@@ -1,5 +1,5 @@
 import "./Client.scss";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
 import { useHistory } from "react-router-dom";
 
@@ -11,7 +11,6 @@ import { Resize } from "../../components/wrappers";
 import Navigation from "../../views/Navigation/Navigation";
 import Settings from "../../views/Settings/Settings";
 import ChatPanel from "../../views/ChatPanel/ChatPanel";
-import navManager from "../../views/Navigation/navManager";
 import MemberList from "../../views/MemberList/MemberList";
 
 
@@ -22,23 +21,18 @@ function Client({ urlRoom }) {
     const [page, setPage] = useState();  // Used to set full screen pages
     const [userPopupInfo, setUserPopup] = useState(null);
     const [contextMenu, setContextMenu] = useState();
+    const hideMemberListState = useState(false);
 
     const [currentRoom, selectRoom] = useState(urlRoom);  // The currently selected room
 
-    const roomNav = useRef(null);  // Handles populating the groups and room list - navManager instance
     const history = useHistory();  // For altering the url
 
-    const [invites, setInvites] = useState([]);  // Passed into navmanager and navigation pane
-    const hideMemberListState = useState(false);
 
+    // Change url to match selected room
     useEffect(() => {
-        if (currentRoom) {
+        if (currentRoom && currentRoom !== urlRoom) {
             history.push("/" + currentRoom);
             history.goForward();
-        }
-
-        if (roomNav.current) {
-            roomNav.current.roomSelected(currentRoom);
         }
     }, [currentRoom, history])
     useEffect(() => {
@@ -56,14 +50,12 @@ function Client({ urlRoom }) {
         buildMatrix().then(() => {
             global.matrix.once("sync", (state, oldState) => {
                 if (oldState === null && state === "PREPARED") {
-                    roomNav.current = new navManager(setInvites, selectRoom);
                     syncState(true);
                 }
             })
         })
 
         return () => {
-            // roomNav.current.detachListeners();
             global.matrix.stopClient();
         }
     }, []);
@@ -83,7 +75,7 @@ function Client({ urlRoom }) {
         <userPopupCtx.Provider value={setUserPopup}>
 
         <div className="client">
-            <Navigation setPage={setPage} currentRoom={currentRoom} selectRoom={selectRoom} roomNav={roomNav} invites={invites} />
+            <Navigation setPage={setPage} currentRoom={currentRoom} selectRoom={selectRoom} />
             <div className="column column--chat">
                 <ChatPanel currentRoom={currentRoom} hideMemberListState={hideMemberListState} />
             </div>
