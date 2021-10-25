@@ -30,7 +30,7 @@ function Client({ urlRoom }) {
 
     // Change url to match selected room
     useEffect(() => {
-        if (currentRoom && currentRoom !== urlRoom) {
+        if (currentRoom) {
             history.push("/" + currentRoom);
             history.goForward();
         }

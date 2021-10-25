@@ -27,15 +27,15 @@ export function Loading({ size }) {
 }
 
 
-export function Option({ text, k, selected, select = ()=>{}, danger=false, compact=false, unread=false, notification=0, children }) {
+export function Option({ text, k, selected, select = ()=>{}, danger=false, compact=false, unread=false, notifications=0, children }) {
     const className = classList("option",
                                 {"option--selected": k ? selected===k : null}, 
                                 {"option--danger": danger},
                                 {"option--compact": compact}) 
 
-    var indicator = null;
-    if (notification > 0) {
-        indicator = (<div className="option__notification">{notification}</div>);
+    let indicator = null;
+    if (notifications > 0) {
+        indicator = (<div className="option__notification">{notifications}</div>);
     } else if (unread) {
         indicator = (<div className="option__unread"></div>);
     }
@@ -49,8 +49,15 @@ export function Option({ text, k, selected, select = ()=>{}, danger=false, compa
     );
 }
 
-export function DropDown({ icon, text, children }) {
+export function DropDown({ icon, text, children, unread=false, notifications=0 }) {
     const [open, toggleOpen] = useReducer((current) => !current, false);
+
+    let indicator = null;
+    if (notifications > 0) {
+        indicator = (<div className="dropdown__notification">{notifications}</div>);
+    } else if (unread) {
+        indicator = (<div className="dropdown__unread"></div>);
+    }
 
     return (
         <div className="dropdown-wrapper">
@@ -58,6 +65,7 @@ export function DropDown({ icon, text, children }) {
                 <Icon path={mdiChevronDown} color={open ? "var(--text)" : "var(--text-greyed)"} size="1.5rem" className="dropdown__chevron" rotate={open ? 0 : -90} />
                 { icon }
                 <div className="dropdown__text">{text}</div>
+                {indicator}
             </div>
             { open &&
                 <div className="dropdown__content">

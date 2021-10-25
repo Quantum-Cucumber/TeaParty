@@ -92,8 +92,8 @@ function GroupList(props) {
 }
 function Group({ setGroup, currentGroup, roomStates, groupName, k, children, builtin = false }) {
     const roomState = roomStates[k];
-    const read = roomState?.read || true;
-    const notifications = roomState?.notification || 0;
+    const read = roomState ? roomState.read : true;
+    const notifications = roomState ? roomState.notifications : 0;
 
     return (
         <div className="group__holder">
@@ -138,23 +138,24 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
                 {getRoomIcon(room, currentGroup.key === "directs")}
             </div>
         );
+
         const roomState = roomStates[room.roomId];
-        const notifications = roomState?.notification || 0;
-        const unreadDot = !roomState?.read || false;
+        const unreadDot = roomState ? !roomState.read : false;
+        const notifications = roomState ? roomState.notifications : 0;
 
         if (room.isSpaceRoom()) {
             const children = getSpaceChildren(room);
 
             return (
-                <DropDown key={key} icon={icon} text={room.name}>
-                    <RoomList rooms={children} currentGroup={currentGroup} currentRoom={currentRoom} selectRoom={selectRoom} /> 
+                <DropDown key={key} icon={icon} text={room.name} notifications={notifications} unread={unreadDot}>
+                    <RoomList rooms={children} currentGroup={currentGroup} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} /> 
                 </DropDown>
             )
         }
         else {
             return (
                 <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom} 
-                        unread={unreadDot} notification={notifications}>
+                        unread={unreadDot} notifications={notifications}>
                     {icon}
                 </Option>
             )

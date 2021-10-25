@@ -23,7 +23,7 @@ export function getSpaceChildren(space) {
     )
 }
 
-function _getSpaces() {
+export function getSpaces() {
     /* Get all joined spaces */
     return getJoinedRooms().filter((room) => {
         return room.isSpaceRoom();
@@ -33,8 +33,8 @@ function _getSpaces() {
 export function getRootSpaces() {
     /* Get all top level spaces */
 
-    const allSpaces = _getSpaces();  // List to iterate through
-    const rootSpaces = new Set(_getSpaces());
+    const allSpaces = getSpaces();  // List to iterate through
+    const rootSpaces = new Set(getSpaces());
 
     // Remove each child space from our list
     allSpaces.forEach((space) => {
@@ -82,7 +82,7 @@ export function getOrpanedRooms() {
         rooms.delete(directRoom);
     })
     // Remove spaces and their children
-    _getSpaces().forEach((space) => {
+    getSpaces().forEach((space) => {
         rooms.delete(space);
 
         getSpaceChildren(space).forEach((space) => {
@@ -94,7 +94,7 @@ export function getOrpanedRooms() {
 }
 
 export function flatSubrooms(space) {
-    /* Traverse the room heirarchy and put all the (non-space) rooms into one list */
+    /* Traverse the room heirarchy and put all the (non-space) rooms into one deduplicated list */
 
     const traversedSpaces = new Set();  // To avoid circular spaces
     const rooms = new Set();

@@ -34,6 +34,28 @@
         flex: 1;
         margin: 0 8px;
     }
+
+    &__notification {
+        flex: none;
+        background-color: var(--primary);
+        border-radius: 0.6rem;
+        padding: 2px;
+        height: 1.3rem;
+        line-height: 1.3rem;
+        aspect-ratio: 1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    &__unread {
+        flex: none;
+        height: 8px;
+        width: 8px;
+        background-color: var(--primary);
+        margin-right: 5px;
+        border-radius: 50%;
+    }
 }
 
 .option {
@@ -65,28 +87,6 @@
     &--compact {
         padding: 5px 8px;
         border-radius: 5px;
-    }
-
-    &__notification {
-        flex: none;
-        background-color: var(--primary);
-        border-radius: 0.6rem;
-        padding: 2px;
-        height: 1.3rem;
-        line-height: 1.3rem;
-        aspect-ratio: 1;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-
-    &__unread {
-        flex: none;
-        height: 8px;
-        width: 8px;
-        background-color: var(--primary);
-        margin-right: 5px;
-        border-radius: 50%;
     }
 }
 

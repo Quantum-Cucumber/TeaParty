@@ -3,7 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import Settings from "../../utils/settings";
 // import { debounce } from "../../utils/utils";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
-import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms } from "../../utils/roomFilters";
+import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpaces, flatSubrooms } from "../../utils/roomFilters";
 
 function getUnreads(room) {
     /* Determine if there are unread events or notifications for the given room */
@@ -233,13 +233,13 @@ export class roomWatcher {
 
 }
 function _summariseRooms() {
-    const rooms = getJoinedRooms().filter((room) => !room.isSpaceRoom());  // Todo calculate space room notifications
-    const summarys = {};
-
+    const summaries = {};
+    
+    const rooms = getJoinedRooms().filter((room) => !room.isSpaceRoom());
     rooms.forEach((room) => {
         const {read, notifications} = getUnreads(room);
 
-        summarys[room.roomId] = {
+        summaries[room.roomId] = {
             roomId: room.roomId,
             name: room.name,
             room: room,
@@ -248,7 +248,34 @@ function _summariseRooms() {
         }
     })
 
-    return summarys;
+    // Calculate groups based off the already calculated rooms
+    function collectUnreads(unreadList) {
+        const unread = unreadList.some((state) => {return !state.read});  // If any are unread
+        const notifications = unreadList.reduce((count, state) => {return count + state.notifications}, 0);  // Get sum
+
+        return {read: !unread, notifications: notifications}
+    }
+
+    getSpaces().forEach((space) => {
+        const childUnreads = flatSubrooms(space).map((room) => {return summaries[room.roomId]});
+        const {read, notifications} = collectUnreads(childUnreads);
+
+        summaries[space.roomId] = {
+            roomId: space.roomId,
+            name: space.name,
+            room: space,
+            read: read,
+            notifications: notifications,
+        }
+    });
+    ["home", "directs"].forEach((group) => {
+        // There should not be spaces here
+        const childUnreads = getChildRoomsFromGroup(group).map(getUnreads);
+        // The only thing about a group that should change is the notifications status
+        summaries[group] = collectUnreads(childUnreads);
+    })
+
+    return summaries;
 }
 
 export default function useRoomStates() {
