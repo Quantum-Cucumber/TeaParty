@@ -105,6 +105,17 @@ export function useDebouncedState(initial, delay) {
     return [debouncedState, queueState];
 }
 
+export function useStableState(prop) {
+    /* Creates a ref that is updated when the prop changes */
+    const stableProp = useRef(prop);
+
+    useEffect(() => {
+        stableProp.current = prop;
+    }, [prop])
+
+    return stableProp
+}
+
 export function useDownloadUrl(url) {
     const [blobUrl, setBlobUrl] = useState();
     function download(e) {

@@ -19,7 +19,7 @@ function Navigation({ setPage, currentRoom, selectRoom }) {
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
     const [groupRooms, setGroupRooms] = useState(getChildRoomsFromGroup(currentGroup.key))
 
-    const [roomStates, invitedRooms] = useRoomStates();  // Manages room and invite updating
+    const [roomStates, invitedRooms] = useRoomStates({currentGroup, setGroupRooms});  // Manages room and invite updating
     useGroupBreadcrumbs({currentGroup, currentRoom, selectRoom});  // Select the relevant room when a group is selected
     
 

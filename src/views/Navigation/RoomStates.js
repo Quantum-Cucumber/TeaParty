@@ -1,9 +1,24 @@
-import { useState, useEffect, useRef } from "react";
-
+import { useEffect, useRef, useCallback, useReducer } from "react";
 import Settings from "../../utils/settings";
-// import { debounce } from "../../utils/utils";
+import { debounce, useStableState } from "../../utils/utils";
+import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpaces, flatSubrooms, getRootSpaces } from "../../utils/roomFilters";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
-import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpaces, flatSubrooms } from "../../utils/roomFilters";
+
+
+
+export function getChildRoomsFromGroup(groupKey) {
+    switch(groupKey) {
+        case "home":
+            return getOrpanedRooms();
+        case "directs":
+            return getDirects();
+
+        default:  // Likely a space Id
+            const space = global.matrix.getRoom(groupKey);
+            return space ? getSpaceChildren(space) : [];
+    }
+}
+
 
 function getUnreads(room) {
     /* Determine if there are unread events or notifications for the given room */
@@ -25,21 +40,6 @@ function getUnreads(room) {
     const notifications = room.getUnreadNotificationCount("total");
     return {read: read, notifications: notifications}
 }
-
-
-export function getChildRoomsFromGroup(groupKey) {
-    switch(groupKey) {
-        case "home":
-            return getOrpanedRooms();
-        case "directs":
-            return getDirects();
-
-        default:  // Likely a space Id
-            const space = global.matrix.getRoom(groupKey);
-            return space ? getSpaceChildren(space) : [];
-    }
-}
-
 
 function _getInvitedRooms() {
     var rooms = [];
@@ -69,169 +69,6 @@ function _getInvitedRooms() {
 }
 
 
-
-export class roomWatcher {
-    constructor(selectRoom, setInvites) {
-        this.selectRoom = selectRoom;
-        this.setInvites = setInvites;
-
-        // Create map from saved breadcrumbs object
-        this.groupBreadcrumbs = undefined;
-        this.currentGroup = null;
-
-        // this._startListeners();
-
-        this.setInvites(_getInvitedRooms());
-        // When initialised, go to home by default
-        this.groupSelected("home");
-    }
-
-    _roomStates(rooms) {
-        /* Create a bare bones copy of a room object, enough to differentiate it from other instances*/
-        return rooms.map((room) => {
-            let unreads;
-            if (room.isSpaceRoom()) {
-                unreads = this.groupUnreads(room.roomId);
-            } else {
-                unreads = getUnreads(room);
-            }
-
-            return {
-                roomId: room.roomId, name: room.name, room: room, 
-                read: unreads.read, notifications: unreads.notifications
-            };
-        });
-    }
-
-    groupUnreads(groupKey) {
-        // Get unreads for all children
-        let children = getChildRoomsFromGroup(groupKey).map((child) => {
-            return getUnreads(child);
-        });
-        // In case space has no joined children
-        if (children.length === 0) {children = [{read: true, notifications: 0}]}
-
-        // Merge all unread states
-        const unread = children.some((state) => {return !state.read});  // If any are unread
-        const notifications = children.reduce((count, state) => {return count + state.notifications}, 0);  // Get sum
-        return {read: !unread, notifications: notifications};
-    }
-
-
-    /* Listeners */
-
-    /*_listeners = {
-        "Room.myMembership": this._membershipChange.bind(this),
-        "accountData": this._accountData.bind(this), 
-        "Room.name": this._roomRenamed.bind(this),
-        "Room.timeline": debounce(this._roomEvent.bind(this), 1000),  // For unread indicator updates
-        "Room.receipt": this._readReceipt.bind(this),
-    }
-    _startListeners() {
-        Object.keys(this._listeners).forEach((type) => {
-            console.log("Attached", type)
-            global.matrix.on(type, this._listeners[type]);
-        })
-    }
-    detachListeners() {
-        Object.keys(this._listeners).forEach((type) => {
-            global.matrix.removeListener(type, this._listeners[type]);
-        })
-    }
-
-    // Membership in room updated
-    _membershipChange(room, state, oldState) {
-        console.log("Membership change", oldState, state, room);
-
-        // Left room
-        if (state === "leave" || state === "ban") {
-            if (room.isSpaceRoom()) {
-                // Left space, update group list
-                this.setGroups(this._roomStates(this.getGroups()));
-                return;
-            }
-
-            // Remove from mapping
-            this.roomToGroup.delete(room.roomId);
-            // If current group has that room, refresh the list
-            if (this.currentRooms.includes(room)) {
-                this.groupSelected(this.currentGroup);
-            }
-        }
-
-        // New invite to a room, or invite has changed (joined room etc)
-        if (state === "invite" || oldState === "invite") {
-            this.setInvites(this._getInvitedRooms());
-        }
-
-        // Joined room 
-        if (state === "join") {
-            if (room.isSpaceRoom()) {
-                this.setGroups(getRootSpaces());
-            } else {
-                // We don't know which group this belongs to, so reinitialise all the groups
-                this._initRoomMap();
-
-                // Check if the current group was updated, if so, refresh it
-                if (getChildRoomsFromGroup(this.currentGroup).includes(room)) {
-                    this.groupSelected(this.currentGroup);
-                }
-            }
-        }
-    }
-
-    // DM room info
-    _accountData(event) {
-        console.log("Account data", event)
-
-        // If m.directs list updated, refresh the dms list
-        if (event.getType() !== "m.direct") {
-            this._getDirects();  // This updates the room mapping with new values
-
-            // If currently in the directs group, update the room list
-            if (this.currentGroup === "directs") {
-                this.groupSelected("directs");
-            }
-        };
-
-    }
-
-    // Room name updated
-    _roomRenamed(room) {
-        if (this.currentRooms.includes(room)) {
-            this.setRooms(this._roomStates(this.currentRooms));
-        }
-    }
-
-    // Message event
-    _roomEvent(event, room, toStartOfTimeline, removed) {
-        if (removed) {return};
-        if (event.getType() !== "m.room.message") {return};
-        if (toStartOfTimeline) {return}  // Only update for messages at start of chat
-
-        // If event's room is in current roomlist, refresh (to add indicators)
-        if (this.currentRooms.includes(room)) {
-            this.groupSelected(this.currentGroup);
-        }
-        // Update group list
-        this.setGroups(getRootSpaces());
-    }
-
-    // Read receipt
-    _readReceipt(event, room) {
-        // Check if read receipt was the signed in user, then update the unread indicators if so
-        const userId = Object.keys(Object.values(event.getContent())[0]["m.read"])[0];
-        if (userId === global.matrix.getUserId()) {
-            // If event's room is in current roomlist, refresh (to add indicators)
-            if (this.currentRooms.includes(room)) {
-                this.groupSelected(this.currentGroup);
-            }
-            // Update group list
-            this.setGroups(getRootSpaces());
-        }
-    }*/
-
-}
 function _summariseRooms() {
     const summaries = {};
     
@@ -249,7 +86,7 @@ function _summariseRooms() {
     })
 
     // Calculate groups based off the already calculated rooms
-    function collectUnreads(unreadList) {
+    function mergeUnreads(unreadList) {
         const unread = unreadList.some((state) => {return !state.read});  // If any are unread
         const notifications = unreadList.reduce((count, state) => {return count + state.notifications}, 0);  // Get sum
 
@@ -258,7 +95,7 @@ function _summariseRooms() {
 
     getSpaces().forEach((space) => {
         const childUnreads = flatSubrooms(space).map((room) => {return summaries[room.roomId]});
-        const {read, notifications} = collectUnreads(childUnreads);
+        const {read, notifications} = mergeUnreads(childUnreads);
 
         summaries[space.roomId] = {
             roomId: space.roomId,
@@ -272,16 +109,120 @@ function _summariseRooms() {
         // There should not be spaces here
         const childUnreads = getChildRoomsFromGroup(group).map(getUnreads);
         // The only thing about a group that should change is the notifications status
-        summaries[group] = collectUnreads(childUnreads);
+        summaries[group] = mergeUnreads(childUnreads);
     })
 
     return summaries;
 }
 
-export default function useRoomStates() {
-    /* Attach listeners  */
-    const [roomStates, setRoomStates] = useState(_summariseRooms());
-    const [invitedRooms, setInvites] = useState(_getInvitedRooms());
+
+function roomInGroup(groupKey, room) {
+    /* Check if room is a descendent of the current group*/
+
+    let flatGroupSubrooms;
+    switch (groupKey) {
+        case "home":
+            flatGroupSubrooms = getOrpanedRooms();
+            break;
+        case "directs":
+            flatGroupSubrooms = getDirects();
+            break;
+        default:        
+            flatGroupSubrooms = flatSubrooms(groupKey);
+    }
+
+    return flatGroupSubrooms.includes(room);
+}
+
+export default function useRoomStates({ currentGroup, setGroupRooms }) {
+    // Contains information to rerender rooms
+    const [roomStates, refreshRoomStates] = useReducer(_summariseRooms, _summariseRooms());
+    const [invitedRooms, refreshInvites] = useReducer(_getInvitedRooms, _getInvitedRooms());
+    const stableCurrentGroup = useStableState(currentGroup);
+
+    // Membership in room updated
+    const _membershipChange = useCallback((room, state, oldState) => {
+        console.log("Membership change", oldState, state, room);
+
+        function isVisible(room) {
+            if (getRootSpaces().includes(room)) {return true};
+            // TODO: Check for children in current pane
+        }
+        function refreshRooms() {
+            setGroupRooms(getChildRoomsFromGroup(stableCurrentGroup.current.key));
+        }
+
+        // Left room
+        if (state === "leave" || state === "ban") {
+            if (isVisible) {
+                refreshRooms()
+            }
+        }
+
+        // New invite to a room, or invite has changed (joined room etc)
+        if (state === "invite" || oldState === "invite") {
+            refreshInvites();
+        }
+
+        // Joined room 
+        if (state === "join") {
+            if (isVisible) {
+                refreshRooms()
+            }
+        }
+    }, [setGroupRooms, stableCurrentGroup, refreshInvites])
+
+    // Direct room added
+    const _accountData = useCallback((event) => {
+        console.log("Account data", event)
+
+        // If m.directs list updated, refresh the dms list
+        if (event.getType() === "m.direct") {
+            refreshRoomStates();
+        };
+    }, [refreshRoomStates])
+
+    // When channel is read
+    const _readReceipt = useCallback((event) => {
+        // Check if read receipt was the signed in user, then update the unread indicators if so
+        const userId = Object.keys(Object.values(event.getContent())[0]["m.read"])[0];
+        if (userId === global.matrix.getUserId()) {
+            refreshRoomStates()
+        }
+    }, [refreshRoomStates])
+
+    // Message event
+    const _roomEvent = useCallback((event, _room, toStartOfTimeline, removed) => {
+        if (removed) {return};
+        if (!shouldDisplayEvent(event)) {return};
+        if (toStartOfTimeline) {return}  // Only update for messages at start of chat
+        if (event.getSender() === global.matrix.getUserId()) {return}  // No unread indicators for own events
+
+        refreshRoomStates()
+    }, [refreshRoomStates]);
+
+    useEffect(() => {
+        // Mount listeners
+        const listeners = {
+            "Room.myMembership": _membershipChange,
+            "accountData": _accountData,
+            "Room.name": refreshRoomStates,
+            "Room.timeline": debounce(_roomEvent, 1000),  // For unread indicator updates
+            "Room.receipt": _readReceipt,
+        }
+
+        Object.keys(listeners).forEach((type) => {
+            console.log("Attached", type)
+            global.matrix.on(type, listeners[type]);
+        })
+
+        // Detach listeners on mount
+        return () => {
+            Object.keys(listeners).forEach((type) => {
+                global.matrix.removeListener(type, listeners[type]);
+            })
+        }
+    }, [_membershipChange, _accountData, _roomEvent, _readReceipt])
 
     return [roomStates, invitedRooms];
 }
@@ -290,13 +231,13 @@ export function useGroupBreadcrumbs({ currentGroup, currentRoom, selectRoom }) {
     /* Tracks the last selected room for a given group. When the group is changed, select a relevant room */
 
     const lastOpenedRoom = useRef(new Map(Object.entries(Settings.getSetting("groupBreadcrumbs"))));  // group => selected room;
-    const groupRef = useRef(currentGroup.key);  // To avoid updating the breadcrumb setter
+    const groupRef = useStableState(currentGroup);  // To avoid updating the breadcrumb setter
 
     // When the current room is changed, update the mapping with the new room
     useEffect(() => {
         if (!currentRoom) {return}  // If no room selected, don't save that
 
-        lastOpenedRoom.current.set(groupRef.current, currentRoom);
+        lastOpenedRoom.current.set(groupRef.current.key, currentRoom);
         // Convert map to object to be saved
         const crumbObj = Object.fromEntries(lastOpenedRoom.current);
         Settings.updateSetting("groupBreadcrumbs", crumbObj);
@@ -304,15 +245,13 @@ export function useGroupBreadcrumbs({ currentGroup, currentRoom, selectRoom }) {
 
     // When a different group is selected, open either the last opened room for that group, the first direct child or set as null 
     useEffect(() => {
-        groupRef.current = currentGroup.key;
-
-        const lastRoom = lastOpenedRoom.current.get(groupRef.current);
+        const lastRoom = lastOpenedRoom.current.get(groupRef.current.key);
         if (lastRoom) {
             selectRoom(lastRoom);
         }
         else {
             // Get direct children that are not spaces
-            const children = getChildRoomsFromGroup(groupRef.current).filter((room) => !room.isSpaceRoom());
+            const children = getChildRoomsFromGroup(groupRef.current.key).filter((room) => !room.isSpaceRoom());
             if (children.length !== 0) {
                 selectRoom(children[0]);
             }
@@ -321,5 +260,5 @@ export function useGroupBreadcrumbs({ currentGroup, currentRoom, selectRoom }) {
                 selectRoom(null);
             }
         }
-    }, [currentGroup, selectRoom])
+    }, [groupRef, selectRoom])
 }
