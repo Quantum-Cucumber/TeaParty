@@ -93,8 +93,8 @@ export function getOrpanedRooms() {
     return [...rooms];
 }
 
-export function flatSubrooms(space) {
-    /* Traverse the room heirarchy and put all the (non-space) rooms into one deduplicated list */
+export function flatSubrooms(space, includeSpaces = false) {
+    /* Traverse the room heirarchy and place all the rooms into one deduplicated list */
 
     const traversedSpaces = new Set();  // To avoid circular spaces
     const rooms = new Set();
@@ -116,5 +116,5 @@ export function flatSubrooms(space) {
     }
     traverse(space);
 
-    return [...rooms];
+    return includeSpaces ? [...rooms, ...traversedSpaces] : [...rooms];
 }

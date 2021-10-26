@@ -5,7 +5,6 @@ import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpace
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
 
 
-
 export function getChildRoomsFromGroup(groupKey) {
     switch(groupKey) {
         case "home":
@@ -17,6 +16,25 @@ export function getChildRoomsFromGroup(groupKey) {
             const space = global.matrix.getRoom(groupKey);
             return space ? getSpaceChildren(space) : [];
     }
+}
+
+export function roomInGroup(groupKey, room) {
+    /* Check if room is a descendent of the current group*/
+
+    let flatGroupSubrooms;
+    switch (groupKey) {
+        case "home":
+            flatGroupSubrooms = getOrpanedRooms();
+            break;
+        case "directs":
+            flatGroupSubrooms = getDirects();
+            break;
+        default:
+            const space = global.matrix.getRoom(groupKey);
+            flatGroupSubrooms = space ? flatSubrooms(space, true) : [];
+    }
+
+    return flatGroupSubrooms.includes(room);
 }
 
 
@@ -115,30 +133,16 @@ function _summariseRooms() {
     return summaries;
 }
 
-
-function roomInGroup(groupKey, room) {
-    /* Check if room is a descendent of the current group*/
-
-    let flatGroupSubrooms;
-    switch (groupKey) {
-        case "home":
-            flatGroupSubrooms = getOrpanedRooms();
-            break;
-        case "directs":
-            flatGroupSubrooms = getDirects();
-            break;
-        default:        
-            flatGroupSubrooms = flatSubrooms(groupKey);
-    }
-
-    return flatGroupSubrooms.includes(room);
-}
-
 export default function useRoomStates({ currentGroup, setGroupRooms }) {
     // Contains information to rerender rooms
     const [roomStates, refreshRoomStates] = useReducer(_summariseRooms, _summariseRooms());
     const [invitedRooms, refreshInvites] = useReducer(_getInvitedRooms, _getInvitedRooms());
     const stableCurrentGroup = useStableState(currentGroup);
+
+    const refreshRooms = useCallback(() => {
+        setGroupRooms(getChildRoomsFromGroup(stableCurrentGroup.current.key));
+    }, [setGroupRooms, stableCurrentGroup])
+
 
     // Membership in room updated
     const _membershipChange = useCallback((room, state, oldState) => {
@@ -146,10 +150,7 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
 
         function isVisible(room) {
             if (getRootSpaces().includes(room)) {return true};
-            // TODO: Check for children in current pane
-        }
-        function refreshRooms() {
-            setGroupRooms(getChildRoomsFromGroup(stableCurrentGroup.current.key));
+            return roomInGroup(stableCurrentGroup.current.key, room);
         }
 
         // Left room
@@ -170,7 +171,7 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
                 refreshRooms()
             }
         }
-    }, [setGroupRooms, stableCurrentGroup, refreshInvites])
+    }, [stableCurrentGroup, refreshRooms, refreshInvites])
 
     // Direct room added
     const _accountData = useCallback((event) => {
@@ -178,9 +179,9 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
 
         // If m.directs list updated, refresh the dms list
         if (event.getType() === "m.direct") {
-            refreshRoomStates();
+            refreshRooms();
         };
-    }, [refreshRoomStates])
+    }, [refreshRooms])
 
     // When channel is read
     const _readReceipt = useCallback((event) => {
@@ -231,27 +232,29 @@ export function useGroupBreadcrumbs({ currentGroup, currentRoom, selectRoom }) {
     /* Tracks the last selected room for a given group. When the group is changed, select a relevant room */
 
     const lastOpenedRoom = useRef(new Map(Object.entries(Settings.getSetting("groupBreadcrumbs"))));  // group => selected room;
-    const groupRef = useStableState(currentGroup);  // To avoid updating the breadcrumb setter
+    const stableCurrentGroup = useStableState(currentGroup);  // To avoid updating the breadcrumb setter
 
     // When the current room is changed, update the mapping with the new room
     useEffect(() => {
         if (!currentRoom) {return}  // If no room selected, don't save that
+        // Ensure the room is actually in that map
+        if (!roomInGroup(stableCurrentGroup.current.key, global.matrix.getRoom(currentRoom))) {return}
 
-        lastOpenedRoom.current.set(groupRef.current.key, currentRoom);
+        lastOpenedRoom.current.set(stableCurrentGroup.current.key, currentRoom);
         // Convert map to object to be saved
         const crumbObj = Object.fromEntries(lastOpenedRoom.current);
         Settings.updateSetting("groupBreadcrumbs", crumbObj);
-    }, [groupRef, currentRoom])
+    }, [stableCurrentGroup, currentRoom])
 
     // When a different group is selected, open either the last opened room for that group, the first direct child or set as null 
     useEffect(() => {
-        const lastRoom = lastOpenedRoom.current.get(groupRef.current.key);
+        const lastRoom = lastOpenedRoom.current.get(currentGroup.key);
         if (lastRoom) {
             selectRoom(lastRoom);
         }
         else {
             // Get direct children that are not spaces
-            const children = getChildRoomsFromGroup(groupRef.current.key).filter((room) => !room.isSpaceRoom());
+            const children = getChildRoomsFromGroup(currentGroup.key).filter((room) => !room.isSpaceRoom());
             if (children.length !== 0) {
                 selectRoom(children[0]);
             }
@@ -260,5 +263,5 @@ export function useGroupBreadcrumbs({ currentGroup, currentRoom, selectRoom }) {
                 selectRoom(null);
             }
         }
-    }, [groupRef, selectRoom])
+    }, [currentGroup, selectRoom])
 }

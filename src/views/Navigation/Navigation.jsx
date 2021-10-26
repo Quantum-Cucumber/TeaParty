@@ -8,7 +8,7 @@ import { Tooltip, Modal } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
 
-import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup } from "./RoomStates";
+import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup } from "./RoomStates";
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { acronym, useBindEscape, classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
@@ -18,6 +18,7 @@ function Navigation({ setPage, currentRoom, selectRoom }) {
     // Name will be displayed above the room list and can't (always) be inferred from the key
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
     const [groupRooms, setGroupRooms] = useState(getChildRoomsFromGroup(currentGroup.key))
+    const [showRoomSeperate, setShowRoomSeperate] = useState(null);
 
     const [roomStates, invitedRooms] = useRoomStates({currentGroup, setGroupRooms});  // Manages room and invite updating
     useGroupBreadcrumbs({currentGroup, currentRoom, selectRoom});  // Select the relevant room when a group is selected
@@ -31,15 +32,32 @@ function Navigation({ setPage, currentRoom, selectRoom }) {
         setGroupRooms(getChildRoomsFromGroup(currentGroup.key))
     }, [currentGroup])
 
+    // If the current room isn't in the room list, add an entry above the groups list to represent the selected room
+    useEffect(() => {
+        const room = global.matrix.getRoom(currentRoom);
+        if (room && !roomInGroup(currentGroup.key, room)) {
+            setShowRoomSeperate(room);
+        }
+        else {
+            setShowRoomSeperate(null);
+        }
+    }, [currentRoom, currentGroup])
+
     return (
         <>
             <div className="column column--groups scroll--hidden">
-                {invLen !== 0 && 
-                    <>
-                    <InvitesIcon invites={invitedRooms} invLen={invLen} />
-                    <div className="group__seperator"></div>
-                    </>
+                { showRoomSeperate &&
+                    <Group currentGroup={currentGroup} roomStates={roomStates} groupName={showRoomSeperate.name} k={currentGroup.key}>
+                        {getRoomIcon(showRoomSeperate)}
+                    </Group>
                 }
+                {invLen !== 0 && 
+                    <InvitesIcon invites={invitedRooms} invLen={invLen} />
+                }
+                { (showRoomSeperate || invLen !== 0) &&
+                    <div className="group__seperator"></div>
+                }
+
                 <GroupList setGroup={setGroup} currentGroup={currentGroup} roomStates={roomStates} />
             </div>
             <Resize initialSize={260} side="right" minSize="60px" collapseSize={100}>
@@ -73,24 +91,20 @@ function GroupList(props) {
 
     getRootSpaces().forEach((space) => {
         const key = space.roomId;
-        const icon = space.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
-        const image = icon ?
-            <img className="room__icon" src={icon} alt={acronym(space.name)} /> :
-            <div className="room__icon">{acronym(space.name)}</div>;
 
         groups.push(
             <Group {...props}
                 groupName={space.name}
                 key={key} k={key}
             >
-                {image}
+                {getRoomIcon(space)}
             </Group>
         );
     })
 
     return groups;
 }
-function Group({ setGroup, currentGroup, roomStates, groupName, k, children, builtin = false }) {
+function Group({ setGroup = ()=>{}, currentGroup, roomStates, groupName, k, children, builtin = false }) {
     const roomState = roomStates[k];
     const read = roomState ? roomState.read : true;
     const notifications = roomState ? roomState.notifications : 0;

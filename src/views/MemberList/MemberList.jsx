@@ -36,6 +36,7 @@ function MemberList({ currentRoom, setUserPopup }) {
 
     useEffect(() => {
         if (!currentRoom) {return}
+        if (!global.matrix.getRoom(currentRoom)) {return}
 
         let members = global.matrix.getRoom(currentRoom).getJoinedMembers();
         if (members.length === loadedMembers) {return}

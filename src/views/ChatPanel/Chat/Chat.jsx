@@ -35,6 +35,7 @@ function Chat({ currentRoom }) {
         setEventList([]);
         // No listener when no selected room
         if (!currentRoom) {return};
+        if (!global.matrix.getRoom(currentRoom)) {return}
 
         console.info("Load room: ", currentRoom)
         timeline.current = new eventTimeline(currentRoom);
@@ -71,7 +72,7 @@ function Chat({ currentRoom }) {
     /* Render timeline */
     
     var events = [];
-    const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom).getEventReadUpTo(global.matrix.getUserId()) : null;
+    const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom)?.getEventReadUpTo(global.matrix.getUserId()) : null;
     eventList.filter((event) => {return shouldDisplayEvent(event)})
     .forEach((event, index, filteredEvents) => {
         const prevEvent = filteredEvents[index - 1];
