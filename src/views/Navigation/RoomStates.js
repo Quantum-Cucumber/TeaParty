@@ -202,6 +202,12 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
         refreshRoomStates()
     }, [refreshRoomStates]);
 
+    const _settingsUpdate = useCallback((setting) => {
+        if (setting === "showRedactedEvents" || setting === "showJoinEvents" || setting === "showLeaveEvents") {
+            refreshRoomStates()
+        }
+    }, [refreshRoomStates])
+
     useEffect(() => {
         // Mount listeners
         const listeners = {
@@ -217,13 +223,18 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
             global.matrix.on(type, listeners[type]);
         })
 
+        // Refresh unread indicators when the events to be shown are updated
+        Settings.on("settingUpdate", _settingsUpdate)
+
         // Detach listeners on mount
         return () => {
             Object.keys(listeners).forEach((type) => {
                 global.matrix.removeListener(type, listeners[type]);
             })
+
+            Settings.removeListener("settingUpdate", _settingsUpdate)
         }
-    }, [_membershipChange, _accountData, _roomEvent, _readReceipt])
+    }, [_membershipChange, _accountData, _roomEvent, _readReceipt, _settingsUpdate])
 
     return [roomStates, invitedRooms];
 }
