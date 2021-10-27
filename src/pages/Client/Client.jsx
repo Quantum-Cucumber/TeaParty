@@ -22,6 +22,7 @@ function Client({ urlRoom }) {
     const [userPopupInfo, setUserPopup] = useState(null);
     const [contextMenu, setContextMenu] = useState();
     const hideMemberListState = useState(false);
+    const hideRoomListState = useState(false);
 
     const [currentRoom, selectRoom] = useState(urlRoom);  // The currently selected room
 
@@ -75,9 +76,9 @@ function Client({ urlRoom }) {
         <userPopupCtx.Provider value={setUserPopup}>
 
         <div className="client">
-            <Navigation setPage={setPage} currentRoom={currentRoom} selectRoom={selectRoom} />
+            <Navigation setPage={setPage} currentRoom={currentRoom} selectRoom={selectRoom} hideRoomListState={hideRoomListState} />
             <div className="column column--chat">
-                <ChatPanel currentRoom={currentRoom} hideMemberListState={hideMemberListState} />
+                <ChatPanel currentRoom={currentRoom} hideMemberListState={hideMemberListState} hideRoomListState={hideRoomListState} />
             </div>
             <Resize side="left" initialSize={300} collapseSize={150} collapseState={hideMemberListState}>
                 <div className="column column--right">

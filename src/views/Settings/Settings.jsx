@@ -1,7 +1,7 @@
 import "./Settings.scss";
 import { useEffect, useState } from "react";
 import { Loading, Option } from "../../components/elements";
-import { mdiClose, mdiBrush, mdiLock, mdiHammerWrench } from "@mdi/js";
+import { mdiClose, mdiBrush, mdiLock, mdiHammerWrench, mdiTune } from "@mdi/js";
 import { Icon } from "@mdi/react";
 import Settings from "../../utils/settings";
 import { logoutMatrix } from "../../utils/matrix-client";
@@ -14,7 +14,7 @@ const settings_pages = [
         title: "Appearance",
         icon: mdiBrush,
         render: () => {
-            const currentTheme = Settings.getSetting("theme");
+            const currentTheme = Settings.get("theme");
             return (<>
                 <Section name="Theme">
                     <ThemeSelect initial={currentTheme} themeList={[
@@ -30,6 +30,17 @@ const settings_pages = [
                 </Section>
             </>);
         },
+    },
+    {
+        title: "Behaviour",
+        icon: mdiTune,
+        render: () => {
+            return (
+                <Section name="Behaviour">
+                    <Toggle label="Collapse group list" setting="collapseGroups" />
+                </Section>
+            )
+        }
     },
     {
         title: "Security",

@@ -2,16 +2,19 @@ import "./ChatPanel.scss";
 import Chat from "./Chat/Chat";
 import { useEffect, useState } from "react";
 import Icon from "@mdi/react";
-import { mdiAccountMultiple, mdiAlert } from "@mdi/js";
+import { mdiAccountMultiple, mdiAlert, mdiMenu } from "@mdi/js";
 import { friendlyList } from "../../utils/utils";
 import { Button } from "../../components/elements";
 
 
-export default function ChatPanel({currentRoom, hideMemberListState}) {
+export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}) {
     const [hideMemberList, setHideMemberList] = hideMemberListState;
+    const [hideRoomList, setHideRoomList] = hideRoomListState;
 
     return (<>
         <div className="header chat-header">
+            <Button path={mdiMenu} size="25px" tipDir="bottom" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
+            <div className="header__align"></div>
             <Button path={mdiAccountMultiple} size="25px" tipDir="left" tipText={`${hideMemberList ? "Show" : "Hide"} Members`} clickFunc={() => {setHideMemberList((current) => !current)}} />
         </div>
         <div className="chat-frame">

@@ -231,7 +231,7 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
 export function useGroupBreadcrumbs({ currentGroup, currentRoom, selectRoom }) {
     /* Tracks the last selected room for a given group. When the group is changed, select a relevant room */
 
-    const lastOpenedRoom = useRef(new Map(Object.entries(Settings.getSetting("groupBreadcrumbs"))));  // group => selected room;
+    const lastOpenedRoom = useRef(new Map(Object.entries(Settings.get("groupBreadcrumbs"))));  // group => selected room;
     const stableCurrentGroup = useStableState(currentGroup);  // To avoid updating the breadcrumb setter
 
     // When the current room is changed, update the mapping with the new room
@@ -243,7 +243,7 @@ export function useGroupBreadcrumbs({ currentGroup, currentRoom, selectRoom }) {
         lastOpenedRoom.current.set(stableCurrentGroup.current.key, currentRoom);
         // Convert map to object to be saved
         const crumbObj = Object.fromEntries(lastOpenedRoom.current);
-        Settings.updateSetting("groupBreadcrumbs", crumbObj);
+        Settings.update("groupBreadcrumbs", crumbObj);
     }, [stableCurrentGroup, currentRoom])
 
     // When a different group is selected, open either the last opened room for that group, the first direct child or set as null 

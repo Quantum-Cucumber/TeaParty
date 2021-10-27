@@ -16,10 +16,10 @@ export function Section({ name, children }) {
 
 export function Toggle({ label, setting }) {
     /* Directly toggles a boolean setting, interacting with the settings.js util */
-    const [state, toggleState] = useReducer((current) => {return !current}, Settings.getSetting(setting));
+    const [state, toggleState] = useReducer((current) => {return !current}, Settings.get(setting));
 
     useEffect(() => {
-        Settings.updateSetting(setting, state);
+        Settings.update(setting, state);
     }, [setting, state])
 
     return (

@@ -162,7 +162,7 @@ const messageOptions = {
     },
     source: {
         path: mdiXml,
-        condition: () => {return Settings.getSetting("devMode") === true},
+        condition: () => {return Settings.get("devMode") === true},
         label: "View source",
         title: "Event Source",
         render: ({ trueEvent }) => {

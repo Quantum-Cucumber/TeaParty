@@ -10,11 +10,11 @@ export function shouldDisplayEvent(event) {
         (   // If m.room.message should be displayed
             isMessageEvent(event) && 
             !isEditEvent(event) &&  // Edits will update the original event object
-            (!event.isRedacted() || Settings.getSetting("showRedactedEvents"))
+            (!event.isRedacted() || Settings.get("showRedactedEvents"))
         ) ||
         // Join/leave events
-        (isJoinEvent(event) && Settings.getSetting("showJoinEvents")) || (isLeaveEvent(event) && Settings.getSetting("showLeaveEvents")) ||
-        (isRoomEditEvent(event) && Settings.getSetting("showRoomEdits")) ||
+        (isJoinEvent(event) && Settings.get("showJoinEvents")) || (isLeaveEvent(event) && Settings.get("showLeaveEvents")) ||
+        (isRoomEditEvent(event) && Settings.get("showRoomEdits")) ||
         isPinEvent(event)
     )
 }

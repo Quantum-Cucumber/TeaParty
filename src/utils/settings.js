@@ -3,7 +3,11 @@ import { EventEmitter } from "events";
 const default_settings = {
     theme: "dark",
     groupBreadcrumbs: {},
+
+    collapseGroups: false,
+
     devMode: false,
+
     showRedactedEvents: false,
     showJoinEvents: false,
     showLeaveEvents: false,
@@ -22,11 +26,11 @@ class SettingsManager extends EventEmitter {
         this.settings = settings ? JSON.parse(settings) : {};
     }
 
-    getSetting(key) {
+    get(key) {
         return this.settings[key] || default_settings[key];
     }
     
-    updateSetting(key, value) {
+    update(key, value) {
         this.settings[key] = value;
         localStorage.setItem("settings", JSON.stringify(this.settings));
         this.emit("settingUpdate", key, value);
@@ -37,9 +41,9 @@ class SettingsManager extends EventEmitter {
     setTheme(theme = null) {
         // If called without a theme, load the theme from storage
         if (theme !== null) {
-            this.updateSetting("theme", theme);
+            this.update("theme", theme);
         } else {
-            theme = this.getSetting("theme");
+            theme = this.update("theme");
             if (theme === undefined) {theme = default_settings["theme"]};
         }
     

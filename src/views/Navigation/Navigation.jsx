@@ -12,13 +12,19 @@ import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { acronym, useBindEscape, classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
+import Settings from "../../utils/settings";
 
 
-function Navigation({ setPage, currentRoom, selectRoom }) {
+function Navigation({ setPage, currentRoom, selectRoom, hideRoomListState }) {
     // Name will be displayed above the room list and can't (always) be inferred from the key
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
     const [groupRooms, setGroupRooms] = useState(getChildRoomsFromGroup(currentGroup.key))
     const [showRoomSeperate, setShowRoomSeperate] = useState(null);
+    
+    const [collapseGroups, setCollapseGroups] = useState();
+    useEffect(() => {
+        setCollapseGroups(hideRoomListState[0] && Settings.get("collapseGroups"))
+    }, [hideRoomListState])
 
     const [roomStates, invitedRooms] = useRoomStates({currentGroup, setGroupRooms});  // Manages room and invite updating
     useGroupBreadcrumbs({currentGroup, currentRoom, selectRoom});  // Select the relevant room when a group is selected
@@ -45,7 +51,7 @@ function Navigation({ setPage, currentRoom, selectRoom }) {
 
     return (
         <>
-            <div className="column column--groups scroll--hidden">
+            <div className={classList("scroll--hidden", "column", "column--groups", {"column--groups--collapsed": collapseGroups})}>
                 { showRoomSeperate &&
                     <Group currentGroup={currentGroup} roomStates={roomStates} groupName={showRoomSeperate.name} k={currentGroup.key}>
                         {getRoomIcon(showRoomSeperate)}
@@ -60,9 +66,13 @@ function Navigation({ setPage, currentRoom, selectRoom }) {
 
                 <GroupList setGroup={setGroup} currentGroup={currentGroup} roomStates={roomStates} />
             </div>
-            <Resize initialSize={260} side="right" minSize="60px" collapseSize={100}>
+            <Resize side="right" initialSize={260} collapseSize={collapseGroups ? 170 : 100} collapseState={hideRoomListState}>
                 <div className="column column--rooms">
-                    <div className="header column--rooms__label">{currentGroup.name}</div>
+                    <div className="header column--rooms__label-holder">
+                        <div className="column--rooms__label">
+                            {currentGroup.name}
+                        </div>
+                    </div>
                     <div className="column--rooms__holder scroll--hover">
                         <RoomList rooms={groupRooms} currentGroup={currentGroup} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} />
                     </div>

@@ -1,7 +1,7 @@
 import "./wrappers.scss";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "./elements";
-import { classList } from "../utils/utils";
+import { classList, useStableState } from "../utils/utils";
 import { mdiContentCopy } from "@mdi/js";
 
 
@@ -33,6 +33,7 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
     const [dragging, setDrag] = useState(false);
     const [size, setSize] = useState(initialSize);
     const container = useRef();
+    const stableCollapseSize = useStableState(collapseSize);
 
     // If collapseState isn't passed, use our own state
     const backupCollapseState = useState(false);
@@ -73,8 +74,10 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
 
     // When size changes, check whether it should be collapsed due to being less than collapseSize
     useEffect(() => {
-        setCollapse(size < collapseSize);
-    }, [size, collapseSize, setCollapse])
+        setCollapse(size < stableCollapseSize.current);
+    }, [size, stableCollapseSize, setCollapse])
+    // ^ Use stableCollapseSize so if the collapse size is changed as a result of collapsing the panel, it doesn't uncollapse
+
     // When collapse is set to false, set size to initial
     useEffect(() => {
         if (!collapse) {

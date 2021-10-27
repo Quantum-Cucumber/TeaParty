@@ -29,6 +29,7 @@
 .resizable {
     $size: 10px;
     position: relative;
+    flex: none;
 
     &--left, &--right {
         > * {

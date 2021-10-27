@@ -3,20 +3,23 @@ $border: 2px solid var(--bg-dark);
 
 /* Rooms panel */
 .column--rooms {
-    flex: 0 0 auto;
     background-color: var(--bg-focus);
     position: relative;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
 
-    &__label {
+    /* text overflow doesn't like the flexbox parent, so we have a holder */
+    &__label-holder {
         flex: none;
         padding: 0px 18px;
         font-size: 1.1rem;
         
+        white-space: nowrap;
+    }
+    &__label {
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
     }
 
     &__holder {
@@ -124,6 +127,10 @@ $group-padding: 11px;
     background-color: var(--bg-dark);
     padding: 15px 0;
     overflow: hidden auto;
+
+    &--collapsed {
+        width: 0;
+    }
 }
 
 .group__holder {
