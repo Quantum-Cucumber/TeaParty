@@ -8,7 +8,7 @@
 }
 
 .avatar__crop {
-    border-radius: 30%;
+    border-radius: var(--avatar-radius);
     overflow: hidden;
     height: 100%;
     aspect-ratio: 1;

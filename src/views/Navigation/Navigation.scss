@@ -54,7 +54,7 @@ $border: 2px solid var(--bg-dark);
     width: 1.5rem;
     aspect-ratio: 1;
     overflow: hidden;
-    border-radius: 35%;
+    border-radius: var(--avatar-radius);
     flex: none;
 
     & > .room__icon {
@@ -156,7 +156,7 @@ $group-padding: 11px;
     overflow: hidden;
     cursor: pointer;
     transition: 0.2s;
-    border-radius: 45%;
+    border-radius: var(--avatar-radius);
 
     &--default {
         background: var(--bg);
@@ -165,7 +165,7 @@ $group-padding: 11px;
     }
 
     &--selected, &:hover {
-        border-radius: 30%;
+        border-radius: calc(var(--avatar-radius) - 15%);
     }
 
     &:hover {
@@ -226,7 +226,7 @@ $group-padding: 11px;
         display: inline-block;
         margin-right: 10px;
         overflow: hidden;
-        border-radius: 35%;
+        border-radius: var(--avatar-radius);
         flex: none;
     }
 

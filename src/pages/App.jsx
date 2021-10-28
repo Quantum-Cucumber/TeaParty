@@ -9,7 +9,7 @@ import Settings from "../utils/settings";
 function App() {
     // Load theme
     useEffect(() => {
-        Settings.setTheme();
+        Settings.update("theme");
     }, [])
 
     return (

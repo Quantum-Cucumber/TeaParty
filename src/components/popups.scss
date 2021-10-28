@@ -159,7 +159,7 @@
     &__avatar {
         width: 65px;
         height: 65px;
-        border-radius: 30%;
+        border-radius: var(--avatar-radius);
         margin-bottom: 10px;
         font-size: 25px;
 

@@ -6,6 +6,7 @@ const default_settings = {
 
     collapseGroups: false,
     showRoomIcons: true,
+    circularAvatars: false,
 
     devMode: false,
 
@@ -44,26 +45,38 @@ class SettingsManager extends EventEmitter {
     }
     
     update(key, value) {
-        this.settings[key] = value;
-        localStorage.setItem("settings", JSON.stringify(this.settings));
-        this.emit("settingUpdate", key, value);
-    }
-
-    // Custom handlers
-
-    setTheme(theme = null) {
-        // If called without a theme, load the theme from storage
-        if (theme !== null) {
-            this.update("theme", theme);
-        } else {
-            theme = this.update("theme");
-            if (theme === undefined) {theme = default_settings["theme"]};
+        // If value is undefined, just broadcast the value rather than setting it too
+        if (value !== undefined) {
+            this.settings[key] = value;
+            localStorage.setItem("settings", JSON.stringify(this.settings));
         }
-    
-        // Just hope we don't need to apply any other classes to the root ig
-        document.getElementById("root").className = theme;
+        this.emit("settingUpdate", key, value);
     }
 }
 
 const Settings = new SettingsManager();
+// Perform actions when certain settings update
+Settings.on("settingUpdate", (setting, value) => {
+    switch (setting) {
+        case "theme":
+            // If called without a theme, load the current theme/default and set it
+            if (value === undefined) {
+                value = Settings.get("theme");
+            }
+
+            // Just hope we don't need to apply any other classes to the root ig
+            document.getElementById("root").className = value;
+
+            break;
+        case "circularAvatars":
+            const root = document.querySelector(":root");
+            root.style.setProperty("--avatar-radius", value ? "50%" : "var(--avatar-rounded)");
+
+            break;
+        default:
+            break;
+    }
+})
+
+
 export default Settings;

@@ -4,6 +4,7 @@ import Chat from "./Chat/Chat";
 import Icon from "@mdi/react";
 import { mdiAccountMultiple, mdiAlert, mdiMenu } from "@mdi/js";
 import { friendlyList } from "../../utils/utils";
+import { getDirects } from "../../utils/roomFilters";
 import { Button, RoomIcon } from "../../components/elements";
 
 
@@ -24,7 +25,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
 
             {room.current && <>
                 <div className="chat-header__icon room__icon__crop">
-                    <RoomIcon room={room.current} />
+                    <RoomIcon room={room.current} directRoom={getDirects().includes(room.current)} />
                 </div>
                 <div className="chat-header__name">
                     {room.current.name}

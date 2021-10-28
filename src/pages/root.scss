@@ -51,9 +51,13 @@
 
 
 /* Universal styles */
-body, html, #root {
+:root {
     --font-standard: Arial, Helvetica, sans-serif;
+    --avatar-rounded: 30%;
+    --avatar-radius: var(--avatar-rounded);
+}
 
+body, html, #root {
     font-family: var(--font-standard);
     color: var(--text);
     height: 100%;

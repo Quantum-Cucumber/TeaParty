@@ -24,6 +24,7 @@ const settings_pages = [
                 </Section>
                 <Section name="Appearance">
                     <Toggle label="Show room icons in sidebar" setting="showRoomIcons" />
+                    <Toggle label="Circular avatars" setting="circularAvatars" />
                 </Section>
                 <Section name="Events">
                     <Toggle label="Show deleted events" setting="showRedactedEvents" />
@@ -125,7 +126,7 @@ function ThemeSelect({ initial, themeList }) {
         return (
             <div
                 className={classList("theme", name, {"theme--selected": selected === name})}
-                onClick={() => {Settings.setTheme(name); Select(name)}}
+                onClick={() => {Settings.update("theme", name); Select(name)}}
             >
                 <div className="theme__colours">
                     <div className="theme__bg"></div>
