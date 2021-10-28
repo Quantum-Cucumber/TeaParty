@@ -1,11 +1,47 @@
 .chat-header {
-    justify-content: flex-end;
     flex: none;
     background-color: var(--bg);
     padding: 0 8px;
 
+    min-width: 0;
+    overflow: hidden;
+
     .button {
         margin: 0 5px;
+    }
+
+    &__icon {
+        width: unset;
+        height: 65%;
+        margin-left: 12px;
+        margin-right: 10px;
+
+        .room__icon {
+            background-color: var(--bg-focus);
+        }
+    }
+    &__name {
+        font-size: 1.1rem;
+        margin-right: 12px;
+
+        flex: none;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+        min-width: 0;
+    }
+    &__topic {
+        flex: 1 1 auto;
+        overflow: hidden;
+        /*white-space: nowrap;*/
+        text-overflow: ellipsis;
+        min-width: 0;
+
+        color: var(--text-greyed);
+        font-size: 0.85rem;
+        line-height: 1.1rem;
+        max-height: 2.2rem;
+        margin-right: 1rem;
     }
 }
 

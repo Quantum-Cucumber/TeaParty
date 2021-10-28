@@ -1,22 +1,42 @@
 import "./ChatPanel.scss";
+import { useEffect, useState, useRef } from "react";
 import Chat from "./Chat/Chat";
-import { useEffect, useState } from "react";
 import Icon from "@mdi/react";
 import { mdiAccountMultiple, mdiAlert, mdiMenu } from "@mdi/js";
 import { friendlyList } from "../../utils/utils";
-import { Button } from "../../components/elements";
+import { Button, RoomIcon } from "../../components/elements";
 
 
 export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}) {
     const [hideMemberList, setHideMemberList] = hideMemberListState;
     const [hideRoomList, setHideRoomList] = hideRoomListState;
 
+    const room = useRef(currentRoom ? global.matrix.getRoom(currentRoom) : null);
+    useEffect(() => {
+        if (currentRoom) {
+            room.current = global.matrix.getRoom(currentRoom);
+        }
+    }, [currentRoom])
+
     return (<>
         <div className="header chat-header">
             <Button path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
-            <div className="header__align"></div>
+
+            {room.current && <>
+                <div className="chat-header__icon room__icon__crop">
+                    <RoomIcon room={room.current} />
+                </div>
+                <div className="chat-header__name">
+                    {room.current.name}
+                </div>
+                <div className="chat-header__topic" title={room.current.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic}>
+                    {room.current.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic}
+                </div>
+            </>}
+
             <Button path={mdiAccountMultiple} size="25px" tipDir="left" tipText={`${hideMemberList ? "Show" : "Hide"} Members`} clickFunc={() => {setHideMemberList((current) => !current)}} />
         </div>
+
         <div className="chat-frame">
             <Chat currentRoom={currentRoom} />
         </div>

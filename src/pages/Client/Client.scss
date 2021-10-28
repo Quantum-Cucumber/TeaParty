@@ -36,13 +36,14 @@
 }
 
 .column--chat {
-    flex: 1 0 auto;
+    flex: 1 1 auto;
     background-color: var(--bg);
     display: flex;
     flex-direction: column;
+    min-width: 0;
 }
 .column--right {
-    flex: 0 0 auto;
+    flex: none;
     background-color: var(--bg-focus);
     display: flex;
     flex-direction: column;

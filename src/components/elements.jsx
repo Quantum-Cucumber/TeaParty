@@ -1,6 +1,7 @@
 import "./elements.scss";
 import { Tooltip } from "./popups";
-import { classList } from '../utils/utils';
+import { Avatar } from "./user";
+import { acronym, classList } from '../utils/utils';
 import Icon from '@mdi/react';
 import { mdiChevronDown, mdiLoading } from "@mdi/js";
 import { useReducer } from "react";
@@ -24,6 +25,20 @@ export function Loading({ size }) {
     return (
         <Icon path={mdiLoading} color="var(--primary)" size={size} spin={1.2}/>
     );
+}
+
+
+export function RoomIcon({ room, directRoom = false }) {
+    const iconUrl = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+
+    if (!iconUrl && directRoom) {
+        const user = global.matrix.getUser(room.guessDMUserId());
+        return <Avatar subClass="room__icon" user={user} />
+    } else {
+        return iconUrl ?
+               <img className="room__icon" src={iconUrl} alt={acronym(room.name)} /> :
+               <div className="room__icon">{acronym(room.name)}</div>;
+    }
 }
 
 

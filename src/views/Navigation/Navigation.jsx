@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
 import { Icon } from "@mdi/react";
 
-import { Button, Option, DropDown, Loading } from "../../components/elements";
+import { Button, Option, DropDown, Loading, RoomIcon } from "../../components/elements";
 import { Tooltip, Modal } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
 
 import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup } from "./RoomStates";
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
-import { acronym, useBindEscape, classList } from "../../utils/utils";
+import { useBindEscape, classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
 import Settings from "../../utils/settings";
 
@@ -54,7 +54,7 @@ function Navigation({ setPage, currentRoom, selectRoom, hideRoomListState }) {
             <div className={classList("scroll--hidden", "column", "column--groups", {"column--groups--collapsed": collapseGroups})}>
                 { showRoomSeperate &&
                     <Group currentGroup={currentGroup} roomStates={roomStates} groupName={showRoomSeperate.name} k={currentGroup.key}>
-                        {getRoomIcon(showRoomSeperate)}
+                        <RoomIcon room={showRoomSeperate} />
                     </Group>
                 }
                 {invLen !== 0 && 
@@ -107,7 +107,7 @@ function GroupList(props) {
                 groupName={space.name}
                 key={key} k={key}
             >
-                {getRoomIcon(space)}
+                <RoomIcon room={space} />
             </Group>
         );
     })
@@ -139,21 +139,6 @@ function Group({ setGroup = ()=>{}, currentGroup, roomStates, groupName, k, chil
     );
 }
 
-function getRoomIcon(room, isDm = false) {
-    var icon = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
-
-    if (!icon && isDm) {
-        const user = global.matrix.getUser(room.guessDMUserId());
-        icon = <Avatar subClass="room__icon" user={user} />
-    } else {
-        icon = icon ?
-               <img className="room__icon" src={icon} alt={acronym(room.name)} /> :
-               <div className="room__icon">{acronym(room.name)}</div>;
-    }
-
-    return icon;
-}
-
 function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) {
     const showRoomIcons = Settings.get("showRoomIcons");
 
@@ -161,7 +146,7 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
         const key = room.roomId;
         const icon = showRoomIcons ? (
                                         <div className="room__icon__crop">
-                                            {getRoomIcon(room, currentGroup.key === "directs")}
+                                            <RoomIcon room={room} directRoom={currentGroup.key === "directs"} />
                                         </div>
                                      ) 
                                    : null;
@@ -264,8 +249,6 @@ function InviteEntry({ invite, direct }) {
     const [status, setStatus] = useState(null);
     const { inviter, room } = invite;
 
-    const icon = getRoomIcon(room);
-
     function acceptInvite() {
         setStatus(<Loading size="1.5rem"/>);
         global.matrix.joinRoom(room.roomId).then(() => {
@@ -297,7 +280,9 @@ function InviteEntry({ invite, direct }) {
 
     return (
         <div className="invite-entry">
-            <div className="invite-entry__icon">{icon}</div>
+            <div className="invite-entry__icon">
+                <RoomIcon room={room} />
+            </div>
             <div className="invite-entry__label">
                 <div className="invite-entry__label--name">{room.name}</div>
                 <div className="invite-entry__label--inviter">{inviter}</div>
