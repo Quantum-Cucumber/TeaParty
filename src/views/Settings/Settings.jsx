@@ -22,6 +22,9 @@ const settings_pages = [
                         {label: "Light", theme: "light"}
                     ]}/>
                 </Section>
+                <Section name="Appearance">
+                    <Toggle label="Show room icons in sidebar" setting="showRoomIcons" />
+                </Section>
                 <Section name="Events">
                     <Toggle label="Show deleted events" setting="showRedactedEvents" />
                     <Toggle label="Show member join events" setting="showJoinEvents" />

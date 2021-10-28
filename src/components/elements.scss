@@ -99,11 +99,16 @@
         margin-right: 4px;
     }
 
+    &__text:nth-child(2) {
+        margin: 0;
+    }
+
     &__content {
         margin-top: 3px;
-        padding-left: calc(-2px + (1.5rem / 2));
+        margin-bottom: 6px;
+        padding-left: calc(#{6px - 8px} + (1.5rem / 2));  /* Keep icons inline */
         box-shadow: 2px 0 var(--text-greyed) inset;
-        margin-left: calc(6px + (1.5rem / 2));
+        margin-left: calc(6px + (1.5rem / 2)); /* padding + 1/2 chevron height */
     }
 
     &-wrapper {

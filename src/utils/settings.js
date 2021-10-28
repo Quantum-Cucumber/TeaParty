@@ -5,6 +5,7 @@ const default_settings = {
     groupBreadcrumbs: {},
 
     collapseGroups: false,
+    showRoomIcons: true,
 
     devMode: false,
 
@@ -12,6 +13,18 @@ const default_settings = {
     showJoinEvents: false,
     showLeaveEvents: false,
     showRoomEdits: false,
+}
+
+export function isEventVisibility(settingName) {
+    switch (settingName) {
+        case "showRedactedEvents":
+        case "showJoinEvents":
+        case "showLeaveEvents":
+        case "showRoomEdits":
+            return true;
+        default:
+            return false;
+    }
 }
 
 class SettingsManager extends EventEmitter {
@@ -27,7 +40,7 @@ class SettingsManager extends EventEmitter {
     }
 
     get(key) {
-        return this.settings[key] || default_settings[key];
+        return this.settings.hasOwnProperty(key) ? this.settings[key] : default_settings[key];
     }
     
     update(key, value) {

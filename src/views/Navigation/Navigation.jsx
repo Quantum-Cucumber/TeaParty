@@ -155,13 +155,16 @@ function getRoomIcon(room, isDm = false) {
 }
 
 function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) {
+    const showRoomIcons = Settings.get("showRoomIcons");
+
     const elements = rooms.map((room) => {
         const key = room.roomId;
-        const icon = (
-            <div className="room__icon__crop">
-                {getRoomIcon(room, currentGroup.key === "directs")}
-            </div>
-        );
+        const icon = showRoomIcons ? (
+                                        <div className="room__icon__crop">
+                                            {getRoomIcon(room, currentGroup.key === "directs")}
+                                        </div>
+                                     ) 
+                                   : null;
 
         const roomState = roomStates[room.roomId];
         const unreadDot = roomState ? !roomState.read : false;
@@ -186,7 +189,7 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
         }
     });
 
-    return elements.length !== 0 ? elements : "Nothing here :(";
+    return elements.length !== 0 ? elements : (<div className="room__placeholder">No joined rooms</div>);
 }
 
 function MyUser() {

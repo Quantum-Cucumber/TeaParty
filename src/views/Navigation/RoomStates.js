@@ -1,5 +1,5 @@
 import { useEffect, useRef, useCallback, useReducer } from "react";
-import Settings from "../../utils/settings";
+import Settings, { isEventVisibility } from "../../utils/settings";
 import { debounce, useStableState } from "../../utils/utils";
 import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpaces, flatSubrooms, getRootSpaces } from "../../utils/roomFilters";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
@@ -203,10 +203,13 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
     }, [refreshRoomStates]);
 
     const _settingsUpdate = useCallback((setting) => {
-        if (setting === "showRedactedEvents" || setting === "showJoinEvents" || setting === "showLeaveEvents") {
+        if (isEventVisibility(setting)) {
             refreshRoomStates()
         }
-    }, [refreshRoomStates])
+        else if (setting === "showRoomIcons") {
+            refreshRooms();
+        }
+    }, [refreshRoomStates, refreshRooms])
 
     useEffect(() => {
         // Mount listeners

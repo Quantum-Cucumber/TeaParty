@@ -5,7 +5,7 @@ import eventTimeline, { shouldDisplayEvent } from "./eventTimeline";
 import { useBindEscape, useDebouncedState } from "../../../utils/utils";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
 import { TimelineEvent } from "./Events/Event";
-import Settings from "../../../utils/settings";
+import Settings, { isEventVisibility } from "../../../utils/settings";
 
 
 function nextShouldBePartial(thisMsg, lastMsg) {
@@ -58,7 +58,7 @@ function Chat({ currentRoom }) {
     // Settings listener
     useEffect(() => {
         function settingUpdate(setting) {
-            if (setting === "showRedactedEvents" || setting === "showJoinEvents" || setting === "showLeaveEvents") {
+            if (isEventVisibility(setting)) {
                 updateEventList();
             }
         }

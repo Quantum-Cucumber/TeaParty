@@ -13,7 +13,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
 
     return (<>
         <div className="header chat-header">
-            <Button path={mdiMenu} size="25px" tipDir="bottom" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
+            <Button path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
             <div className="header__align"></div>
             <Button path={mdiAccountMultiple} size="25px" tipDir="left" tipText={`${hideMemberList ? "Show" : "Hide"} Members`} clickFunc={() => {setHideMemberList((current) => !current)}} />
         </div>

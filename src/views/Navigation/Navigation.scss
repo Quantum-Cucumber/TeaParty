@@ -81,6 +81,11 @@ $border: 2px solid var(--bg-dark);
     }
 }
 
+.room__placeholder {
+    color: var(--text-greyed);
+    margin-left: 8px;  /* Same as option padding */
+}
+
 
 /* User bar */
 .client__user-bar {
