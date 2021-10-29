@@ -1,6 +1,7 @@
 import { useEffect, useRef, useCallback, useReducer } from "react";
 import Settings, { isEventVisibility } from "../../utils/settings";
-import { debounce, useStableState } from "../../utils/utils";
+import { debounce } from "../../utils/utils";
+import { useStableState } from "../../utils/hooks";
 import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpaces, flatSubrooms, getRootSpaces } from "../../utils/roomFilters";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
 

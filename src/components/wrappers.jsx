@@ -1,7 +1,8 @@
 import "./wrappers.scss";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "./elements";
-import { classList, useStableState } from "../utils/utils";
+import { classList } from "../utils/utils";
+import { useStableState } from "../utils/hooks"
 import { mdiContentCopy } from "@mdi/js";
 
 

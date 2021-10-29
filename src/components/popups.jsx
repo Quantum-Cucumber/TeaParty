@@ -1,7 +1,8 @@
 import "./popups.scss";
 import { useState, useEffect, useRef, useCallback, createContext, useContext, useLayoutEffect, cloneElement } from "react";
 import { Button } from "./elements";
-import { classList, useBindEscape, useDownloadUrl } from '../utils/utils';
+import { classList } from '../utils/utils';
+import { useBindEscape, useDownloadUrl } from "../utils/hooks";
 import Icon from "@mdi/react";
 import { mdiDownload, mdiClose, mdiOpenInNew } from "@mdi/js";
 

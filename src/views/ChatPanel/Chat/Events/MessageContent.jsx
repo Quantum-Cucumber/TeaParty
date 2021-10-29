@@ -8,7 +8,8 @@ import { ImagePopup, Tooltip } from "../../../../components/popups";
 import { userPopupCtx } from "../../../../components/user";
 
 import { messageTimestampFull } from "../../../../utils/datetime";
-import { bytesToFriendly, useDownloadUrl } from "../../../../utils/utils";
+import { bytesToFriendly } from "../../../../utils/utils";
+import { useDownloadUrl } from "../../../../utils/hooks";
 import { tryGetUser } from "../../../../utils/matrix-client";
 
 import { mdiChatRemove, mdiDownload, mdiFileDocumentOutline } from "@mdi/js";

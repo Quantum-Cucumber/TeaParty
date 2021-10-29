@@ -6,7 +6,8 @@ import { Icon } from "@mdi/react";
 import Settings from "../../utils/settings";
 import { logoutMatrix } from "../../utils/matrix-client";
 import { msToDate } from "../../utils/datetime";
-import { classList, useBindEscape } from "../../utils/utils";
+import { classList } from "../../utils/utils";
+import { useBindEscape } from "../../utils/hooks";
 import { Section, Toggle } from "./components";
 
 const settings_pages = [
@@ -23,8 +24,8 @@ const settings_pages = [
                     ]}/>
                 </Section>
                 <Section name="Appearance">
-                    <Toggle label="Show room icons in sidebar" setting="showRoomIcons" />
                     <Toggle label="Circular avatars" setting="circularAvatars" />
+                    <Toggle label="Show room avatars in sidebar" setting="showRoomIcons" />
                 </Section>
                 <Section name="Events">
                     <Toggle label="Show deleted events" setting="showRedactedEvents" />

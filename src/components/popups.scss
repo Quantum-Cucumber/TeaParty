@@ -55,7 +55,16 @@
     }
 }
 
-
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+        visibility: hidden;
+    }
+    100% {
+        opacity: 100%;
+        visibility: visible;
+    }
+}
 
 .overlay {
     position: fixed;
@@ -139,68 +148,6 @@
     }
     100% {
         @include startframe;
-    }
-}
-
-
-.user-popup {
-    position: fixed;
-    padding: 16px;
-    width: 250px;
-    background-color: var(--bg-dark);
-    border-radius: 15px;
-    z-index: common.z-index("popup");
-    overflow-wrap: break-word;
-
-    // Slide in animation
-    animation: slide-in 0.2s ease-in-out 0s 1,
-               fade-in 0.1s ease-out 0s 1;
-
-    &__avatar {
-        width: 65px;
-        height: 65px;
-        border-radius: var(--avatar-radius);
-        margin-bottom: 10px;
-        font-size: 25px;
-
-        /*&:hover {
-            opacity: 0.7;
-            cursor: pointer;
-        }*/
-    }
-
-    &__display-name {
-        font-weight: bold;
-        font-size: 1.1rem;
-    }
-
-    &__label {
-        margin-top: 1rem;
-        font-size: 0.9rem;
-    }
-    &__text {
-        color: var(--text-greyed);
-        font-size: 0.8rem;
-    }
-}
-
-@keyframes slide-in {
-    0% {
-        transform: translateX(10px);
-    }
-    100% {
-        transform: translateX(0);
-    }
-}
-
-@keyframes fade-in {
-    0% {
-        opacity: 0;
-        visibility: hidden;
-    }
-    100% {
-        opacity: 100%;
-        visibility: visible;
     }
 }
 

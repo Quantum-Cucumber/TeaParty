@@ -10,7 +10,8 @@ import { Avatar } from "../../components/user";
 
 import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup } from "./RoomStates";
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
-import { useBindEscape, classList } from "../../utils/utils";
+import { useBindEscape } from "../../utils/hooks";
+import { classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
 import Settings from "../../utils/settings";
 

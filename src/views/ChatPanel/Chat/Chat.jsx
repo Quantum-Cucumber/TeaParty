@@ -2,7 +2,7 @@ import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback, memo } from "react";
 import { Loading } from "../../../components/elements";
 import eventTimeline, { shouldDisplayEvent } from "./eventTimeline";
-import { useBindEscape, useDebouncedState } from "../../../utils/utils";
+import { useBindEscape, useDebouncedState } from "../../../utils/hooks";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
 import { TimelineEvent } from "./Events/Event";
 import Settings, { isEventVisibility } from "../../../utils/settings";

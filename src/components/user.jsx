@@ -1,9 +1,9 @@
 import "./user.scss";
 import { getUserColour, acronym, classList } from "../utils/utils";
-import { useEffect, useRef, useCallback, useLayoutEffect, createContext } from "react";
-import { useBindEscape } from '../utils/utils';
+import { useState, useEffect, useRef, useLayoutEffect, createContext } from "react";
+import { useBindEscape } from '../utils/hooks';
 import { getLocalpart, powerLevelText } from "../utils/matrix-client";
-import { positionFloating } from "./popups";
+import { ImagePopup, positionFloating } from "./popups";
 import { TextCopy } from "./wrappers";
 
 
@@ -16,7 +16,7 @@ export function Avatar({ user, subClass, clickFunc }) {
     // Use a placeholder if need be
     var icon;
     if (url) {
-        icon = <img alt={acronym(user.displayName, 1)} style={{"backgroundColor": getUserColour(user.userId)}} className="avatar" src={url} />;
+        icon = <img alt={acronym(user.displayName, 1)} style={{"backgroundColor": getUserColour(user.userId)}} className="avatar avatar--img" src={url} />;
     } else {
         icon = (
             <div className="avatar" style={{"backgroundColor": getUserColour(user.userId)}}>
@@ -50,15 +50,9 @@ export function Member({ member, subClass = null, clickFunc }) {
 export const userPopupCtx = createContext(() => {});
 export function UserPopup({ user, parent, room, setUserPopup }) {
     const popupRef = useRef();
+    const [showFullImage, setShowFullImage] = useState(false);
 
     useBindEscape(setUserPopup, null);
-
-    const clicked = useCallback((e) => {
-        // If anything other than the popup is clicked, or another component that opens the popup was clicked
-        if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || parent.contains(e.target)) {
-            setUserPopup(null);
-        }
-    }, [setUserPopup, parent]);
 
     // useLayoutEffect to set position before render
     useLayoutEffect(() => {
@@ -78,17 +72,35 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
     // Attach click event AFTER render
     useEffect(() => {
         if (!user || !parent) {return};
+
+        setShowFullImage(false);
+
+        function clicked(e) {
+            // If anything other than the popup is clicked, or another component that opens the popup was clicked
+            if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || parent.contains(e.target)) {
+                setUserPopup(null);
+            }
+        }
+
         // Attach click event to dismiss the popup
-        document.addEventListener("click", clicked);
-        return () => document.removeEventListener("click", clicked);
-    }, [user, parent, clicked]);
+        // I know the timeout is dumb but without it <ImagePopup> makes the userpopup hide instantly </3
+        setTimeout(() => {
+            document.addEventListener("click", clicked)
+        }, 1);
+        return () => {
+            document.removeEventListener("click", clicked)
+        }
+    }, [user, parent, setUserPopup]);
     
 
     if (!user || !parent || !room) {return null};
 
     return (
         <div className="user-popup" ref={popupRef}>
-            <Avatar user={user} subClass="user-popup__avatar" />
+            <Avatar user={user} subClass="user-popup__avatar" clickFunc={user.avatarUrl ? () => {setShowFullImage(true)} : null} />
+            { user.avatarUrl &&
+                <ImagePopup sourceUrl={global.matrix.mxcUrlToHttp(user.avatarUrl)} render={showFullImage} setRender={setShowFullImage} name="avatar" />
+            }
             <div className="user-popup__display-name">{user.rawDisplayName || getLocalpart(user)}</div>
             <div className="user-popup__text">
                 <TextCopy text={user.userId} />
