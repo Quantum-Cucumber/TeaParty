@@ -55,34 +55,32 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
 
         // Distance between the container's offset and the mouse as the width
         const bounding = container.current.getBoundingClientRect();
+        let newSize;
         switch (side) {
             case "top":
-                setSize(bounding.bottom - e.clientY);
+                newSize = bounding.bottom - e.clientY;
                 break;
             case "right":
-                setSize(e.clientX - bounding.left);
+                newSize = e.clientX - bounding.left;
                 break;
             case "bottom":
-                setSize(e.clientY - bounding.top);
+                newSize = e.clientY - bounding.top;
                 break;
             case "left":
-                setSize(bounding.right - e.clientX);
+                newSize = bounding.right - e.clientX;
                 break;
             default:
                 break;
         }
-    }, [side])
 
-    // When size changes, check whether it should be collapsed due to being less than collapseSize
-    useEffect(() => {
-        setCollapse(size < stableCollapseSize.current);
-    }, [size, stableCollapseSize, setCollapse])
-    // ^ Use stableCollapseSize so if the collapse size is changed as a result of collapsing the panel, it doesn't uncollapse
+        setSize(newSize);
+        setCollapse(newSize < stableCollapseSize.current);
+    }, [side, setCollapse, stableCollapseSize])
 
-    // When collapse is set to false, set size to initial
+    // When collapse is set to false, set size to the initial size
     useEffect(() => {
         if (!collapse) {
-            setSize(initialSize)
+            setSize(initialSize);
         }
     }, [collapse, initialSize])
 
@@ -91,23 +89,24 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
         if (!container.current) {return}
 
         if (dragging) {
-            document.addEventListener("mousemove", mouseMove)
-            document.addEventListener("mouseup", mouseUp)
+            document.addEventListener("mousemove", mouseMove);
+            document.addEventListener("mouseup", mouseUp);
         } else {
-            document.removeEventListener("mousemove", mouseMove)
-            document.removeEventListener("mouseup", mouseUp)
+            document.removeEventListener("mousemove", mouseMove);
+            document.removeEventListener("mouseup", mouseUp);
         }
     }, [dragging, mouseMove, mouseUp])
     // Remove listeners on unmount
     useEffect(() => {
         return () => {
-            document.removeEventListener("mousemove", mouseMove)
-            document.removeEventListener("mouseup", mouseUp)
+            document.removeEventListener("mousemove", mouseMove);
+            document.removeEventListener("mouseup", mouseUp);
         }
     }, [mouseMove, mouseUp])
 
     // Whether to change the width or height of the container
     const dimension = side === "left" || side === "right" ? "width" : "height"
+    // Override size completely if collapse is set
     const style = {[dimension]: collapse ? minSize : size , [`min${dimension}`]: minSize};
     return (
         <div className={classList("resizable", "resizable--"+side, {"resizable--collapsed": collapse})} style={style} ref={container}>

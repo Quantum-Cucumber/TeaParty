@@ -6,11 +6,26 @@ import { mdiAccountMultiple, mdiAlert, mdiMenu } from "@mdi/js";
 import { friendlyList } from "../../utils/utils";
 import { getDirects } from "../../utils/roomFilters";
 import { Button, RoomIcon } from "../../components/elements";
+import Settings from "../../utils/settings";
 
 
 export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}) {
-    const [hideMemberList, setHideMemberList] = hideMemberListState;
     const [hideRoomList, setHideRoomList] = hideRoomListState;
+    const [hideMemberList, setHideMemberList] = hideMemberListState;
+
+    useEffect(() => {
+        setHideRoomList(Settings.get("startRoomsCollapsed"));
+        console.log("startMembersCollapsed", Settings.get("startMembersCollapsed"))
+        setHideMemberList(Settings.get("startMembersCollapsed"));
+    }, [setHideRoomList, setHideMemberList])
+    
+    useEffect(() => {
+        Settings.update("startRoomsCollapsed", hideRoomList);
+    }, [hideRoomList])
+    useEffect(() => {
+        console.log(hideMemberList)
+        Settings.update("startMembersCollapsed", hideMemberList);
+    }, [hideMemberList])
 
     const room = useRef(currentRoom ? global.matrix.getRoom(currentRoom) : null);
     useEffect(() => {

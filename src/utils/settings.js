@@ -4,12 +4,16 @@ const default_settings = {
     theme: "dark",
     groupBreadcrumbs: {},
 
+    // Appearance
     collapseGroups: false,
+    startRoomsCollapsed: false,
+    startMembersCollapsed: false,
     showRoomIcons: true,
     circularAvatars: false,
 
     devMode: false,
 
+    // Event Visibility
     showRedactedEvents: false,
     showJoinEvents: false,
     showLeaveEvents: false,
