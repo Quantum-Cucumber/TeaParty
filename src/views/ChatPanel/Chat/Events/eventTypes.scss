@@ -24,7 +24,15 @@
 }
 
 .message--emote {
+    &__icon {
+        vertical-align: top !important;
+        width: 0.8em !important;
+        height: 0.8em !important;
+    }
+
     &__content {
+        display: inline;
+
         .message__author {
             font-weight: normal;
             cursor: pointer;

@@ -35,10 +35,11 @@ export const TimelineEvent = memo(({ event, partial=false }) => {
                 <EmoteMsg event={event} partial={partial} />
             );
         }
-        
-        eventEntry = (
-            <Message event={event} partial={partial} />
-        );
+        else {    
+            eventEntry = (
+                <Message event={event} partial={partial} />
+            );
+        }
     } 
     else if (isJoinEvent(event) || isLeaveEvent(event)) {
         eventEntry = (

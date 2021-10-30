@@ -15,7 +15,6 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
 
     useEffect(() => {
         setHideRoomList(Settings.get("startRoomsCollapsed"));
-        console.log("startMembersCollapsed", Settings.get("startMembersCollapsed"))
         setHideMemberList(Settings.get("startMembersCollapsed"));
     }, [setHideRoomList, setHideMemberList])
     
@@ -23,7 +22,6 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
         Settings.update("startRoomsCollapsed", hideRoomList);
     }, [hideRoomList])
     useEffect(() => {
-        console.log(hideMemberList)
         Settings.update("startMembersCollapsed", hideMemberList);
     }, [hideMemberList])
 
