@@ -104,6 +104,7 @@ export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
         // Calculate position of tooltip
         const tooltip = tooltipRef.current;
         const child = childRef.current;
+        if (!tooltip || !child) {return};
 
         const presets = {
             "top": {x: "center", y: "top"},

@@ -1,6 +1,6 @@
 import Settings from "../../../utils/settings";
 import { debounce } from "../../../utils/utils";
-import { isMessageEvent, isEditEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent } from "../../../utils/event-grouping";
+import { isMessageEvent, isEditEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent, isStickerEvent } from "../../../utils/event-grouping";
 
 const msgLoadCount = 30;
 
@@ -15,7 +15,8 @@ export function shouldDisplayEvent(event) {
         // Join/leave events
         (isJoinEvent(event) && Settings.get("showJoinEvents")) || (isLeaveEvent(event) && Settings.get("showLeaveEvents")) ||
         (isRoomEditEvent(event) && Settings.get("showRoomEdits")) ||
-        isPinEvent(event)
+        isPinEvent(event) ||
+        isStickerEvent(event)
     )
 }
 

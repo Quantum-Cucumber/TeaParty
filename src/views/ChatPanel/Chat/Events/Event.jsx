@@ -6,13 +6,13 @@ import { Button, Option } from "../../../../components/elements";
 import { Tooltip, contextMenuCtx, ContextMenu, Modal } from "../../../../components/popups";
 import { TextCopy } from "../../../../components/wrappers";
 import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
-import { Message, PartialMessage, EmoteMsg, MembershipEvent, RoomEditEvent, PinEvent } from "./eventTypes";
+import { Message, EmoteMsg, MembershipEvent, RoomEditEvent, PinEvent, StickerEvent } from "./eventTypes";
 
 import { classList } from "../../../../utils/utils";
 import { dateToTime, messageTimestampFull } from "../../../../utils/datetime";
 import Settings from "../../../../utils/settings";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
-import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent } from "../../../../utils/event-grouping";
+import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent, isStickerEvent } from "../../../../utils/event-grouping";
 
 import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon } from "@mdi/js";
 import Icon from "@mdi/react";
@@ -31,23 +31,34 @@ export const TimelineEvent = memo(({ event, partial=false }) => {
     let eventEntry = null;
     if (isMessageEvent(event)) {
         if (event.getContent().msgtype === "m.emote") {
-            eventEntry = (<EmoteMsg event={event} partial={partial} />);
+            eventEntry = (
+                <EmoteMsg event={event} partial={partial} />
+            );
         }
         
-        else if (partial) {
-            eventEntry = (<PartialMessage event={event} />);
-        } else {
-            eventEntry = (<Message event={event} />);
-        }
+        eventEntry = (
+            <Message event={event} partial={partial} />
+        );
     } 
     else if (isJoinEvent(event) || isLeaveEvent(event)) {
-        eventEntry = (<MembershipEvent event={event} partial={partial} />);
+        eventEntry = (
+            <MembershipEvent event={event} partial={partial} />
+        );
     }
     else if (isRoomEditEvent(event)) {
-        eventEntry = (<RoomEditEvent event={event} partial={partial} />);
+        eventEntry = (
+            <RoomEditEvent event={event} partial={partial} />
+        );
     } 
     else if (isPinEvent(event)) {
-        eventEntry = (<PinEvent event={event} partial={partial} />);
+        eventEntry = (
+            <PinEvent event={event} partial={partial} />
+        );
+    }
+    else if (isStickerEvent(event)) {
+        eventEntry = (
+            <StickerEvent event={event} partial={partial} />
+        )
     }
 
     return eventEntry;

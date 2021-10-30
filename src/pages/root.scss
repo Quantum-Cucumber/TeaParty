@@ -55,6 +55,9 @@
     --font-standard: Arial, Helvetica, sans-serif;
     --avatar-rounded: 30%;
     --avatar-radius: var(--avatar-rounded);
+
+    --toggle-indicator: #e6e6e6;
+    --toggle-bg-off: #8d8d8d;
 }
 
 body, html, #root {

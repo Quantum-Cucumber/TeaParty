@@ -1,5 +1,15 @@
 @use "../../../../utils/common";
 
+
+
+.message__content {
+    width: 100%;
+    overflow-wrap: break-word;
+    padding-right: 60px;
+    box-sizing: border-box;
+}
+
+
 /* Message markdown */
 .message__content {
     > p > * {
@@ -75,6 +85,17 @@
             }
         }
     }
+}
+
+
+.message__content--notice {
+    color: var(--text-greyed);
+}
+
+.message__content--unknown {
+    color: var(--text-greyed);
+    width: fit-content;
+    max-width: 100%;
 }
 
 .message__content__image {

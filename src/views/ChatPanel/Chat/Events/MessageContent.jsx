@@ -36,6 +36,11 @@ export default function MessageContent({ event }) {
                 <MessageFile eventContent={eventContent} />
             )
             break;
+        case "m.notice":
+            content = (
+                <MessageNotice eventContent={eventContent} />
+            )
+            break;
         default:
             content = (
                 <UnknownMessageType eventContent={eventContent} />
@@ -76,6 +81,14 @@ export function MessageText({ eventContent }) {
             <p>{content}</p>
         }
     </>)
+}
+
+function MessageNotice({ eventContent }) {
+    return (
+        <p className="message__content--notice">
+            {eventContent.body}
+        </p>
+    )
 }
 
 function UnknownMessageType({ eventContent }) {

@@ -21,19 +21,6 @@
             flex: none;
         }
     }
-
-    &__content {
-        width: 100%;
-        overflow-wrap: break-word;
-        padding-right: 60px;
-        box-sizing: border-box;
-
-        &--unknown {
-            color: var(--text-greyed);
-            width: fit-content;
-            max-width: 100%;
-        }
-    }
 }
 
 .message--emote {
@@ -53,6 +40,11 @@
     }
 }
 
+.event__sticker {
+    max-width: 100%;
+    width: 200px;
+}
+
 /* Compact event with icon */
 .event--compact-event {
     width: fit-content;
@@ -63,6 +55,7 @@
         display: inline-block;
         vertical-align: text-bottom;
         margin-right: 0.2em;
+        cursor: pointer;
     }
 
     &__user {

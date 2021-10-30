@@ -110,7 +110,7 @@
         position: relative;
 
         border-radius: 30px;
-        background-color: var(--text-greyed);
+        background-color: var(--toggle-bg-off);
         transition: 0.3s;
 
         &__indicator {
@@ -121,7 +121,7 @@
             width: $height - ($padding * 2);
 
             border-radius: 50%;
-            background-color: var(--text);
+            background-color: var(--toggle-indicator);
             transition: 0.3s;
         }
         &--on {

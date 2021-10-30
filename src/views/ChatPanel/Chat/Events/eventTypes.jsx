@@ -14,7 +14,7 @@ import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiAccountMinus, md
 import Icon from "@mdi/react";
 
 
-export function Message({ event }) {
+export function Message({ event, partial, children }) {
     const setUserPopup = useContext(userPopupCtx);
 
     const author = tryGetUser(event.getSender());
@@ -25,27 +25,21 @@ export function Message({ event }) {
     }
 
     return (
-        <EventWrapper event={event}>
-            <div className="message__info">
-                <span className="message__info__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
-                    {getMember(event.getSender(), event.getRoomId())?.name}
-                </span>
+        <EventWrapper event={event} partial={partial}>
+            {!partial &&
+                <div className="message__info">
+                    <span className="message__info__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
+                        {getMember(event.getSender(), event.getRoomId())?.name}
+                    </span>
 
-                <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
-                    <span className="event__timestamp">{messageTimestamp(event.getDate())}</span>
-                </Tooltip>
-            </div>
-            <MessageContent event={event} />
+                    <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
+                        <span className="event__timestamp">{messageTimestamp(event.getDate())}</span>
+                    </Tooltip>
+                </div>
+            }
+            {children || <MessageContent event={event} />}
         </EventWrapper>
     );
-}
-
-export function PartialMessage({ event }) {
-    return (
-        <EventWrapper event={event} partial>
-            <MessageContent event={event} />
-        </EventWrapper>
-    )
 }
 
 export function EmoteMsg({ event, partial }) {
@@ -82,7 +76,9 @@ export function IconEvent({ event, partial, userId, icon, text }) {
     return (
         <EventWrapper event={event} partial={partial} compact>
             <div className="event--compact-event">
-                <Icon path={icon} color="var(--text-greyed)" size="1em" className="event--compact-event__icon" />
+                <Tooltip text={messageTimestampFull(event.getDate())} dir="top" delay={0.5}>
+                    <Icon path={icon} color="var(--text-greyed)" size="1em" className="event--compact-event__icon" />
+                </Tooltip>
                 <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
                     {getMember(userId, event.getRoomId())?.name}
                 </span>
@@ -168,4 +164,17 @@ export function PinEvent({ event, partial }) {
     return (
         <IconEvent event={event} partial={partial} userId={userId} icon={mdiPin} text="changed the room pins" />
     )
+}
+
+export function StickerEvent({event, partial}) {
+    const eventContent = event.getContent();
+    const url = global.matrix.mxcUrlToHttp(eventContent.url)
+
+    return (
+        <Message event={event} partial={partial}>
+            <Tooltip text={eventContent.body} dir="right" delay={0.15}>
+                <img alt={eventContent.body} src={url} className="event__sticker" />
+            </Tooltip>
+        </Message>
+    );
 }

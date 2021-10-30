@@ -32,3 +32,7 @@ export function isRoomEditEvent(event) {
 export function isPinEvent(event) {
     return event.getType() === "m.room.pinned_events";
 }
+
+export function isStickerEvent(event) {
+    return event.getType() === "m.sticker";
+}
