@@ -1,15 +1,24 @@
 import "./ChatPanel.scss";
-import { useEffect, useState, useRef } from "react";
-import Chat from "./Chat/Chat";
-import Icon from "@mdi/react";
-import { mdiAccountMultiple, mdiAlert, mdiMenu } from "@mdi/js";
+import { useEffect, useState, useRef, useContext } from "react";
+import { MatrixEvent } from "matrix-js-sdk";
+
 import { friendlyList } from "../../utils/utils";
 import { getDirects } from "../../utils/roomFilters";
-import { Button, RoomIcon } from "../../components/elements";
 import Settings from "../../utils/settings";
+
+import Chat from "./Chat/Chat";
+import { Button, Loading, RoomIcon } from "../../components/elements";
+import { ContextMenu, contextMenuCtx } from "../../components/popups";
+import { TimelineEvent } from "./Chat/Events/Event";
+
+import Icon from "@mdi/react";
+import { mdiAccountMultiple, mdiAlert, mdiMenu, mdiPin } from "@mdi/js";
 
 
 export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}) {
+    const setPopup = useContext(contextMenuCtx);
+
+    // Restore panel states on render
     const [hideRoomList, setHideRoomList] = hideRoomListState;
     const [hideMemberList, setHideMemberList] = hideMemberListState;
 
@@ -25,6 +34,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
         Settings.update("startMembersCollapsed", hideMemberList);
     }, [hideMemberList])
 
+    // Store the room as an object to be reused rather than needing getRoom for everything
     const room = useRef(currentRoom ? global.matrix.getRoom(currentRoom) : null);
     useEffect(() => {
         if (currentRoom) {
@@ -48,6 +58,13 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
                 </div>
             </>}
 
+            <Button path={mdiPin} size="25px" tipDir="bottom" tipText="Pinned Events" clickFunc={(e) => {
+                setPopup(
+                    <PinnedMessages parent={e.target.closest(".button")} room={room.current} eventIds={
+                        room.current?.currentState.getStateEvents("m.room.pinned_events", "")?.getContent().pinned
+                    }/>
+                )
+            }} />
             <Button path={mdiAccountMultiple} size="25px" tipDir="left" tipText={`${hideMemberList ? "Show" : "Hide"} Members`} clickFunc={() => {setHideMemberList((current) => !current)}} />
         </div>
 
@@ -96,7 +113,7 @@ function TypingIndicator({currentRoom}) {
     }, [currentRoom]);
 
     useEffect(() => {
-        function clientState(oldState, newState) {
+        function clientState(_oldState, newState) {
             if (newState === "ERROR" || newState === "RECONNECTING") {
                 setConnError(newState);
             } else {
@@ -149,4 +166,54 @@ function TypingIndicator({currentRoom}) {
             </>}
         </div>
     );
+}
+
+function PinnedMessages({ parent, room, eventIds }) {
+    const [events, setEvents] = useState([]);
+
+    useEffect(() => {
+        if (!room || !eventIds) {return};
+        setEvents([]);
+
+        for (let i=0; i<eventIds.length; i++) {
+            const eventId = eventIds[i];
+
+            // Try and get event from timeline 
+            if (room.findEventById(eventId)) {
+                const event = room.findEventById(eventId);
+                setEvents((current) => current.concat(event));
+            }
+            // Fetch from API
+            else {
+                global.matrix.fetchRoomEvent(room.roomId, eventId).then((event) => {
+                    setEvents((current) => current.concat(new MatrixEvent(event)));
+                })
+                .catch(() => {
+                    console.warn(`Could not find pinned event ${eventId}`);
+                    setEvents((current) => current.concat(null));  // To keep length up to date for loading wheel
+                })
+            }
+        }
+    }, [eventIds, room])
+    
+    if (!room) {return null}
+    return (
+        <ContextMenu subClass="pinned-events" parent={parent} x="align-left" y="bottom">
+            <div className="pinned-events__title">
+                Pinned Events:
+            </div>
+            {
+                events.map((event) => {
+                    return event ? (
+                        <TimelineEvent event={event} key={event.getId()} />
+                    ) : null
+                })
+            }
+            { events.length !== eventIds?.length &&
+                <div className="pinned-events__loading">
+                    <Loading size="2rem" />
+                </div>
+            }
+        </ContextMenu>
+    )
 }

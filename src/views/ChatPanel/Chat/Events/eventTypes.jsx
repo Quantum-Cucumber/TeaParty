@@ -58,7 +58,7 @@ export function IconEvent({ event, partial, userId, icon, text, iconClass }) {
                 <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
                     {getMember(userId, event.getRoomId())?.name}
                 </span>
-                {text}
+                {" "}{text}
             </div>
         </EventWrapper>
     )
@@ -68,7 +68,6 @@ export function EmoteMsg({ event, partial }) {
     return (
         <IconEvent event={event} partial={partial} userId={event.getSender()} icon={mdiAsterisk} iconClass="message--emote__icon" text={
             <div className="message__content message--emote__content">
-                {" "}
                 <MessageText eventContent={event.getContent()} />
                 <EditMarker event={event} />
             </div>
@@ -107,7 +106,7 @@ export function MembershipEvent({ event, partial }) {
 
     if (!userId || !membershipText) {return null};
     return (
-        <IconEvent event={event} partial={partial} userId={userId} icon={icon} text={" " + membershipText} />
+        <IconEvent event={event} partial={partial} userId={userId} icon={icon} text={membershipText} />
     )
 }
 
@@ -141,7 +140,7 @@ export function RoomEditEvent({ event, partial }) {
 
     if (!userId || !what) {return null};
     return (
-        <IconEvent event={event} partial={partial} userId={userId} icon={icon} text={" changed the room " + what} />
+        <IconEvent event={event} partial={partial} userId={userId} icon={icon} text={"changed the room " + what} />
     )
 }
 

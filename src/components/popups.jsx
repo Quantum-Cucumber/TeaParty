@@ -254,7 +254,7 @@ export function ImagePopup({ sourceUrl, render, setRender, name }) {
 }
 
 export const contextMenuCtx = createContext(() => {});
-export function ContextMenu({ parent, x, y, mouseEvent = null, children }) {
+export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, children }) {
     const setVisible = useContext(contextMenuCtx);
     const [menu, setMenu] = useState();
 
@@ -279,7 +279,7 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, children }) {
     }, [setVisible, menu])
 
     return (
-        <div className="context-menu" ref={setMenu}>
+        <div className={classList("context-menu", subClass)} ref={setMenu}>
             {children}
         </div>
     )

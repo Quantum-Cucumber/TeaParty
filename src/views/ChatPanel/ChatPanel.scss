@@ -103,3 +103,35 @@ $halfDotSize: 0.3rem;
         fill: var(--text);
     }
 }
+
+.pinned-events {
+    width: 350px;
+
+    &__title {
+        --margin: 5px;
+        font-size: 1.1rem;
+        border-bottom: 1px solid var(--text-greyed);
+        margin: var(--margin);
+        width: calc(100% - (var(--margin) * 2));
+        padding: 2px;
+    }
+
+    .event {
+        padding: 8px 10px;
+        background-color: var(--bg);
+        &:hover {
+            background-color: var(--bg-focus);
+        }
+
+        .event__buttons {
+            display: none !important;
+        }
+    }
+
+    &__loading {
+        width: 100%;
+        display: flex;
+        justify-content: center;
+        padding: 5px 0;
+    }
+}
