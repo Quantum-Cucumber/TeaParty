@@ -1,3 +1,5 @@
+@use "../../utils/common";
+
 .chat-header {
     flex: none;
     background-color: var(--bg);
@@ -107,7 +109,13 @@ $halfDotSize: 0.3rem;
 .pinned-events {
     width: 350px;
 
+    display: flex;
+    flex-direction: column;
+    max-height: 60%;
+    overflow: hidden;
+
     &__title {
+        flex: 0;
         --margin: 5px;
         font-size: 1.1rem;
         border-bottom: 1px solid var(--text-greyed);
@@ -116,8 +124,17 @@ $halfDotSize: 0.3rem;
         padding: 2px;
     }
 
+    &__scroll {
+        flex: 1;
+        @include common.scroll-style(var(--bg));
+        overflow: auto;
+
+        & > * {
+            padding: 8px 10px !important;
+        }
+    }
+
     .event {
-        padding: 8px 10px;
         background-color: var(--bg);
         &:hover {
             background-color: var(--bg-focus);

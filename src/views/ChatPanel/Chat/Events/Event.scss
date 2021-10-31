@@ -161,7 +161,7 @@ $event-offset: 2.75em;
         padding: 5px 0.5rem 5px 0;
         margin-right: 0.5rem;
         overflow: hidden auto;
-        @include common.scroll-style(var(--bg-focus));
+        @include common.scroll-style();
 
         .option {
             aspect-ratio: 1;
@@ -173,7 +173,7 @@ $event-offset: 2.75em;
     &__users {
         flex: 1 1 auto;
         overflow: hidden scroll;
-        @include common.scroll-style(var(--bg-focus));
+        @include common.scroll-style();
     }
 
     .user {

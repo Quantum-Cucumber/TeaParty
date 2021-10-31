@@ -7,7 +7,7 @@
     overflow: hidden scroll; /* Only vertical scroll */
     bottom: 0;
 
-    @include common.scroll-style(var(--bg));
+    @include common.scroll-style();
 
     &__loading {
         width: 100%;

@@ -30,7 +30,7 @@ $border: 2px solid var(--bg-dark);
         font-size: 0.9rem;
 
         overflow: hidden auto;
-        @include common.scroll-style(var(--bg-focus));
+        @include common.scroll-style();
 
         &__loading {
             display: flex;

@@ -4,7 +4,7 @@
     padding: 10px 0;
 
     overflow: hidden auto;
-    @include common.scroll-style(var(--bg-focus));
+    @include common.scroll-style();
 
     &__member {
         height: 2.5rem;

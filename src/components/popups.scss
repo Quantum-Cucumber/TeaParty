@@ -114,7 +114,7 @@
         flex: 1 1 auto;
         overflow: hidden auto;
         padding: 0 10px;
-        @include common.scroll-style(var(--bg-focus));
+        @include common.scroll-style();
     }
 
     &__close{
@@ -178,6 +178,7 @@
     border-radius: 8px;
     padding: 6px;
     background-color: var(--bg-dark);
+    box-shadow: 0 2px 8px -2px var(--border);
     width: 150px;
 }
 

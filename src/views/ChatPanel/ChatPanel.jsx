@@ -202,18 +202,23 @@ function PinnedMessages({ parent, room, eventIds }) {
             <div className="pinned-events__title">
                 Pinned Events:
             </div>
-            {
-                events.map((event) => {
-                    return event ? (
-                        <TimelineEvent event={event} key={event.getId()} />
-                    ) : null
-                })
-            }
-            { events.length !== eventIds?.length &&
-                <div className="pinned-events__loading">
-                    <Loading size="2rem" />
-                </div>
-            }
+            <div className="pinned-events__scroll">
+                {
+                    events.map((event) => {
+                        return event ? (
+                            <TimelineEvent event={event} key={event.getId()} />
+                        ) : null
+                    })
+                }
+                { (eventIds && events.length !== eventIds.length) &&
+                    <div className="pinned-events__loading">
+                        <Loading size="2rem" />
+                    </div>
+                }
+                {!eventIds &&
+                    <div>No events have been pinned</div>
+                }
+            </div>
         </ContextMenu>
     )
 }
