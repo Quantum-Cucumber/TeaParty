@@ -1,6 +1,7 @@
 import "./MemberList.scss";
 import { Member } from "../../components/user";
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, memo, useReducer } from "react";
+import { useScrollPaginate } from "../../utils/hooks";
 
 const membersPerPage = 30;
 const memberEvents = ["RoomMember.membership", "RoomMember.name", "RoomMember.powerLevel"];
@@ -15,16 +16,18 @@ function filterName(name) {
 
 function MemberList({ currentRoom, setUserPopup }) {
     const [memberList, setMembers] = useState([]);
-    const [loadedMembers, setLoadedMembers] = useState(membersPerPage);  // Number of members to load
-    const memberScroll = useRef();
 
+    const [updateVal, update] = useReducer(false, current => !current);
+    const [loadingRef, setLoadingRef] = useState();
+    const loadedMembers = useScrollPaginate(loadingRef, membersPerPage);
+
+    // When the room changes, attach a listener to look for member updateevents
     useEffect(() => {
-        setLoadedMembers(membersPerPage);  // Reset loaded member count
         setMembers([]);  // Reset member list
 
         function memberUpdated(event, member) {
             if (member.roomId === currentRoom) {
-                setLoadedMembers(l => l);
+                update();
             }
         }
         for (const e in memberEvents) {
@@ -34,12 +37,12 @@ function MemberList({ currentRoom, setUserPopup }) {
         return () => {for (const e in memberEvents) {global.matrix.removeListener(e, memberUpdated)}}
     }, [currentRoom]);
 
+    // Sort the members to be loaded
     useEffect(() => {
         if (!currentRoom) {return}
         if (!global.matrix.getRoom(currentRoom)) {return}
 
         let members = global.matrix.getRoom(currentRoom).getJoinedMembers();
-        if (members.length === loadedMembers) {return}
 
         const collator = Intl.Collator("en", {sensitivity: "base", ignorePunctuation: true})
         members.sort((a, b) => {
@@ -48,17 +51,11 @@ function MemberList({ currentRoom, setUserPopup }) {
             }
             return collator.compare(filterName(a.name), filterName(b.name));
         });
-        setMembers(members.slice(0, loadedMembers));
-    }, [loadedMembers, currentRoom])
-    
-    // When at the bottom of the list, load in new members
-    function onScroll(e) {
-        if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
-            setLoadedMembers(loadedMembers => loadedMembers + membersPerPage);
-        }
-    }
+        setMembers(members);
+    }, [updateVal, currentRoom])
 
-    const members = memberList.map((member) => {
+    // Convert member objects to elements
+    const members = memberList.slice(0, loadedMembers).map((member) => {
         const user = global.matrix.getUser(member.userId);
         function clickFunc(e) {
             setUserPopup({parent: e.target.closest(".member-list__member"), user: user});
@@ -72,8 +69,12 @@ function MemberList({ currentRoom, setUserPopup }) {
     });
 
     return (
-        <div className="member-list scroll--hover" onScroll={onScroll} ref={memberScroll}>
+        <div className="member-list scroll--hover">
             {members}
+
+            { memberList.length > loadedMembers &&
+                <div ref={setLoadingRef} style={{height: "1px", width: "100%"}}></div>
+            }
         </div>
     );
 }

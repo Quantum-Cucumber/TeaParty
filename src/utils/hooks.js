@@ -82,3 +82,31 @@ export function useDownloadUrl(url) {
 
     return [blobUrl, download];
 }
+
+
+export function useScrollPaginate(element, loadSize) {
+    const [loaded, setLoaded] = useState(loadSize);
+    const stableLoadSize = useStableState(loadSize);
+    
+    useEffect(() => {
+        setLoaded(stableLoadSize.current);
+    }, [stableLoadSize])
+
+    useEffect(() => {
+        if (!element) {return}
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                setLoaded(loaded => loaded + stableLoadSize.current);
+            }
+        })
+
+        observer.observe(element);
+
+        return () => {
+            observer.disconnect();
+        }
+    }, [element, stableLoadSize])
+
+    return loaded;
+}

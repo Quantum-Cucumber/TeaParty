@@ -1,5 +1,5 @@
 import "./Event.scss";
-import { useContext, memo, useState, useEffect } from "react";
+import { useContext, memo, useState, useEffect, useRef } from "react";
 
 import { Avatar, Member, userPopupCtx } from "../../../../components/user";
 import { Button, Option } from "../../../../components/elements";
@@ -16,6 +16,7 @@ import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent,
 
 import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon } from "@mdi/js";
 import Icon from "@mdi/react";
+import { useScrollPaginate } from "../../../../utils/hooks";
 
 function eventIsSame(oldProps, newProps) {
     const oldEvent = oldProps.event;
@@ -153,24 +154,8 @@ const messageOptions = {
         label: "Read receipts",
         title: "Read By",
         bodyClass: "overlay__modal--read",
-        render: ({ event, setUserPopup }) => {
-            const readBy = getMembersRead(event);
-            return (<>
-                {
-                    readBy.map((member) => {
-                        const user = global.matrix.getUser(member?.userId);
-                        if (!user) {return null}
-                        return (
-                            <Member member={member} key={member.userId} subClass="data__user-popup" clickFunc={
-                                (e) => {
-                                    setUserPopup({user: user, parent: e.target.closest(".user")});
-                                }
-                            } />
-                        )
-                    })
-                }
-            </>)
-        },
+        render: ({ event, setUserPopup }) => 
+            <ReadReceipts event={event} setUserPopup={setUserPopup} />,
     },
     source: {
         path: mdiXml,
@@ -239,4 +224,32 @@ function MoreOptions({ parent, event, setHover, reactions }) {
             {modal}
         </ContextMenu>
     )
+}
+
+
+const readReceiptsChunks = 30;
+function ReadReceipts({ event, setUserPopup }) {
+    const readBy = useRef(getMembersRead(event));
+    const [loadingRef, setLoadingRef] = useState();
+    const loaded = useScrollPaginate(loadingRef, readReceiptsChunks);
+
+    return (<>
+        {
+            readBy.current.slice(0, loaded).map((member) => {
+                const user = global.matrix.getUser(member?.userId);
+                if (!user) {return null}
+                return (
+                    <Member member={member} key={member.userId} subClass="data__user-popup" clickFunc={
+                        (e) => {
+                            setUserPopup({user: user, parent: e.target.closest(".user")});
+                        }
+                    } />
+                )
+            })
+        }
+
+        { readBy.current.length > loaded &&
+            <div ref={setLoadingRef} style={{height: "1px", width: "100%"}}></div>
+        }
+    </>)
 }
