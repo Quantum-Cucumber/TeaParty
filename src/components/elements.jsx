@@ -90,3 +90,13 @@ export function DropDown({ icon, text, children, unread=false, notifications=0 }
         </div>
     )
 }
+
+export function A(props) {
+    const {children, ...passthroughProps} = props;
+
+    return (
+        <a target="_blank" rel="noopener noreferrer" {...passthroughProps}>
+            {children}
+        </a>
+    )
+}

@@ -1,6 +1,6 @@
 import "./popups.scss";
 import { useState, useEffect, useRef, useCallback, createContext, useContext, useLayoutEffect, cloneElement } from "react";
-import { Button } from "./elements";
+import { A, Button } from "./elements";
 import { classList } from '../utils/utils';
 import { useBindEscape, useDownloadUrl } from "../utils/hooks";
 import Icon from "@mdi/react";
@@ -242,12 +242,12 @@ export function ImagePopup({ sourceUrl, render, setRender, name }) {
                 mountAnimation="image__zoom-in 0.15s ease-out" unmountAnimation="image__zoom-out 0.15s ease-in">
             <img src={sourceUrl} alt={name} className="image-popup" />
             <div className="image-popup__buttons">
-                <a rel="noopener noreferrer" target="_blank" href={blobUrl || sourceUrl} download={name || "download"} onClick={download}>
+                <A href={blobUrl || sourceUrl} download={name || "download"} onClick={download}>
                     <Button path={mdiDownload} size="1.5rem" tipDir="top" tipText="Download" />
-                </a>
-                <a rel="noopener noreferrer" target="_blank" href={sourceUrl}>
+                </A>
+                <A href={sourceUrl}>
                     <Button path={mdiOpenInNew} size="1.5rem" tipDir="top" tipText="Open Original" />
-                </a>
+                </A>
             </div>
         </Overlay>
     );

@@ -3,7 +3,7 @@ import { useState, useEffect, useContext } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm"
 
-import { Button } from "../../../../components/elements";
+import { A, Button } from "../../../../components/elements";
 import { ImagePopup, Tooltip } from "../../../../components/popups";
 import { userPopupCtx } from "../../../../components/user";
 
@@ -176,9 +176,9 @@ function MessageFile({ eventContent }) {
                 </Tooltip>
                 <div className="message__content__file__text__size">{bytesToFriendly(size)}</div>
             </div>
-            <a rel="noopener noreferrer" target="_blank" href={blobUrl} download={name || "download"} onClick={download}>
+            <A href={blobUrl} download={name || "download"} onClick={download}>
                 <Button subClass="message__content__file__download" path={mdiDownload} size="1.5rem" tipDir="top" tipText="Download" />
-            </a>
+            </A>
         </div>
     );
 }

@@ -1,14 +1,18 @@
 import "./Settings.scss";
 import { useEffect, useState } from "react";
-import { Loading, Option } from "../../components/elements";
-import { mdiClose, mdiBrush, mdiLock, mdiHammerWrench, mdiTune } from "@mdi/js";
-import { Icon } from "@mdi/react";
+
 import Settings from "../../utils/settings";
 import { logoutMatrix } from "../../utils/matrix-client";
 import { msToDate } from "../../utils/datetime";
 import { classList } from "../../utils/utils";
 import { useBindEscape } from "../../utils/hooks";
+
 import { Section, Toggle } from "./components";
+import { A, Loading, Option } from "../../components/elements";
+
+import { mdiClose, mdiBrush, mdiLock, mdiHammerWrench, mdiTune, mdiGithub } from "@mdi/js";
+import { Icon } from "@mdi/react";
+import {ReactComponent as MatrixLogo} from "./matrix-logo.svg";
 
 const settings_pages = [
     {
@@ -72,7 +76,7 @@ const settings_pages = [
 ];
 
 
-function SettingsPage({ setPage }) {
+export default function SettingsPage({ setPage }) {
     const [tab, setTab] = useState(settings_pages[0].title);
     const [settingsPage, setSettingsPage] = useState(settings_pages[0].render());
 
@@ -110,6 +114,8 @@ function SettingsPage({ setPage }) {
                     {tabs}
                     <div className="options-divider"></div>
                     <Option danger text="Log Out" k="logout" select={logoutMatrix}/>
+                    <div className="options-divider"></div>
+                    <About />
                 </div>
                 <div className="settings__divider"></div>
                 <div className="settings__panel">
@@ -211,4 +217,15 @@ function DeviceTable() {
     );
 }
 
-export default SettingsPage;
+function About() {
+    return (
+        <div className="settings__categories__about">
+            <A href="https://github.com/quantum-cucumber/teaparty" className="settings__categories__about__icon" title="Github">
+                <Icon path={mdiGithub} color="var(--text)" size="calc(16px + 1rem)" />
+            </A>
+            <A href="https://matrix.org/" className="settings__categories__about__icon" title="Made For Matrix">
+                <MatrixLogo className="matrix-logo" />
+            </A>
+        </div>
+    )
+}

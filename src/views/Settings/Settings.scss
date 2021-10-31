@@ -66,7 +66,8 @@
     width: calc(100% - 15px);
     height: 2px;
     background-color: var(--bg);
-    margin: 15px 0px;
+    margin-bottom: 10px;
+    margin-top: 5px;
 }
 
 /* Components */
@@ -222,5 +223,29 @@
             font-size: 0.8rem;
             margin-left: 0.25rem;
         }
+    }
+}
+
+/* About page */
+.settings__categories__about {
+    width: 100%;
+    margin-top: 5px;
+
+    &__icon {
+        margin: calc(2px + 0.125rem);
+
+        &:hover {
+            opacity: 0.7;
+        }
+    }
+}
+.matrix-logo {
+    height: calc(16px + 1rem);  /* Match option's height */
+    width: auto;
+    overflow: visible;  /* Needed otherwise there can be some clipping */
+
+    /* Override SVG's colour so it can be modified by the theme */
+    #Made-for-Matrix-\\u2014-Preferred {
+        fill: var(--matrix-logo);
     }
 }
