@@ -73,8 +73,8 @@ function Chat({ currentRoom }) {
     
     var events = [];
     const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom)?.getEventReadUpTo(global.matrix.getUserId()) : null;
-    eventList.filter((event) => {return shouldDisplayEvent(event)})
-    .forEach((event, index, filteredEvents) => {
+    const filteredEvents = eventList.filter((event) => {return shouldDisplayEvent(event)});
+    filteredEvents.forEach((event, index) => {
         const prevEvent = filteredEvents[index - 1];
         event = event.toSnapshot();
 
@@ -100,8 +100,8 @@ function Chat({ currentRoom }) {
 
     });
     // If rendered last message in channel, add a day border and 30vh of padding
-    if (eventList.length !== 0 && timeline.current.canLoad === false) {
-        const text = dateToDateStr(eventList[0].getDate());
+    if (filteredEvents.length !== 0 && timeline.current.canLoad === false) {
+        const text = dateToDateStr(filteredEvents[0].getDate());
         events.unshift(
             <div style={{height: "30vh"}} key="padding"></div>,
             <EventBorder text={text} color="var(--text-greyed)" key={text}/>
