@@ -49,12 +49,14 @@
 }
 
 .event__sticker {
+    margin-top: 0.25em;
     /* Max sticker size is 200x200, or 100%x200px */
     width: 200px;
     max-width: 100%;
     height: 200px;
     /* Ensures the image is constrained to those dimensions without warping */
     object-fit: contain;
+
 }
 
 /* Compact event with icon */

@@ -1,11 +1,10 @@
 import "./MessageContent.scss";
 import { useState, useEffect, useContext } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm"
 
 import { A, Button } from "../../../../components/elements";
 import { ImagePopup, Tooltip } from "../../../../components/popups";
 import { userPopupCtx } from "../../../../components/user";
+import HtmlContent from "./HtmlContent";
 
 import { messageTimestampFull } from "../../../../utils/datetime";
 import { bytesToFriendly } from "../../../../utils/utils";
@@ -72,13 +71,13 @@ export function EditMarker({ event }) {
 }
 
 export function MessageText({ eventContent }) {
-    const content = eventContent.body;
     const useMarkdown = eventContent.format === "org.matrix.custom.html";
 
     return (<>
         {useMarkdown ? 
-            <ReactMarkdown remarkPlugins={[[remarkGfm, {singleTilde: false}]]} linkTarget="_blank">{content}</ReactMarkdown> :
-            <p>{content}</p>
+            <HtmlContent eventContent={eventContent} />
+            :
+            <p>{eventContent.body}</p>
         }
     </>)
 }
@@ -129,18 +128,15 @@ function RedactedMessage({ event }) {
 }
 
 /* Media */
-function genThumbnailUrl(eventContent) {
+export function genThumbnailUrl(url, desiredWidth, desiredHeight) {
     /* Load a smaller version of the given file */
-    const width = 320;
-    const height = 240;
-    const info = eventContent.info;
-    const url = eventContent.url;
+    const maxWidth = 320;
+    const maxHeight = 240;
 
-    if (info.w > width || info.h > height) {
-        return global.matrix.mxcUrlToHttp(url, width, height, "scale") || url;
-    } else {
-        return global.matrix.mxcUrlToHttp(eventContent.url) || url;  // Return as is
-    }
+    const width = desiredWidth ? Math.min(desiredWidth, maxWidth) : maxWidth;
+    const height = desiredWidth ? Math.min(desiredHeight, maxHeight) : maxHeight;
+
+    return global.matrix.mxcUrlToHttp(url, width, height, "scale") || url;
 }
 
 function MessageImage({ eventContent }) {
@@ -148,7 +144,7 @@ function MessageImage({ eventContent }) {
     const [thumbnail, setThumbnail] = useState();
 
     useEffect(() => {
-        setThumbnail(genThumbnailUrl(eventContent));
+        setThumbnail(genThumbnailUrl(eventContent.url, eventContent.info.w, eventContent.info.h));
     }, [eventContent])
 
     const sourceUrl = global.matrix.mxcUrlToHttp(eventContent.url) || eventContent.url;

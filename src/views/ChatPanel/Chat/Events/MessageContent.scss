@@ -7,17 +7,18 @@
     overflow-wrap: break-word;
     padding-right: 60px;
     box-sizing: border-box;
+
+    * {
+        font-size: 1rem;  /* Override h1/h2 etc */
+        margin: 0;
+    }
 }
 
 
 /* Message markdown */
-.message__content {
+.message__content--html {
     > p > * {
         display: inline-block;
-    }
-    * {
-        font-size: 1rem;  /* Override h1/h2 etc */
-        margin: 0;
     }
     p, pre {
         white-space: pre-wrap;
@@ -27,10 +28,6 @@
         border-left: 4px solid var(--text-greyed);
         padding: 0.25rem 0.6rem;
     }
-    code {
-        /*font-family: monospace;*/
-        background-color: var(--bg-focus);
-    }
     ul, ol {
         padding-left: 0;
         list-style-position: inside;
@@ -39,11 +36,18 @@
             text-indent: 0.75em;
         }
     }
+    pre {
+        font-family: var(--font-monospace);
+    }
+    code {
+        background-color: var(--bg-focus);
+    }
     /* Code block */
-    p > code:only-child, pre > code:only-child {
+    code:only-child, pre > code:only-child {
         @include common.codeblock;
         width: 90%;
     }
+
     input[type=checkbox] {
         appearance: none;
         border: 2px solid var(--text);
@@ -104,6 +108,7 @@
     border-radius: 4px;
     max-width: 320px;
     max-height: 240px;
+    object-fit: contain;
 }
 
 .message__content__file {

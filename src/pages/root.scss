@@ -55,6 +55,8 @@
 /* Universal styles */
 :root {
     --font-standard: Arial, Helvetica, sans-serif;
+    --font-monospace: monospace;
+
     --avatar-rounded: 30%;
     --avatar-radius: var(--avatar-rounded);
 
@@ -79,6 +81,19 @@ a {
 *::selection {
     background-color: var(--primary-hover);
     color: var(--text)
+}
+
+.mention {
+    color: var(--text);
+    background-color: var(--primary-hover);
+    /* Ensure there is a slight gap between the mention and the next line */
+    font-size: 0.9rem !important;
+    padding: 0.04rem 0.2rem;
+    border-radius: 0.2rem;
+    text-decoration: none;
+    &:hover {
+        text-decoration: underline;
+    }
 }
 
 .codeblock {
