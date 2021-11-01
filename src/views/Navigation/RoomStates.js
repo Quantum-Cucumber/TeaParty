@@ -4,18 +4,19 @@ import { debounce } from "../../utils/utils";
 import { useStableState } from "../../utils/hooks";
 import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpaces, flatSubrooms, getRootSpaces } from "../../utils/roomFilters";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
+import { sortRooms } from "../../utils/event-grouping";
 
 
 export function getChildRoomsFromGroup(groupKey) {
     switch(groupKey) {
         case "home":
-            return getOrpanedRooms();
+            return sortRooms(getOrpanedRooms());
         case "directs":
-            return getDirects();
+            return sortRooms(getDirects());
 
         default:  // Likely a space Id
             const space = global.matrix.getRoom(groupKey);
-            return space ? getSpaceChildren(space) : [];
+            return space ? sortRooms(getSpaceChildren(space)) : [];
     }
 }
 
@@ -220,6 +221,7 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
             "Room.name": refreshRoomStates,
             "Room.timeline": debounce(_roomEvent, 1000),  // For unread indicator updates
             "Room.receipt": _readReceipt,
+            "Room.tags": refreshRooms,
         }
 
         Object.keys(listeners).forEach((type) => {
@@ -238,7 +240,7 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
 
             Settings.removeListener("settingUpdate", _settingsUpdate)
         }
-    }, [_membershipChange, _accountData, _roomEvent, _readReceipt, _settingsUpdate])
+    }, [_membershipChange, _accountData, _roomEvent, _readReceipt, _settingsUpdate, refreshRooms])
 
     return [roomStates, invitedRooms];
 }
