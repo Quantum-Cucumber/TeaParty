@@ -1,6 +1,14 @@
+import { useState, useEffect, useReducer, useContext, createContext } from 'react';
+import { render } from 'react-dom';
 import sanitizeHtml from 'sanitize-html';
+
 import { genThumbnailUrl } from './MessageContent';
+import { Tooltip } from '../../../../components/popups';
+import { userPopupCtx } from '../../../../components/user';
+
+import { classList } from '../../../../utils/utils';
 import { parseMatrixto } from '../../../../utils/linking';
+import { tryGetUser } from '../../../../utils/matrix-client';
 
 const hexColourRegex = /^#[0-9a-f]{6}$/i;
 
@@ -19,7 +27,7 @@ const allowedTags = [
 const allowedAttributes = {
     "font": ["data-mx-bg-color", "data-mx-color", "color", "style"],  // Style is allowed but overridden to convert data-mx-*
     "span": ["data-mx-bg-color", "data-mx-color", "data-mx-spoiler", "style"],  // Style is allowed but overridden to convert data-mx-*
-    "a": ["name", "href", "target", "rel", "class"],  // target, rel and class are allowed so they can be transformed. We don't actually pass them directly to the dom
+    "a": ["name", "href", "target", "rel"],  // target, rel are allowed so they can be transformed. We don't actually pass them directly to the dom
     "img": ["width", "height", "alt", "title", "src"],
     "ol": ["start"],
     "code": ["class"],
@@ -31,18 +39,24 @@ const allowedClasses = {
 
 const allowedSchemes = ["https", "http", "ftp", "mailto", "magnet"];
 
+function customTagToStyle(attribs, customTag, style, validation = ()=>{return true}) {
+    let output = "";
+
+    if (attribs.hasOwnProperty(customTag)) {
+        if (validation(attribs[customTag])) {
+            output = `${style}:${attribs[customTag]};`
+        }
+
+        delete attribs[customTag]
+    }
+
+    return output;
+}
+
 const transformTags = {
     "a": (tagName, attribs) => {
-        delete attribs.class;  // Only allowed to add mentions class
-
         attribs.target = "_blank";
         attribs.rel = "noopener noreferrer";
-
-        // Process mentions
-        const match = parseMatrixto(attribs.href);
-        if (attribs.hasOwnProperty("href") && match.match && match.type !== "event") {
-            attribs.class = "mention";
-        }
 
         return {tagName, attribs};
     },
@@ -58,41 +72,35 @@ const transformTags = {
         return {tagName, attribs};
     },
 
-    // Only really applies to font and span
-    "*": (tagName, attribs) => {
-        // Style is only allowed so it can be modified here. Strip any style tags from the parsed html
-        delete attribs.style;
 
-        const customColorTags = {
-            "data-mx-color": "color",
-            "data-mx-bg-color": "background-color",
-        }
-        
+    "span": (tagName, attribs) => {
         let style = "";
-        // Replace each custom tag with a css style
-        for (let customTag in customColorTags) {
-            const styleTag = customColorTags[customTag];
+        style += customTagToStyle(attribs, "data-mx-color", "color", (value) => hexColourRegex.test);
+        style += customTagToStyle(attribs, "data-mx-bg-color", "background-color", (value) => hexColourRegex.test);
+        
+        attribs.style = style;
+        return {tagName, attribs};
+    },
 
-            if (attribs.hasOwnProperty(customTag)) {
-                const value = attribs[customTag];
+    "font": (tagName, attribs) => {
+        let style = "";
+        style += customTagToStyle(attribs, "data-mx-color", "color", (value) => hexColourRegex.test);
+        style += customTagToStyle(attribs, "data-mx-bg-color", "background-color", (value) => hexColourRegex.test);
 
-                // Ensure the value is a valid hex colour
-                if (hexColourRegex.test(value)) {
-                    style += `${styleTag}: ${value};`;
-                }
-
-                // Delete the custom data-mx property regardless of if the value is valid
-                delete attribs[customTag];
+        // Check that color property is valid
+        if (attribs.hasOwnProperty("color")) {
+            if (!hexColourRegex.test(attribs.color)) {
+                delete attribs.color;
             }
         }
         
         attribs.style = style;
         return {tagName, attribs};
-    }
+    },
 }
 
-function parseHtml(html) {
-    const cleanHtml = sanitizeHtml(html, {
+function cleanHtml(html) {
+    const cleanedHtml = sanitizeHtml(html, {
         allowedTags: allowedTags,
         allowedAttributes: allowedAttributes,
         allowedClasses: allowedClasses,
@@ -102,14 +110,118 @@ function parseHtml(html) {
         transformTags: transformTags,
     });
 
-    return {__html: cleanHtml};
+    return cleanedHtml;
+}
+
+function CleanedHtml({ eventContent, spanRef }) {
+    const body = eventContent.formatted_body;
+    const content = cleanHtml(body);
+
+    return (
+        <span ref={spanRef} className="message__content--html" dangerouslySetInnerHTML={{__html: content}}></span>
+    );
 }
 
 export default function HtmlContent({ eventContent }) {
-    const sourceHtml = eventContent.formatted_body;
-    const parsedHtml = parseHtml(sourceHtml);
+    const [domTree, domTreeRef] = useState();
+
+    useEffect(() => {
+        if (!domTree) {return}
+
+        applySpoilers(domTree.childNodes);
+        formatUserMentions(domTree.childNodes);
+
+    }, [domTree])
 
     return (
-        <span className="message__content--html" dangerouslySetInnerHTML={parsedHtml}></span>
+        <CleanedHtml eventContent={eventContent} spanRef={domTreeRef} />
     );
 }
+
+
+function applySpoilers(nodeList) {
+    let node = nodeList[0];
+
+    while (node) {
+        if (node.tagName === "SPAN" && node.hasAttribute("data-mx-spoiler")) {
+            const reason = node.getAttribute("data-mx-spoiler");
+            node.removeAttribute("data-mx-spoiler");
+
+            const container = document.createElement("span");
+            const component = (
+                <Spoiler reason={reason} content={node.outerHTML} />
+            );
+            // Turn into dom
+            render(component, container);
+            // Transform node
+            node.parentNode.replaceChild(container, node);
+            node = container;
+        }
+
+        // If node has children, run function over those too
+        if (node.childNodes?.length) {
+            applySpoilers(node.childNodes);
+        }
+
+        node = node.nextElementSibling;
+    }
+}
+function Spoiler({reason, content}) {
+    // Content should be a sanitised dom tree
+    const [visible, toggleVisible] = useReducer(current => !current, false);
+
+    return reason ?
+        (
+            <Tooltip text={reason} dir="top" x="mouse">
+                <span className={classList("spoiler", {"spoiler--visible": visible})} onClick={toggleVisible} dangerouslySetInnerHTML={{__html: content}}></span>
+            </Tooltip>
+        )
+        :
+        (
+            <span className={classList("spoiler", {"spoiler--visible": visible})} onClick={toggleVisible} dangerouslySetInnerHTML={{__html: content}}></span>
+        )
+}
+
+function formatUserMentions(nodeList) {
+    let node = nodeList[0];
+
+    while (node) {
+        if (node.tagName === "A" && node.hasAttribute("href")) {
+            const match = parseMatrixto(node.href);
+
+            if (match.match && match.type === "user") {
+                const container = document.createElement("span");
+                const component = (
+                    <UserMention userId={match.identifier} />
+                );
+                // Turn into dom
+                render(component, container);
+                // Transform node
+                node.parentNode.replaceChild(container, node);
+                node = container;
+            }
+        }
+
+        // If node has children, run function over those too
+        if (node.childNodes?.length) {
+            formatUserMentions(node.childNodes);
+        }
+
+        node = node.nextElementSibling;
+    }
+}
+
+function UserMention({ userId }) {
+    const setUserPopup = useContext(userPopupCtx);
+
+    const user = tryGetUser(userId);
+    function userPopup(e) {
+        setUserPopup({parent: e.target.closest(".mention"), user: user})
+        console.log("clicked")
+    }
+
+    return (
+        <span className="mention data__user-popup" onClick={userPopup}>@{user.displayName}</span>
+    )
+}
+

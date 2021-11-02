@@ -1,12 +1,14 @@
 const matrixtoRegex = /^(?:https:\/\/)?(?:www\.)?matrix\.to\/#\/(([!@#+]).+)/i;
 
-export function parseMatrixto(string) {
-    const match = matrixtoRegex.exec(decodeURIComponent(string));
+export function parseMatrixto(url) {
+    const match = matrixtoRegex.exec(decodeURIComponent(url));
     
     let type;
     let sigil;
+    let identifier;
 
     if (match !== null) {
+        identifier = match[1];
         sigil = match[2];
 
         switch (sigil) {
@@ -29,5 +31,5 @@ export function parseMatrixto(string) {
         }
     }
 
-    return {match: match !== null, type: type, sigil: sigil}
+    return {match: match !== null, type: type, sigil: sigil, identifier: identifier}
 }

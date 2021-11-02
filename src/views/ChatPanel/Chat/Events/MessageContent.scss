@@ -91,6 +91,18 @@
     }
 }
 
+.spoiler {
+    background-color: var(--bg-dark);
+    color: var(--bg-dark);
+    cursor: pointer;
+    user-select: none;
+
+    &--visible {
+        background-color: var(--bg-focus);
+        color: var(--text);
+        user-select: unset;
+    }
+}
 
 .message__content--notice {
     color: var(--text-greyed);
