@@ -1,14 +1,13 @@
-import { useState, useEffect, useReducer, useContext, createContext } from 'react';
-import { render } from 'react-dom';
+import { useState, useEffect, useReducer } from 'react';
+import { render, unmountComponentAtNode } from 'react-dom';
 import sanitizeHtml from 'sanitize-html';
 
 import { genThumbnailUrl } from './MessageContent';
 import { Tooltip } from '../../../../components/popups';
-import { userPopupCtx } from '../../../../components/user';
 
 import { classList } from '../../../../utils/utils';
 import { parseMatrixto } from '../../../../utils/linking';
-import { tryGetUser } from '../../../../utils/matrix-client';
+import { getMember } from '../../../../utils/matrix-client';
 
 const hexColourRegex = /^#[0-9a-f]{6}$/i;
 
@@ -122,24 +121,30 @@ function CleanedHtml({ eventContent, spanRef }) {
     );
 }
 
-export default function HtmlContent({ eventContent }) {
+export default function HtmlContent({ event }) {
     const [domTree, domTreeRef] = useState();
 
     useEffect(() => {
         if (!domTree) {return}
+        const unmountList = [];
 
-        applySpoilers(domTree.childNodes);
-        formatUserMentions(domTree.childNodes);
+        applySpoilers(domTree.childNodes, unmountList);
+        formatUserMentions(domTree.childNodes, event, unmountList);
 
-    }, [domTree])
+        return () => {
+            unmountList.forEach((nodeContainer) => {
+                unmountComponentAtNode(nodeContainer);
+            })
+        }
+    }, [domTree, event])
 
     return (
-        <CleanedHtml eventContent={eventContent} spanRef={domTreeRef} />
+        <CleanedHtml eventContent={event.getContent()} spanRef={domTreeRef} />
     );
 }
 
 
-function applySpoilers(nodeList) {
+function applySpoilers(nodeList, unmountList) {
     let node = nodeList[0];
 
     while (node) {
@@ -155,12 +160,13 @@ function applySpoilers(nodeList) {
             render(component, container);
             // Transform node
             node.parentNode.replaceChild(container, node);
+            unmountList.push(container);
             node = container;
         }
 
         // If node has children, run function over those too
         if (node.childNodes?.length) {
-            applySpoilers(node.childNodes);
+            applySpoilers(node.childNodes, unmountList);
         }
 
         node = node.nextElementSibling;
@@ -182,7 +188,7 @@ function Spoiler({reason, content}) {
         )
 }
 
-function formatUserMentions(nodeList) {
+function formatUserMentions(nodeList, event, unmountList) {
     let node = nodeList[0];
 
     while (node) {
@@ -192,36 +198,39 @@ function formatUserMentions(nodeList) {
             if (match.match && match.type === "user") {
                 const container = document.createElement("span");
                 const component = (
-                    <UserMention userId={match.identifier} />
+                    <UserMention userId={match.identifier} roomId={event.getRoomId()} />
                 );
                 // Turn into dom
                 render(component, container);
                 // Transform node
                 node.parentNode.replaceChild(container, node);
+                unmountList.push(container);
                 node = container;
             }
         }
 
         // If node has children, run function over those too
         if (node.childNodes?.length) {
-            formatUserMentions(node.childNodes);
+            formatUserMentions(node.childNodes, event, unmountList);
         }
 
         node = node.nextElementSibling;
     }
 }
 
-function UserMention({ userId }) {
+function UserMention({ userId, roomId }) {
+    /* This doesn't work as UserMention is rendered outside of the context tree for some reason
     const setUserPopup = useContext(userPopupCtx);
 
-    const user = tryGetUser(userId);
     function userPopup(e) {
-        setUserPopup({parent: e.target.closest(".mention"), user: user})
-        console.log("clicked")
+        setUserPopup({parent: e.target, user: user})
     }
+    */
+
+   const member = getMember(userId, roomId);
 
     return (
-        <span className="mention data__user-popup" onClick={userPopup}>@{user.displayName}</span>
+        <span className="mention data__user-popup">{member ? `@${member.name}` : userId}</span>
     )
 }
 

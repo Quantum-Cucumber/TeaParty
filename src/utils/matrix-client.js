@@ -109,8 +109,8 @@ export function tryGetUser(userId) {
 
 export function getMember(userId, roomId) {
     const room = global.matrix.getRoom(roomId);
-    const member = room.getMember(userId);
-    return member;
+    const member = room?.getMember(userId);
+    return member || {};
 }
 // These two mimic matrix-js-sdk's way of extracting this info
 export function getLocalpart(user) {

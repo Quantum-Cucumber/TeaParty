@@ -22,7 +22,7 @@ export default function MessageContent({ event }) {
         case "m.text":
         case "org.matrix.custom.html":
             content = (
-                <MessageText eventContent={eventContent} />
+                <MessageText event={event} />
             );
             break;
         case "m.image": 
@@ -70,14 +70,14 @@ export function EditMarker({ event }) {
     </>)
 }
 
-export function MessageText({ eventContent }) {
-    const useMarkdown = eventContent.format === "org.matrix.custom.html";
+export function MessageText({ event }) {
+    const useMarkdown = event.getContent().format === "org.matrix.custom.html";
 
     return (<>
         {useMarkdown ? 
-            <HtmlContent eventContent={eventContent} />
+            <HtmlContent event={event} />
             :
-            <p>{eventContent.body}</p>
+            <p>{event.getContent().body}</p>
         }
     </>)
 }

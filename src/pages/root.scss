@@ -85,11 +85,12 @@ a {
 
 .mention {
     background-color: var(--primary-hover);
+    color: var(--text);
     /* Ensure there is a slight gap between the mention and the next line */
     font-size: 0.9rem !important;
     padding: 0.04rem 0.2rem;
     border-radius: 0.2rem;
-    cursor: pointer;
+    /*cursor: pointer;*/
 }
 
 .codeblock {

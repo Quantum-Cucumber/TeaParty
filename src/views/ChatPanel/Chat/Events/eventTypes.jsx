@@ -68,7 +68,7 @@ export function EmoteMsg({ event, partial }) {
     return (
         <IconEvent event={event} partial={partial} userId={event.getSender()} icon={mdiAsterisk} iconClass="message--emote__icon" text={
             <div className="message__content message--emote__content">
-                <MessageText eventContent={event.getContent()} />
+                <MessageText event={event} />
                 <EditMarker event={event} />
             </div>
         } />
