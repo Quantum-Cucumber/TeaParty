@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { mediaToBlob } from "./utils";
 
 
@@ -109,4 +109,41 @@ export function useScrollPaginate(element, loadSize) {
     }, [element, stableLoadSize])
 
     return loaded;
+}
+
+export function useDrag(mouseMoveFunc) {
+    /* Fires mouseMoveFunc while the mouse being dragged */
+    
+    const [dragging, setDragging] = useState(false);
+
+    const mouseDown = useCallback((e) => {
+        e.preventDefault();  // Prevent text selection
+        setDragging(true);
+        mouseMoveFunc(e);  // Fire once in case clicked and no mouse movement
+    }, [mouseMoveFunc])
+
+
+    const mouseUp = useCallback(() => {
+        setDragging(false);
+    }, [setDragging])
+
+    useEffect(() => {
+        if (dragging) {
+            document.addEventListener("mousemove", mouseMoveFunc);
+            document.addEventListener("mouseup", mouseUp);
+        }
+        else {
+            document.removeEventListener("mousemove", mouseMoveFunc);
+            document.removeEventListener("mouseup", mouseUp);
+        }
+    }, [dragging, mouseMoveFunc, mouseUp])
+
+    useEffect(() => {
+        return () => {
+            document.removeEventListener("mousemove", mouseMoveFunc);
+            document.removeEventListener("mouseup", mouseUp);
+        }
+    }, [mouseMoveFunc, mouseUp])
+
+    return mouseDown
 }

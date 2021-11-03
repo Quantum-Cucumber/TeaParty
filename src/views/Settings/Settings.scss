@@ -1,3 +1,5 @@
+@use "sass:math";
+
 .page--settings {
     width: 100vw;
     height: 100vh;
@@ -130,6 +132,49 @@
         }
         &--on &__indicator {
             left: $width - $padding - ($height - ($padding * 2)) ;  /* Overly complicated so it animates */
+        }
+    }
+}
+
+.settings__slider {
+    padding: 10px 0;
+
+    &__labels {
+        > div {
+            display: inline-block;
+        }
+
+        &--right {
+            float: right;
+        }
+
+        &--greyed {
+            color: var(--text-greyed)
+        }
+    }
+
+    $bar-height: 0.3rem;
+    $indicator-height: 1.2rem;
+    &__bar {
+        position: relative;
+        margin: 1rem 0;
+
+        width: 100%;
+        height: $bar-height;
+        border-radius: 0.15rem;
+
+        background-color: var(--toggle-bg-off);
+        cursor: pointer;
+
+        &__indicator {
+            position: absolute;
+            top: math.div(-$indicator-height, 2) + math.div($bar-height, 2);
+
+            height: $indicator-height;
+            width: 0.4rem;
+
+            border-radius: 0.15rem;
+            background-color: var(--toggle-indicator);
         }
     }
 }

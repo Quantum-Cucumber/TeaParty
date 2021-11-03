@@ -2,7 +2,7 @@ import "./wrappers.scss";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { Button } from "./elements";
 import { classList } from "../utils/utils";
-import { useStableState } from "../utils/hooks"
+import { useDrag, useStableState } from "../utils/hooks"
 import { mdiContentCopy } from "@mdi/js";
 
 
@@ -31,7 +31,6 @@ export function TextCopy({ text, children }) {
 }
 
 export function Resize({ children, initialSize, side, minSize = "0px", collapseSize = 0, collapseState }) {
-    const [dragging, setDrag] = useState(false);
     const [size, setSize] = useState(initialSize);
     const container = useRef();
     const stableCollapseSize = useStableState(collapseSize);
@@ -39,16 +38,6 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
     // If collapseState isn't passed, use our own state
     const backupCollapseState = useState(false);
     const [collapse, setCollapse] = collapseState ? collapseState : backupCollapseState;
-
-    // Fires when the slider is clicked
-    function mouseDown(e) {
-        e.preventDefault();  // Prevent text selection
-        setDrag(true);
-    }
-    // Fires when the mouse is released
-    const mouseUp = useCallback(() => {
-        setDrag(false)
-    }, [setDrag])
 
     const mouseMove = useCallback((e) => {
         if (!container.current) {return}
@@ -77,32 +66,14 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
         setCollapse(newSize < stableCollapseSize.current);
     }, [side, setCollapse, stableCollapseSize])
 
+    const startDrag = useDrag(mouseMove);
+
     // When collapse is set to false, set size to the initial size
     useEffect(() => {
         if (!collapse) {
             setSize(initialSize);
         }
     }, [collapse, initialSize])
-
-    // When the mouse is clicking the slider, bind the mousemove event. Unbind if that value changes
-    useEffect(() => {
-        if (!container.current) {return}
-
-        if (dragging) {
-            document.addEventListener("mousemove", mouseMove);
-            document.addEventListener("mouseup", mouseUp);
-        } else {
-            document.removeEventListener("mousemove", mouseMove);
-            document.removeEventListener("mouseup", mouseUp);
-        }
-    }, [dragging, mouseMove, mouseUp])
-    // Remove listeners on unmount
-    useEffect(() => {
-        return () => {
-            document.removeEventListener("mousemove", mouseMove);
-            document.removeEventListener("mouseup", mouseUp);
-        }
-    }, [mouseMove, mouseUp])
 
     // Whether to change the width or height of the container
     const dimension = side === "left" || side === "right" ? "width" : "height"
@@ -111,7 +82,7 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
     return (
         <div className={classList("resizable", "resizable--"+side, {"resizable--collapsed": collapse})} style={style} ref={container}>
             {children}
-            <div className="resizable__handle" onMouseDown={mouseDown}></div>
+            <div className="resizable__handle" onMouseDown={startDrag}></div>
         </div>
     )
 }

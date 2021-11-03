@@ -10,6 +10,7 @@ const default_settings = {
     startMembersCollapsed: false,
     showRoomIcons: true,
     circularAvatars: false,
+    fontSize: 18,  // In px
 
     devMode: false,
 
@@ -61,6 +62,8 @@ class SettingsManager extends EventEmitter {
 const Settings = new SettingsManager();
 // Perform actions when certain settings update
 Settings.on("settingUpdate", (setting, value) => {
+    const root = document.querySelector(":root");
+
     switch (setting) {
         case "theme":
             // If called without a theme, load the current theme/default and set it
@@ -73,9 +76,10 @@ Settings.on("settingUpdate", (setting, value) => {
 
             break;
         case "circularAvatars":
-            const root = document.querySelector(":root");
             root.style.setProperty("--avatar-radius", value ? "50%" : "var(--avatar-rounded)");
-
+            break;
+        case "fontSize":
+            root.style.setProperty("--font-size", `${value}px`);
             break;
         default:
             break;

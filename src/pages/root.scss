@@ -56,6 +56,7 @@
 :root {
     --font-standard: Arial, Helvetica, sans-serif;
     --font-monospace: monospace;
+    --font-size: 16px;
 
     --avatar-rounded: 30%;
     --avatar-radius: var(--avatar-rounded);
@@ -69,7 +70,7 @@ body, html, #root {
     color: var(--text);
     height: 100%;
     margin: 0px;
-    font-size: 2vh;
+    font-size: var(--font-size);
     overflow: hidden;
     background-color: var(--bg);
 }
@@ -100,7 +101,7 @@ a {
 }
 
 .header {
-    height: 45px;
+    height: 2.5rem;
     display: flex;
     flex-direction: row;
     align-items: center;

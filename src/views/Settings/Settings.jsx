@@ -7,7 +7,7 @@ import { msToDate } from "../../utils/datetime";
 import { classList } from "../../utils/utils";
 import { useBindEscape } from "../../utils/hooks";
 
-import { Section, Toggle } from "./components";
+import { Section, Slider, Toggle } from "./components";
 import { A, Loading, Option } from "../../components/elements";
 
 import { mdiClose, mdiBrush, mdiLock, mdiHammerWrench, mdiTune, mdiGithub } from "@mdi/js";
@@ -30,6 +30,7 @@ const settings_pages = [
                 <Section name="Appearance">
                     <Toggle label="Circular avatars" setting="circularAvatars" />
                     <Toggle label="Show room avatars in sidebar" setting="showRoomIcons" />
+                    <Slider label="Text size" setting="fontSize" min={10} max={26} interval={2} units="px" />
                 </Section>
                 <Section name="Events">
                     <Toggle label="Show deleted events" setting="showRedactedEvents" />
