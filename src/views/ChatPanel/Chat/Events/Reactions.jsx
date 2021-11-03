@@ -7,6 +7,7 @@ import { Member } from "../../../../components/user";
 
 import { getMember } from "../../../../utils/matrix-client";
 import { classList, friendlyList } from "../../../../utils/utils";
+import { Twemojify } from "../../../../components/wrappers";
 
 function getEventRelations(event, relationType, eventType) {
     /* A simple wrapper for EventTimelineSet.getRelationsForEvent, taking the event object as an arg */
@@ -92,7 +93,10 @@ function Reaction({ emote, me, count, members }) {
         <Tooltip dir="top" text={hover} delay={0.3}>
             <div className={classList("event__reactions__reaction", {"event__reactions__reaction--selected": selected})}
                 /*onClick={toggleSelected}*/>
-                {emote}{" "}{count}
+                <Twemojify className="event__reactions__reaction__twemoji">
+                    {emote}
+                </Twemojify>
+                {" "}{count}
             </div>
         </Tooltip>
     )

@@ -1,8 +1,12 @@
 import "./wrappers.scss";
 import { useEffect, useState, useCallback, useRef } from "react";
+import Twemoji from "twemoji";
+
 import { Button } from "./elements";
+
 import { classList } from "../utils/utils";
 import { useDrag, useStableState } from "../utils/hooks"
+
 import { mdiContentCopy } from "@mdi/js";
 
 
@@ -84,5 +88,22 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
             {children}
             <div className="resizable__handle" onMouseDown={startDrag}></div>
         </div>
+    )
+}
+
+export function Twemojify(props) {
+    const parentRef = useRef();
+    
+    // After each render, re-parse the twemoji
+    useEffect(() => {
+        if (!parentRef.current) {return}
+        Twemoji.parse(parentRef.current);
+    })
+    
+    const {children, ...spanProps} = props;
+    return (
+        <span ref={parentRef} {...spanProps}>
+            {children}
+        </span>
     )
 }

@@ -1,4 +1,3 @@
-
 // Stolen from matrix-org/matrix-react-sdk
 function hashCode(str) {
     let hash = 0;

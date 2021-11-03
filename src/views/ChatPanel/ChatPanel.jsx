@@ -13,6 +13,7 @@ import { TimelineEvent } from "./Chat/Events/Event";
 
 import Icon from "@mdi/react";
 import { mdiAccountMultiple, mdiAlert, mdiMenu, mdiPin } from "@mdi/js";
+import { Twemojify } from "../../components/wrappers";
 
 
 export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}) {
@@ -54,7 +55,9 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
                     {room.current.name}
                 </div>
                 <div className="chat-header__topic" title={room.current.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic}>
-                    {room.current.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic}
+                    <Twemojify>
+                        {room.current.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic}
+                    </Twemojify>
                 </div>
             </>}
 

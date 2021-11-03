@@ -13,6 +13,7 @@ import { tryGetUser } from "../../../../utils/matrix-client";
 
 import { mdiChatRemove, mdiDownload, mdiFileDocumentOutline } from "@mdi/js";
 import Icon from "@mdi/react";
+import { Twemojify } from "../../../../components/wrappers";
 
 export default function MessageContent({ event }) {
     const eventContent = event.getContent();
@@ -73,13 +74,15 @@ export function EditMarker({ event }) {
 export function MessageText({ event }) {
     const useMarkdown = event.getContent().format === "org.matrix.custom.html";
 
-    return (<>
-        {useMarkdown ? 
-            <HtmlContent event={event} />
+    return (
+        <Twemojify>
+            {useMarkdown ? 
+                <HtmlContent event={event} />
             :
-            <p>{event.getContent().body}</p>
-        }
-    </>)
+                <p>{event.getContent().body}</p>
+            }
+        </Twemojify>
+    )
 }
 
 function MessageNotice({ eventContent }) {

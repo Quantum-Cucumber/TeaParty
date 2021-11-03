@@ -16,7 +16,7 @@
         align-items: center;
 
         background-color: var(--bg-focus);
-        padding: 0.1em 0.5em;
+        padding: 0.2em 0.4em;
         margin-right: 0.4em;
         border-radius: 0.5em;
         &:hover {
@@ -24,6 +24,10 @@
         }
         &--selected {
             background-color: var(--primary) !important;
+        }
+
+        &__twemoji {
+            margin-right: 0.4em;
         }
     }
 }
