@@ -158,21 +158,17 @@ $settings-padding: 50px;
         &--right {
             float: right;
         }
-
-        &--greyed {
-            color: var(--text-greyed)
-        }
     }
 
     $bar-height: 0.3rem;
     $indicator-height: 1.2rem;
+    $marker-width: 2px;
     &__bar {
         position: relative;
-        margin: 1rem 0;
+        margin: 1rem #{math.div($marker-width, 2)};
 
         width: 100%;
         height: $bar-height;
-        border-radius: 0.15rem;
 
         background-color: var(--toggle-bg-off);
         cursor: pointer;
@@ -182,10 +178,24 @@ $settings-padding: 50px;
             top: math.div(-$indicator-height, 2) + math.div($bar-height, 2);
 
             height: $indicator-height;
-            width: 0.4rem;
+            --width: 0.4rem;  /* As a variable to use the right offset in js */
+            width: var(--width);
 
             border-radius: 0.15rem;
             background-color: var(--toggle-indicator);
+        }
+
+        &__marker {
+            $marker-height: 0.9 * $indicator-height;
+            position: absolute;
+            top: math.div(-$marker-height, 2) + math.div($bar-height, 2);
+
+            height: $marker-height;
+            --width: #{$marker-width};
+            width: var(--width);
+
+            border-radius: 1px;
+            background-color: var(--text-greyed);
         }
     }
 }

@@ -45,7 +45,7 @@ export function Slider({label, setting, min, max, interval, units}) {
     }, [setting, current])
 
     const snapValue = useCallback((value) => {
-        // Value between 0 and 1
+        // value must be between 0 and 1
         const range = (max - min);
         const factor = interval / range;
         return range * Math.round(value / factor) * factor + min
@@ -73,12 +73,18 @@ export function Slider({label, setting, min, max, interval, units}) {
             </div>
 
             <div className="settings__slider__bar" ref={barRef} onMouseDown={startDrag}>
-                <div className="settings__slider__bar__indicator" style={{left: `${ (current - min) / (max - min) * 100 }%`}}></div>
-            </div>
+                {
+                    // Array with null values, with the appropriate number of steps
+                    Array.apply(null, Array( Math.round((max - min) / interval) + 1 ))
+                    .map((_, index) => {
+                        const perc = (index * interval) / (max - min) * 100;
+                        return (
+                            <div className="settings__slider__bar__marker" style={{left: `calc(${perc}% - (var(--width) / 2))`}} key={perc}></div>
+                        )
+                    })
+                }
 
-            <div className="settings__slider__labels settings__slider__labels--greyed">
-                <div>{min}{units}</div>
-                <div className="settings__slider__labels--right">{max}{units}</div>
+                <div className="settings__slider__bar__indicator" style={{left: `calc( ${ (current - min) / (max - min) * 100 }% - (var(--width) / 2) )`}}></div>
             </div>
         </div>
     )
