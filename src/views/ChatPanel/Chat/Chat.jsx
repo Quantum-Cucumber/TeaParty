@@ -129,7 +129,7 @@ function ChatScroll({ children, timeline, updateEventList }) {
         scrollToBottom();
         timeline.current.markAsRead();
     }, [timeline]);
-    useBindEscape(markAsRead, null);
+    useBindEscape(markAsRead);
 
     // Callback to load more messages
     const loadMore = useCallback(() => {
@@ -222,8 +222,7 @@ function EventBorder({ text, color }) {
 
 function UnreadBorder() {
     const [visible, setVisible] = useState(true);
-    useBindEscape(setVisible, false);
-
+    useBindEscape(setVisible, false, "unread border");
 
     return visible && <EventBorder text="New Messages" color="var(--error)"/>;
 }

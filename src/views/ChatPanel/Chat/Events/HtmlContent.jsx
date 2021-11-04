@@ -198,7 +198,7 @@ function formatUserMentions(nodeList, event, unmountList) {
             if (match.match && match.type === "user") {
                 const container = document.createElement("span");
                 const component = (
-                    <UserMention userId={match.identifier} roomId={event.getRoomId()} />
+                    <UserMention userId={match.identifier}  roomId={event.getRoomId()} />
                 );
                 // Turn into dom
                 render(component, container);
@@ -230,7 +230,7 @@ function UserMention({ userId, roomId }) {
    const member = getMember(userId, roomId);
 
     return (
-        <span className="mention data__user-popup">{member ? `@${member.name}` : userId}</span>
+        <span className="mention data__user-popup">{member?.name ? `@${member.name}` : userId}</span>
     )
 }
 

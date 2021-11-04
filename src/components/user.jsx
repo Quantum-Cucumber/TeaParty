@@ -52,7 +52,7 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
     const popupRef = useRef();
     const [showFullImage, setShowFullImage] = useState(false);
 
-    useBindEscape(setUserPopup, null);
+    useBindEscape(setUserPopup, null, !!(user && parent));
 
     // useLayoutEffect to set position before render
     useLayoutEffect(() => {

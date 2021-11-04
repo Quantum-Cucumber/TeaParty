@@ -2,21 +2,28 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { mediaToBlob } from "./utils";
 
 
-export function useBindEscape(setState, value) {
+export function useBindEscape(setState, value, bind=true) {
     /* Listen for escape key to hide unread indicator */
-    useEffect(() => {
-        function keyPress(e) {
-            if (e.key === "Escape") {
-                setState(value);
-            }
-        }
-    
-        document.addEventListener("keydown", keyPress);
 
+    const keyPress = useCallback((e) => {
+        if (e.key === "Escape") {
+            setState(value);
+        }
+    }, [setState, value])
+
+    useEffect(() => {
+        if (bind) {
+            document.addEventListener("keydown", keyPress);
+        } else {
+            document.removeEventListener("keydown", keyPress);
+        }
+    }, [keyPress, bind]);
+
+    useEffect(() => {
         return () => {
             document.removeEventListener("keydown", keyPress);
-        };
-    }, [setState, value]);
+        }
+    }, [keyPress])
 }
 
 export function useDebouncedState(initial, delay) {

@@ -237,6 +237,8 @@ export function Modal(props) {
 export function ImagePopup({ sourceUrl, render, setRender, name }) {
     const [blobUrl, download] = useDownloadUrl(sourceUrl);
 
+    useBindEscape(setRender, false, render);
+
     return (
         <Overlay click={() => {setRender(false)}} render={render} fade={0.15}
                 mountAnimation="image__zoom-in 0.15s ease-out" unmountAnimation="image__zoom-out 0.15s ease-in">

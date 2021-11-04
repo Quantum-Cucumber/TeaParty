@@ -118,7 +118,9 @@ export default function SettingsPage({ setPage }) {
                     <div className="options-divider"></div>
                     <About />
                 </div>
+
                 <div className="settings__divider"></div>
+                
                 <div className="settings__panel">
                     {settingsPage}
                 </div>
