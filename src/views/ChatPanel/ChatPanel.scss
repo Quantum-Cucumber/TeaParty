@@ -135,6 +135,7 @@ $halfDotSize: 0.3rem;
     }
 
     .event {
+        margin: unset 2px;
         background-color: var(--bg);
         &:hover {
             background-color: var(--bg-focus);
