@@ -1,11 +1,13 @@
-function _isJoined(room) {
+import { Room } from "matrix-js-sdk";
+
+function _isJoined(room: Room) {
     return room?.getMyMembership() === "join";
 }
-export function getJoinedRooms() {
+export function getJoinedRooms(): Room[] {
     return global.matrix.getRooms().filter(_isJoined);
 }
 
-function _roomIdsToRoom(roomIds) {
+function _roomIdsToRoom(roomIds: (string | undefined)[]): Room[] {
     return roomIds.map((roomId) => {
         return global.matrix.getRoom(roomId);
     }).filter((room) => {
@@ -13,7 +15,7 @@ function _roomIdsToRoom(roomIds) {
     })
 }
 
-export function getSpaceChildren(space) {
+export function getSpaceChildren(space: Room) {
     /* Get children of a given space object */
     const childEvents = space.currentState.getStateEvents('m.space.child');
     return _roomIdsToRoom(
@@ -46,7 +48,7 @@ export function getRootSpaces() {
 
     return [...rootSpaces.values()]
 }    
-function getChildSpaces(space) {
+function getChildSpaces(space: Room) {
     /* Get children of a space, that are spaces themselves */
 
     const childRooms = getSpaceChildren(space);
@@ -60,8 +62,8 @@ export function getDirects() {
        Assumes structure of - {userId: [roomId]}
     */
 
-    const directInfo = global.matrix.getAccountData("m.direct").getContent();
-    const directs = new Set();
+    const directInfo: {string: string[]} = global.matrix.getAccountData("m.direct").getContent();
+    const directs: Set<string> = new Set();
 
     Object.values(directInfo).forEach((roomIds) => {
         roomIds.forEach((directRoomId) => {
@@ -93,13 +95,13 @@ export function getOrpanedRooms() {
     return [...rooms];
 }
 
-export function flatSubrooms(space, includeSpaces = false) {
+export function flatSubrooms(space: Room, includeSpaces = false): Room[] {
     /* Traverse the room heirarchy and place all the rooms into one deduplicated list */
 
-    const traversedSpaces = new Set();  // To avoid circular spaces
-    const rooms = new Set();
+    const traversedSpaces: Set<Room> = new Set();  // To avoid circular spaces
+    const rooms: Set<Room> = new Set();
 
-    function traverse(space) {
+    function traverse(space: Room) {
         getSpaceChildren(space).forEach((room) => {
             // For space rooms, mark as traversed and run this function on it again
             if (room.isSpaceRoom()) {

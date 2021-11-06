@@ -1,11 +1,11 @@
 const matrixtoRegex = /^(?:https:\/\/)?(?:www\.)?matrix\.to\/#\/(([!@#+]).+)/i;
 
-export function parseMatrixto(url) {
+export function parseMatrixto(url: string) {
     const match = matrixtoRegex.exec(decodeURIComponent(url));
     
-    let type;
-    let sigil;
-    let identifier;
+    let type: "user" | "room" | "group" | "event" | null = null;
+    let sigil: string | null = null;
+    let identifier: string | null = null;
 
     if (match !== null) {
         identifier = match[1];
@@ -39,5 +39,4 @@ export const linkifyOptions = {
     target: "_blank",
     rel: "noopener noreferrer",
     defaultProtocol: "https",
-
 }

@@ -21,7 +21,7 @@ const default_settings = {
     showRoomEdits: false,
 }
 
-export function isEventVisibility(settingName) {
+export function isEventVisibility(settingName: string) {
     switch (settingName) {
         case "showRedactedEvents":
         case "showJoinEvents":
@@ -34,6 +34,7 @@ export function isEventVisibility(settingName) {
 }
 
 class SettingsManager extends EventEmitter {
+    [x: string]: {};
     constructor() {
         super();
         this.settings = {};
@@ -45,11 +46,11 @@ class SettingsManager extends EventEmitter {
         this.settings = settings ? JSON.parse(settings) : {};
     }
 
-    get(key) {
+    get(key: string) {
         return this.settings.hasOwnProperty(key) ? this.settings[key] : default_settings[key];
     }
     
-    update(key, value) {
+    update(key: string, value: any) {
         // If value is undefined, just broadcast the value rather than setting it too
         if (value !== undefined) {
             this.settings[key] = value;
@@ -62,7 +63,7 @@ class SettingsManager extends EventEmitter {
 const Settings = new SettingsManager();
 // Perform actions when certain settings update
 Settings.on("settingUpdate", (setting, value) => {
-    const root = document.querySelector(":root");
+    const root: HTMLElement = document.querySelector(":root")!;
 
     switch (setting) {
         case "theme":
@@ -72,7 +73,7 @@ Settings.on("settingUpdate", (setting, value) => {
             }
 
             // Just hope we don't need to apply any other classes to the root ig
-            document.getElementById("root").className = value;
+            root.className = value;
 
             break;
         case "circularAvatars":

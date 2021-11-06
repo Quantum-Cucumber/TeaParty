@@ -1,17 +1,18 @@
+import type { MatrixEvent, Room } from "matrix-js-sdk";
 
-export function isMessageEvent(event) {
+export function isMessageEvent(event: MatrixEvent) {
     return event.getType() === "m.room.message";
 }
-export function isEditEvent(event) {return event.isRelation("m.replace")}
+export function isEditEvent(event: MatrixEvent) {return event.isRelation("m.replace")}
 
-export function isJoinEvent(event) {
+export function isJoinEvent(event: MatrixEvent) {
     return (
         event.getType() === "m.room.member" &&
         event.getContent()?.membership === "join" &&
         event.getPrevContent()?.membership !== "join"  // If current and previous membership is join, the member object was updated
     )
 }
-export function isLeaveEvent(event) {
+export function isLeaveEvent(event: MatrixEvent) {
     return (
         event.getType() === "m.room.member" && (
             event.getContent()?.membership === "leave" ||
@@ -20,7 +21,7 @@ export function isLeaveEvent(event) {
         event.getPrevContent()?.membership === "join"
     )
 }
-export function isRoomEditEvent(event) {
+export function isRoomEditEvent(event: MatrixEvent) {
     return (
         event.getType() === "m.room.name" ||
         event.getType() === "m.room.avatar" ||
@@ -29,11 +30,11 @@ export function isRoomEditEvent(event) {
     )
 }
 
-export function isPinEvent(event) {
+export function isPinEvent(event: MatrixEvent) {
     return event.getType() === "m.room.pinned_events";
 }
 
-export function isStickerEvent(event) {
+export function isStickerEvent(event: MatrixEvent) {
     return event.getType() === "m.sticker";
 }
 
@@ -44,7 +45,7 @@ const tagPriority = {
     "m.servernotice": 1,
     "m.lowpriority": -1,
 }
-function tagToInt(roomTags) {
+function tagToInt(roomTags: Room["tags"]): [number, number] {
     /* Processes a room's tags and returns an int that can be compared easily */
     for (let tag in tagPriority) {
         if (roomTags.hasOwnProperty(tag)) {
@@ -56,7 +57,7 @@ function tagToInt(roomTags) {
     return [0, 2];
 }
 
-export function sortRooms(roomList) {
+export function sortRooms(roomList: Room[]) {
     /* Sort alphabetically then by order tags */
     return roomList.sort((roomA, roomB) => {
         return new Intl.Collator("en").compare(roomA.name, roomB.name)

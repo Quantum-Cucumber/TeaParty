@@ -1,8 +1,8 @@
 // Stolen from matrix-org/matrix-react-sdk
-function hashCode(str) {
+function hashCode(str: string) {
     let hash = 0;
-    let i;
-    let chr;
+    let i: number;
+    let chr: number;
     if (str.length === 0) {
         return hash;
     }
@@ -15,12 +15,12 @@ function hashCode(str) {
 }
 
 const colours = ["blue", "magenta", "aqua", "pink", "orange", "light-blue", "purple", "green"]
-export function getUserColour(user_id) {
-    return `var(--${colours[hashCode(user_id) % 8]})`
+export function getUserColour(userId: string) {
+    return `var(--${colours[hashCode(userId) % 8]})`
 }
 
 
-export function acronym(text, len = 3) {
+export function acronym(text: string, len = 3) {
     if(!text) {return ""};
     const chars = text.match(/\b([a-z0-9])/gi);
     if (!chars) {return text[0]};
@@ -28,9 +28,9 @@ export function acronym(text, len = 3) {
 }
 
 
-export function classList(...classes) {
+export function classList(...classes: (string | {string: boolean} | null | undefined)[]) {
     /* Takes a dict of classNames: bool and outputs a string of the classes that are true */
-    var output = [];
+    var output: string[] = [];
     classes.forEach((item) => {
         if (typeof item === "object" && item !== null) {
             Object.keys(item).forEach((className) => {
@@ -39,7 +39,7 @@ export function classList(...classes) {
                 }
             });
         }
-        else if (item !== null & item !== undefined) {
+        else if (item !== null && item !== undefined) {
             output.push(item)
         }
     });
@@ -48,11 +48,10 @@ export function classList(...classes) {
     return output.join(" ") || null;
 }
 
-
-export function debounce(func, timeout) {
+export function debounce(func: Function, timeout: number) {
     /* Returns a function that will only run once per the timeout period */
-    let timer;
-    return (...args) => {
+    let timer: NodeJS.Timer;
+    return function(this: any, ...args: any) {
         clearTimeout(timer);
         timer = setTimeout(() => {
             Promise.resolve(func.apply(this, args));
@@ -60,7 +59,7 @@ export function debounce(func, timeout) {
     };
 }
 
-export function friendlyList(list, max=null, plural, singular) {
+export function friendlyList(list: string[], max=null, plural: string, singular: string) {
     if (!singular) {singular = plural}
     if (list.length === 0) {return ""}
 
@@ -75,7 +74,7 @@ export function friendlyList(list, max=null, plural, singular) {
     return list.join(", ") + ` and ${last}` + (plural ? ` ${plural}` : "");
 }
 
-export function bytesToFriendly(bytes) {
+export function bytesToFriendly(bytes: number) {
     if (isNaN(bytes)) {return "? B"}
     if (bytes < 1000) {return `${bytes} B`}
     const units = ["kB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];  // Yottabyte support is crucial
@@ -85,7 +84,7 @@ export function bytesToFriendly(bytes) {
     return  `${value} ${units[power - 1]}`;
 }
 
-export async function mediaToBlob(url) {
+export async function mediaToBlob(url: string) {
     try {
         const response = await fetch(url);
         const blob = await response.blob();

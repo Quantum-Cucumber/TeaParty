@@ -6,7 +6,7 @@ const msgLoadCount = 30;
 
 
 export function shouldDisplayEvent(event) {
-    return (
+    return event && (
         (   // If m.room.message should be displayed
             isMessageEvent(event) && 
             !isEditEvent(event) &&  // Edits will update the original event object
