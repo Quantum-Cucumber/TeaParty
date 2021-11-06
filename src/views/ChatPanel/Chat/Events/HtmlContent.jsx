@@ -1,6 +1,7 @@
 import { useState, useEffect, useReducer } from 'react';
 import { render, unmountComponentAtNode } from 'react-dom';
 import sanitizeHtml from 'sanitize-html';
+import hljs from 'highlight.js';
 
 import { genThumbnailUrl } from './MessageContent';
 import { Tooltip } from '../../../../components/popups';
@@ -33,7 +34,7 @@ const allowedAttributes = {
 };
 
 const allowedClasses = {
-    "code": ["languge-*"],
+    "code": ["language-*", "nohighlight"],
 }
 
 const allowedSchemes = ["https", "http", "ftp", "mailto", "magnet"];
@@ -53,13 +54,13 @@ function customTagToStyle(attribs, customTag, style, validation = ()=>{return tr
 }
 
 const transformTags = {
-    "a": (tagName, attribs) => {
+    a: (tagName, attribs) => {
         attribs.target = "_blank";
         attribs.rel = "noopener noreferrer";
 
         return {tagName, attribs};
     },
-    "img": (tagName, attribs) => {
+    img: (tagName, attribs) => {
         // Only allow mxc urls
         if (attribs.src?.startsWith("mxc:")) {
             attribs.src = genThumbnailUrl(attribs.src, attribs.width, attribs.height);
@@ -70,9 +71,17 @@ const transformTags = {
 
         return {tagName, attribs};
     },
+    code: (tagName, attribs) => {
+        // Filter classes to those starting with "language-""
+        if (!attribs.class) {
+            attribs.class = "nohighlight";
+        }
+
+        return {tagName, attribs};
+    },
 
 
-    "span": (tagName, attribs) => {
+    span: (tagName, attribs) => {
         let style = "";
         style += customTagToStyle(attribs, "data-mx-color", "color", (value) => hexColourRegex.test);
         style += customTagToStyle(attribs, "data-mx-bg-color", "background-color", (value) => hexColourRegex.test);
@@ -81,7 +90,7 @@ const transformTags = {
         return {tagName, attribs};
     },
 
-    "font": (tagName, attribs) => {
+    font: (tagName, attribs) => {
         let style = "";
         style += customTagToStyle(attribs, "data-mx-color", "color", (value) => hexColourRegex.test);
         style += customTagToStyle(attribs, "data-mx-bg-color", "background-color", (value) => hexColourRegex.test);
@@ -130,6 +139,7 @@ export default function HtmlContent({ event }) {
 
         applySpoilers(domTree.childNodes, unmountList);
         formatUserMentions(domTree.childNodes, event, unmountList);
+        formatCode(domTree);
 
         return () => {
             unmountList.forEach((nodeContainer) => {
@@ -142,6 +152,7 @@ export default function HtmlContent({ event }) {
         <CleanedHtml eventContent={event.getContent()} spanRef={domTreeRef} />
     );
 }
+
 
 
 function applySpoilers(nodeList, unmountList) {
@@ -234,4 +245,9 @@ function UserMention({ userId, roomId }) {
     return (
         <span className="mention data__user-popup">{member?.name ? `@${member.name}` : userId}</span>
     )
+}
+
+function formatCode(parentNode) {
+    const codeblocks = parentNode.querySelectorAll("code");
+    codeblocks.forEach(hljs.highlightElement);
 }
