@@ -1,11 +1,13 @@
 import "./wrappers.scss";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Twemoji from "twemoji";
+import linkifyElement from "linkify-element";
 
 import { Button } from "./elements";
 
 import { classList } from "../utils/utils";
 import { useDrag, useStableState } from "../utils/hooks"
+import { linkifyOptions } from "../utils/linking";
 
 import { mdiContentCopy } from "@mdi/js";
 
@@ -91,19 +93,28 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
     )
 }
 
-export function Twemojify(props) {
+export function FancyText(props) {
+    /* Appplies twemoji and links */
     const parentRef = useRef();
-    
+
+    const {children, twemoji = true, links = true, ...spanProps} = props;
+
     // After each render, re-parse the twemoji
     useEffect(() => {
         if (!parentRef.current) {return}
-        Twemoji.parse(parentRef.current);
+
+        if (twemoji) {
+            Twemoji.parse(parentRef.current);
+        }
+        if (links) {
+            linkifyElement(parentRef.current, linkifyOptions);
+        }
     })
-    
-    const {children, ...spanProps} = props;
+
     return (
         <span ref={parentRef} {...spanProps}>
             {children}
         </span>
     )
 }
+

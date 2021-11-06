@@ -235,4 +235,3 @@ function UserMention({ userId, roomId }) {
         <span className="mention data__user-popup">{member?.name ? `@${member.name}` : userId}</span>
     )
 }
-

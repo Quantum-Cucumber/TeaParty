@@ -33,3 +33,11 @@ export function parseMatrixto(url) {
 
     return {match: match !== null, type: type, sigil: sigil, identifier: identifier}
 }
+
+
+export const linkifyOptions = {
+    target: "_blank",
+    rel: "noopener noreferrer",
+    defaultProtocol: "https",
+
+}

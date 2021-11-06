@@ -7,7 +7,7 @@ import { Member, UserPopup } from "../../../../components/user";
 
 import { getMember } from "../../../../utils/matrix-client";
 import { classList, friendlyList } from "../../../../utils/utils";
-import { Twemojify } from "../../../../components/wrappers";
+import { FancyText } from "../../../../components/wrappers";
 
 function getEventRelations(event, relationType, eventType) {
     /* A simple wrapper for EventTimelineSet.getRelationsForEvent, taking the event object as an arg */
@@ -48,7 +48,8 @@ function getReacted(relation) {
 
 /* Reaction detection/processing heavily inspired by matrix-org/matrix-react-sdk */
 export default function Reactions({ reactionsRelation }) {
-    const [_ignored, forceUpdate] = useReducer((current) => !current, false);
+    // eslint-disable-next-line no-unused-vars
+    const [ignored, forceUpdate] = useReducer((current) => !current, false);
     
     // Listen for changes to the relations object
     useEffect(() => {
@@ -92,9 +93,9 @@ function Reaction({ emote, me, count, members }) {
         <Tooltip dir="top" text={hover} delay={0.3}>
             <div className={classList("event__reactions__reaction", {"event__reactions__reaction--selected": selected})}
                 /*onClick={toggleSelected}*/>
-                <Twemojify className="event__reactions__reaction__twemoji">
+                <FancyText className="event__reactions__reaction__twemoji" links={false}>
                     {emote}
-                </Twemojify>
+                </FancyText>
                 {" "}{count}
             </div>
         </Tooltip>
