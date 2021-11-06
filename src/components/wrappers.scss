@@ -77,3 +77,22 @@
         cursor: col-resize;
     }
 }
+
+.code {
+    flex: 1 1 auto;
+    position: relative;
+    word-break: break-word;
+
+    .copy-text__button {
+        position: absolute;
+        top: 0.5em;
+        right: 0.5em;
+        background-color: var(--bg-dark);
+        box-shadow: -0.5em 0 0.5em var(--bg-dark);
+    }
+
+    .hljs {
+        background-color: transparent !important;
+        color: var(--text);
+    }
+}

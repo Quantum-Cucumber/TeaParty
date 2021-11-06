@@ -2,6 +2,7 @@ import "./wrappers.scss";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Twemoji from "twemoji";
 import linkifyElement from "linkify-element";
+import hljs from 'highlight.js';
 
 import { Button } from "./elements";
 
@@ -99,7 +100,7 @@ export function FancyText(props) {
 
     const {children, twemoji = true, links = true, ...spanProps} = props;
 
-    // After each render, re-parse the twemoji
+    // After each render, re-parse
     useEffect(() => {
         if (!parentRef.current) {return}
 
@@ -115,6 +116,28 @@ export function FancyText(props) {
         <span ref={parentRef} {...spanProps}>
             {children}
         </span>
+    )
+}
+
+export function Code(props) {
+    const parentRef = useRef();
+
+    // After each render, re-parse the styling
+    useEffect(() => {
+        if (!parentRef.current) {return}
+
+        hljs.highlightElement(parentRef.current);
+    })
+
+    const {children, className, ...otherProps} = props;
+    return (
+        <code className="code codeblock" {...otherProps}>
+            <TextCopy text={children}>
+                <span className={className} ref={parentRef}>
+                    {children}
+                </span>
+            </TextCopy>
+        </code>
     )
 }
 

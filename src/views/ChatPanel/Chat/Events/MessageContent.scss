@@ -40,7 +40,8 @@
         font-family: var(--font-monospace);
     }
     code {
-        background-color: var(--bg-focus);
+        background-color: var(--bg-focus) !important;
+        color: var(--text);
     }
     /* Code block */
     code:only-child, pre > code:only-child {

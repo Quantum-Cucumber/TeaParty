@@ -4,7 +4,7 @@ import { useContext, memo, useState, useEffect, useRef } from "react";
 import { Avatar, Member, UserPopup } from "../../../../components/user";
 import { Button, Option } from "../../../../components/elements";
 import { Tooltip, ContextMenu, Modal, popupCtx, modalCtx } from "../../../../components/popups";
-import { TextCopy } from "../../../../components/wrappers";
+import { Code, TextCopy } from "../../../../components/wrappers";
 import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
 import { Message, EmoteMsg, MembershipEvent, RoomEditEvent, PinEvent, StickerEvent } from "./eventTypes";
 
@@ -175,11 +175,9 @@ const messageOptions = {
                     <b>Room ID:</b> {trueEvent.getRoomId()}
                 </TextCopy>
                 <br />
-                <code className="codeblock">
-                    <TextCopy text={eventJSON}>
-                        {eventJSON}
-                    </TextCopy>
-                </code> 
+                <Code className="language-json">
+                    {eventJSON}
+                </Code>
             </>)
         },
     },

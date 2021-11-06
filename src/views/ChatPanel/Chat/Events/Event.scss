@@ -125,19 +125,6 @@ $event-offset: 2.75em;
     }
 }
 
-.overlay__body code {
-    flex: 1 1 auto;
-    position: relative;
-
-    .copy-text__button {
-        position: absolute;
-        top: 0.5em;
-        right: 0.5em;
-        background-color: var(--bg-dark);
-        box-shadow: -0.5em 0 0.5em var(--bg-dark);
-    }
-}
-
 .overlay__modal--read {
     width: 400px;
     .user {
