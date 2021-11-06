@@ -8,7 +8,7 @@ import Settings from "../../utils/settings";
 
 import Chat from "./Chat/Chat";
 import { Button, Loading, RoomIcon } from "../../components/elements";
-import { ContextMenu, contextMenuCtx } from "../../components/popups";
+import { ContextMenu, popupCtx } from "../../components/popups";
 import { TimelineEvent } from "./Chat/Events/Event";
 
 import Icon from "@mdi/react";
@@ -17,7 +17,7 @@ import { Twemojify } from "../../components/wrappers";
 
 
 export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}) {
-    const setPopup = useContext(contextMenuCtx);
+    const setPopup = useContext(popupCtx);
 
     // Restore panel states on render
     const [hideRoomList, setHideRoomList] = hideRoomListState;

@@ -255,12 +255,11 @@ export function ImagePopup({ sourceUrl, render, setRender, name }) {
     );
 }
 
-export const contextMenuCtx = createContext(() => {});
 export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, children }) {
-    const setVisible = useContext(contextMenuCtx);
+    const setVisible = useContext(popupCtx);
     const [menu, setMenu] = useState();
 
-    useBindEscape(setVisible, () => {});
+    useBindEscape(setVisible);
 
     useLayoutEffect(() => {  // Layout effect reduces visual bugs
         if (!menu) {return}
@@ -272,7 +271,7 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, childre
 
         function hide(e) {
             if (!e.target.closest(".context-menu")) {
-                setVisible(false);
+                setVisible();
             }
         }
 
@@ -286,3 +285,10 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, childre
         </div>
     )
 }
+
+
+// TODO: Use a eventemitter for this to be used with mentions etc
+// Modals are windows of information
+export const modalCtx = createContext(() => {});
+// Popups are small snippets of information that can sit over the top of modals
+export const popupCtx = createContext(() => {});

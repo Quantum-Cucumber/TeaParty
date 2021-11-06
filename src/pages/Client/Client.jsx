@@ -3,9 +3,8 @@ import { useEffect, useState } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
 import { useHistory } from "react-router-dom";
 
-import { contextMenuCtx, Overlay } from "../../components/popups";
+import { popupCtx, modalCtx, Overlay } from "../../components/popups";
 import { Loading } from "../../components/elements";
-import { UserPopup, userPopupCtx } from "../../components/user";
 import { Resize } from "../../components/wrappers";
 
 import Navigation from "../../views/Navigation/Navigation";
@@ -19,8 +18,8 @@ function Client({ urlRoom }) {
     const [synced, syncState] = useState(false);  // Whether to show the syncing page
 
     const [page, setPage] = useState();  // Used to set full screen pages
-    const [userPopupInfo, setUserPopup] = useState(null);
-    const [contextMenu, setContextMenu] = useState();
+    const [popup, setPopup] = useState();
+    const [modal, setModal] = useState();
     const hideMemberListState = useState(false);
     const hideRoomListState = useState(false);
 
@@ -72,8 +71,8 @@ function Client({ urlRoom }) {
     }
 
     return (
-        <contextMenuCtx.Provider value={setContextMenu}>
-        <userPopupCtx.Provider value={setUserPopup}>
+        <popupCtx.Provider value={setPopup}>
+        <modalCtx.Provider value={setModal}>
 
         <div className="client">
             <Navigation setPage={setPage} currentRoom={currentRoom} selectRoom={selectRoom} hideRoomListState={hideRoomListState} />
@@ -82,7 +81,7 @@ function Client({ urlRoom }) {
             </div>
             <Resize side="left" initialSize={300} collapseSize={150} collapseState={hideMemberListState}>
                 <div className="column column--right">
-                    <MemberList currentRoom={currentRoom} setUserPopup={setUserPopup} />
+                    <MemberList currentRoom={currentRoom} />
                 </div>
             </Resize>
 
@@ -91,13 +90,12 @@ function Client({ urlRoom }) {
                 <Settings setPage={setPage} />
             </Overlay>
             
-            {contextMenu}
-
-            <UserPopup parent={userPopupInfo?.parent} user={userPopupInfo?.user} setUserPopup={setUserPopup} room={currentRoom} />
+            {modal}
+            {popup}
         </div>
 
-        </userPopupCtx.Provider>
-        </contextMenuCtx.Provider>
+        </modalCtx.Provider>
+        </popupCtx.Provider>
     );
 }
 

@@ -1,6 +1,7 @@
 import "./MemberList.scss";
-import { Member } from "../../components/user";
-import { useState, useEffect, memo, useReducer } from "react";
+import { useState, useEffect, memo, useReducer, useContext } from "react";
+import { Member, UserPopup } from "../../components/user";
+import { popupCtx } from "../../components/popups";
 import { useScrollPaginate } from "../../utils/hooks";
 
 const membersPerPage = 30;
@@ -14,7 +15,8 @@ function filterName(name) {
 }
 
 
-function MemberList({ currentRoom, setUserPopup }) {
+function MemberList({ currentRoom }) {
+    const setPopup = useContext(popupCtx);
     const [memberList, setMembers] = useState([]);
 
     const [updateVal, update] = useReducer(false, current => !current);
@@ -58,7 +60,9 @@ function MemberList({ currentRoom, setUserPopup }) {
     const members = memberList.slice(0, loadedMembers).map((member) => {
         const user = global.matrix.getUser(member.userId);
         function clickFunc(e) {
-            setUserPopup({parent: e.target.closest(".member-list__member"), user: user});
+            setPopup(
+                <UserPopup parent={e.target.closest(".member-list__member")} user={user} room={currentRoom} setPopup={setPopup} />
+            );
         }
 
         return (

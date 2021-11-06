@@ -2,8 +2,8 @@ import "./MessageContent.scss";
 import { useState, useEffect, useContext } from "react";
 
 import { A, Button } from "../../../../components/elements";
-import { ImagePopup, Tooltip } from "../../../../components/popups";
-import { userPopupCtx } from "../../../../components/user";
+import { ImagePopup, Tooltip, popupCtx } from "../../../../components/popups";
+import { UserPopup } from "../../../../components/user";
 import HtmlContent from "./HtmlContent";
 
 import { messageTimestampFull } from "../../../../utils/datetime";
@@ -106,14 +106,16 @@ function UnknownMessageType({ eventContent }) {
 }
 
 function RedactedMessage({ event }) {
-    const setUserPopup = useContext(userPopupCtx);
+    const setPopup = useContext(popupCtx);
 
     const redaction = event.getRedactionEvent();
     const reason = redaction?.content?.reason;
     const redactUser = tryGetUser(redaction?.sender);
 
     function userPopup(e) {
-        setUserPopup({parent: e.target, user: redactUser})
+        setPopup(
+            <UserPopup parent={e.target} user={redactUser} room={event.getRoomId()} setPopup={setPopup} />
+        )
     }
 
     return (

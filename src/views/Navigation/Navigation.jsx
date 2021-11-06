@@ -1,10 +1,10 @@
 import "./Navigation.scss";
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
 import { Icon } from "@mdi/react";
 
 import { Button, Option, DropDown, Loading, RoomIcon } from "../../components/elements";
-import { Tooltip, Modal } from "../../components/popups";
+import { Tooltip, Modal, modalCtx } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
 
@@ -203,24 +203,33 @@ function MyUser() {
 }
 
 function InvitesIcon({ invLen, invites }) {
-    const [showModal, setShowModal] = useState(false);
+    const setModal = useContext(modalCtx);
+    function showInviteModal() {
+        setModal(
+            <Invites invitedRooms={invites}/>
+        )
+    }
 
     return (
         <div className="group__holder">
             <Tooltip text="Invites" dir="right">
-                <div className="group group--default" onClick={() => setShowModal(true)}>
+                <div className="group group--default" onClick={showInviteModal}>
                     <Icon path={mdiEmail} color="var(--text)" size="100%" />
                     <div className="group__notification">{invLen}</div>
                 </div> 
             </Tooltip>
-            {showModal && <Invites setShowModal={setShowModal} invitedRooms={invites}/>}
         </div>
     );    
 }
 
-function Invites({ setShowModal, invitedRooms }) {
-    if (invitedRooms.length === 0) {setShowModal(false)}
-    useBindEscape(setShowModal, false);
+function Invites({ invitedRooms }) {
+    const setModal = useContext(modalCtx);
+    function hide() {
+        setModal();
+    }
+
+    if (invitedRooms.length === 0) {hide()};
+    useBindEscape(hide);
 
     // Make a holder for each invite type and populate with its values
     const holders = Object.keys(invitedRooms).reduce((holders, name) => {
@@ -240,7 +249,7 @@ function Invites({ setShowModal, invitedRooms }) {
     }, []);
 
     return (
-        <Modal title="Invites" hide={() => setShowModal(false)}>
+        <Modal title="Invites" hide={hide}>
             {holders}
         </Modal>
     )

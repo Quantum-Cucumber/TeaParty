@@ -1,9 +1,9 @@
 import "./Event.scss";
 import { useContext, memo, useState, useEffect, useRef } from "react";
 
-import { Avatar, Member, userPopupCtx } from "../../../../components/user";
+import { Avatar, Member, UserPopup } from "../../../../components/user";
 import { Button, Option } from "../../../../components/elements";
-import { Tooltip, contextMenuCtx, ContextMenu, Modal } from "../../../../components/popups";
+import { Tooltip, ContextMenu, Modal, popupCtx, modalCtx } from "../../../../components/popups";
 import { TextCopy } from "../../../../components/wrappers";
 import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
 import { Message, EmoteMsg, MembershipEvent, RoomEditEvent, PinEvent, StickerEvent } from "./eventTypes";
@@ -17,6 +17,7 @@ import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent,
 import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon } from "@mdi/js";
 import Icon from "@mdi/react";
 import { useScrollPaginate } from "../../../../utils/hooks";
+
 
 function eventIsSame(oldProps, newProps) {
     const oldEvent = oldProps.event;
@@ -67,12 +68,14 @@ export const TimelineEvent = memo(({ event, partial=false }) => {
 }, eventIsSame)
 
 export function EventWrapper({ event, partial=false, compact=false, children }) {
-    const setUserPopup = useContext(userPopupCtx);
+    const setPopup = useContext(popupCtx);
     const [hover, setHover] = useState(false);
 
     const author = tryGetUser(event.getSender());
     function userPopup(e) {
-        setUserPopup({parent: e.target, user: author})
+        setPopup(
+            <UserPopup parent={e.target} user={author} room={event.getRoomId()} setPopup={setPopup} />
+        )
     }
 
     // Reactions
@@ -117,7 +120,7 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
 
 
 function EventButtons(props) {
-    const setPopup = useContext(contextMenuCtx);
+    const setPopup = useContext(popupCtx);
 
     return (
         <div className="event__buttons">
@@ -143,9 +146,9 @@ const messageOptions = {
         title: "Reactions",
         label: "Reactions",
         bodyClass: "overlay__modal--reacts",
-        render: ({ reactions, setUserPopup }) => {
+        render: ({ event, reactions }) => {
             return (
-                <ReactionViewer reactions={reactions} setUserPopup={setUserPopup} />
+                <ReactionViewer event={event} reactions={reactions} />
             )
         },
     },
@@ -154,8 +157,8 @@ const messageOptions = {
         label: "Read receipts",
         title: "Read By",
         bodyClass: "overlay__modal--read",
-        render: ({ event, setUserPopup }) => 
-            <ReadReceipts event={event} setUserPopup={setUserPopup} />,
+        render: ({ event }) => 
+            <ReadReceipts event={event} />,
     },
     source: {
         path: mdiXml,
@@ -183,9 +186,8 @@ const messageOptions = {
 }
 
 function MoreOptions({ parent, event, setHover, reactions }) {
-    const [currentModal, selectModal] = useState(null);
-    const hide = () => {selectModal(null)};
-    const setUserPopup = useContext(userPopupCtx);
+    const setModal = useContext(modalCtx);
+    const setPopup = useContext(popupCtx);
 
     // Maintain the :hover effect on the selected message when this menu is rendered
     useEffect(() => {
@@ -193,16 +195,21 @@ function MoreOptions({ parent, event, setHover, reactions }) {
         return () => {setHover(false)};
     }, [setHover])
 
-    let modal;
-    if (messageOptions[currentModal]) {
-        const {title, render, modalClass, bodyClass} = messageOptions[currentModal];
+    
+    function hide() {
+        setModal();
+    }
+    function selectModal(key) {
+        const {title, render, modalClass, bodyClass} = messageOptions[key];
         const trueEvent = event.replacingEvent() || event;
 
-        modal = (
+        setModal(
             <Modal title={title} hide={hide} modalClass={modalClass} bodyClass={bodyClass}>
-                {render({ trueEvent, event, setUserPopup, reactions})}
+                {render({ trueEvent, event, reactions})}
             </Modal>
         );
+        // Hide popup as it would render over the top of the modal
+        setPopup();
     }
 
     return (
@@ -221,14 +228,14 @@ function MoreOptions({ parent, event, setHover, reactions }) {
                     )
                 })
             }
-            {modal}
         </ContextMenu>
     )
 }
 
 
 const readReceiptsChunks = 30;
-function ReadReceipts({ event, setUserPopup }) {
+function ReadReceipts({ event }) {
+    const setPopup = useContext(popupCtx);
     const readBy = useRef(getMembersRead(event));
     const [loadingRef, setLoadingRef] = useState();
     const loaded = useScrollPaginate(loadingRef, readReceiptsChunks);
@@ -241,7 +248,9 @@ function ReadReceipts({ event, setUserPopup }) {
                 return (
                     <Member member={member} key={member.userId} subClass="data__user-popup" clickFunc={
                         (e) => {
-                            setUserPopup({user: user, parent: e.target.closest(".user")});
+                            setPopup(
+                                <UserPopup parent={e.target} user={user} room={event.getRoomId()} setPopup={setPopup} />
+                            );
                         }
                     } />
                 )

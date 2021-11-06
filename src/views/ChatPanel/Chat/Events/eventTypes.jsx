@@ -1,8 +1,8 @@
 import "./eventTypes.scss";
 import { useContext } from "react";
 
-import { userPopupCtx } from "../../../../components/user";
-import { Tooltip } from "../../../../components/popups";
+import { UserPopup } from "../../../../components/user";
+import { popupCtx, Tooltip } from "../../../../components/popups";
 import MessageContent, { EditMarker, MessageText } from "./MessageContent";
 import { EventWrapper } from "./Event";
 
@@ -15,13 +15,15 @@ import Icon from "@mdi/react";
 
 
 export function Message({ event, partial, children }) {
-    const setUserPopup = useContext(userPopupCtx);
+    const setPopup = useContext(popupCtx);
 
     const author = tryGetUser(event.getSender());
     if (!author) {return;}
 
     function userPopup(e) {
-        setUserPopup({parent: e.target, user: author})
+        setPopup(
+            <UserPopup parent={e.target} user={author} room={event.getRoomId()} setPopup={setPopup} />
+        )
     }
 
     return (
@@ -43,10 +45,12 @@ export function Message({ event, partial, children }) {
 }
 
 export function IconEvent({ event, partial, userId, icon, text, iconClass }) {
-    const setUserPopup = useContext(userPopupCtx);
+    const setPopup = useContext(popupCtx);
     const user = tryGetUser(userId);
     function userPopup(e) {
-        setUserPopup({parent: e.target, user})
+        setPopup(
+            <UserPopup parent={e.target} user={user} room={event.getRoomId()} setPopup={setPopup} />
+        )
     }
     
     return (

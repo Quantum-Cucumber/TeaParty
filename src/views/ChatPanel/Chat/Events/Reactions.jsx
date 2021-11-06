@@ -1,9 +1,9 @@
 import "./Reactions.scss";
-import { useReducer, useEffect, useState } from "react";
+import { useReducer, useEffect, useState, useContext } from "react";
 
 import { Option } from "../../../../components/elements";
-import { Tooltip } from "../../../../components/popups"
-import { Member } from "../../../../components/user";
+import { popupCtx, Tooltip } from "../../../../components/popups"
+import { Member, UserPopup } from "../../../../components/user";
 
 import { getMember } from "../../../../utils/matrix-client";
 import { classList, friendlyList } from "../../../../utils/utils";
@@ -48,8 +48,7 @@ function getReacted(relation) {
 
 /* Reaction detection/processing heavily inspired by matrix-org/matrix-react-sdk */
 export default function Reactions({ reactionsRelation }) {
-    // eslint-disable-next-line no-unused-vars
-    const [ignored, forceUpdate] = useReducer((current) => !current, false);
+    const [_ignored, forceUpdate] = useReducer((current) => !current, false);
     
     // Listen for changes to the relations object
     useEffect(() => {
@@ -102,7 +101,8 @@ function Reaction({ emote, me, count, members }) {
     )
 }
 
-export function ReactionViewer({ reactions, setUserPopup }) {
+export function ReactionViewer({ event, reactions }) {
+    const setPopup = useContext(popupCtx);
     const reacted = getReacted(reactions);
     const [selected, select] = useState(Object.keys(reacted)[0]);
 
@@ -121,7 +121,9 @@ export function ReactionViewer({ reactions, setUserPopup }) {
                 return (
                     <Member member={member} key={member.userId} subClass="data__user-popup" clickFunc={
                         (e) => {
-                            setUserPopup({user: user, parent: e.target.closest(".user")});
+                            setPopup(
+                                <UserPopup parent={e.target.closest(".user")} user={user} room={event.getRoomId()} setPopup={setPopup} />
+                            );
                         }
                     } />
                 )

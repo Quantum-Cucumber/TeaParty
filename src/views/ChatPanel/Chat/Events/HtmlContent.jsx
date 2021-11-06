@@ -220,10 +220,12 @@ function formatUserMentions(nodeList, event, unmountList) {
 
 function UserMention({ userId, roomId }) {
     /* This doesn't work as UserMention is rendered outside of the context tree for some reason
-    const setUserPopup = useContext(userPopupCtx);
+    const setPopup = useContext(popupCtx);
 
     function userPopup(e) {
-        setUserPopup({parent: e.target, user: user})
+        setPopup(
+            <UserPopup parent={e.target} user={user} room={event.getRoomId()} setPopup={setPopup} />
+        )
     }
     */
 

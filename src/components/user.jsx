@@ -1,6 +1,6 @@
 import "./user.scss";
 import { getUserColour, acronym, classList } from "../utils/utils";
-import { useState, useEffect, useRef, useLayoutEffect, createContext } from "react";
+import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useBindEscape } from '../utils/hooks';
 import { getLocalpart, powerLevelText } from "../utils/matrix-client";
 import { ImagePopup, positionFloating } from "./popups";
@@ -47,12 +47,11 @@ export function Member({ member, subClass = null, clickFunc }) {
 }
 
 
-export const userPopupCtx = createContext(() => {});
-export function UserPopup({ user, parent, room, setUserPopup }) {
+export function UserPopup({ user, room, parent, setPopup }) {
     const popupRef = useRef();
     const [showFullImage, setShowFullImage] = useState(false);
 
-    useBindEscape(setUserPopup, null, !!(user && parent));
+    useBindEscape(setPopup, null, !!(user && parent));
 
     // useLayoutEffect to set position before render
     useLayoutEffect(() => {
@@ -78,7 +77,7 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
         function clicked(e) {
             // If anything other than the popup is clicked, or another component that opens the popup was clicked
             if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || parent.contains(e.target)) {
-                setUserPopup(null);
+                setPopup(null);
             }
         }
 
@@ -90,10 +89,10 @@ export function UserPopup({ user, parent, room, setUserPopup }) {
         return () => {
             document.removeEventListener("click", clicked)
         }
-    }, [user, parent, setUserPopup]);
+    }, [user, parent, setPopup]);
     
 
-    if (!user || !parent || !room) {return null};
+    if (!user || !parent) {return null};
 
     return (
         <div className="user-popup" ref={popupRef}>
