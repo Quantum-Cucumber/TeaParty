@@ -1,5 +1,7 @@
 import type { MatrixEvent } from "matrix-js-sdk";
 
+// Filters
+
 export function isMessageEvent(event: MatrixEvent) {
     return event.getType() === "m.room.message";
 }
@@ -36,4 +38,11 @@ export function isPinEvent(event: MatrixEvent) {
 
 export function isStickerEvent(event: MatrixEvent) {
     return event.getType() === "m.sticker";
+}
+
+// Utils
+export function getReplyId(event: MatrixEvent) {
+    const relations = event.getContent()["m.relates_to"];
+    const reply: {event_id: string} = relations?.["m.in_reply_to"];
+    return reply?.event_id
 }

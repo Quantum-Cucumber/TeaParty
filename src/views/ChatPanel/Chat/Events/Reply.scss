@@ -1,0 +1,32 @@
+.event__reply {
+    font-size: 0.9em;
+    margin-bottom: 4px;
+    display: flex;
+    flex-direction: row;
+
+    &__icon {
+        flex: none;
+        align-self: flex-end;
+    }
+    &__username {
+        flex: none;
+        margin-right: 0.2em;
+    }
+
+    &__content {
+        flex: 1 1 auto;
+        display: inline;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        padding-right: 60px;
+
+        * {
+            padding: 0 !important;
+            margin: 0 !important;
+            display: inline !important;
+            border: none !important;
+        }
+    }
+}

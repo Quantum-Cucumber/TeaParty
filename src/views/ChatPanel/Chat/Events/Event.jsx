@@ -7,17 +7,17 @@ import { Tooltip, ContextMenu, Modal, popupCtx, modalCtx } from "../../../../com
 import { Code, TextCopy } from "../../../../components/wrappers";
 import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
 import { Message, EmoteMsg, MembershipEvent, RoomEditEvent, PinEvent, StickerEvent } from "./eventTypes";
+import Reply from "./Reply";
 
 import { classList } from "../../../../utils/utils";
 import { dateToTime, messageTimestampFull } from "../../../../utils/datetime";
 import Settings from "../../../../utils/settings";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
-import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent, isStickerEvent } from "../../../../utils/event-grouping";
+import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent, isStickerEvent, getReplyId } from "../../../../utils/event";
+import { useScrollPaginate } from "../../../../utils/hooks";
 
 import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon } from "@mdi/js";
 import Icon from "@mdi/react";
-import { useScrollPaginate } from "../../../../utils/hooks";
-
 
 function eventIsSame(oldProps, newProps) {
     const oldEvent = oldProps.event;
@@ -95,6 +95,9 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
         }
     }, [event, reactionsRelation])
 
+    // Rich reply
+    const replyId = getReplyId(event);
+
     if (!author) {return}
     return (
         <div className={classList("event", {"event--hover": hover}, {"event--partial": partial})}>
@@ -106,10 +109,11 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
                         </Tooltip>
                     </div>
                 :
-                    <Avatar user={author} subClass={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} clickFunc={userPopup} />
-                }
+                <Avatar user={author} subClass={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} clickFunc={userPopup} />
+            }
             </div>
             <div className="event__body">
+                { replyId && <Reply roomId={event.getRoomId()} eventId={replyId} /> }
                 {children}
                 {reactionsRelation && <Reactions reactionsRelation={reactionsRelation} />}
             </div>

@@ -21,7 +21,8 @@ const allowedTags = [
     "em", "strike", "code", "hr", "br",
     "div", "table", "thead", "tbody", "tr",
     "th", "td", "caption", "pre", "span",
-    "img", "details", "summary"
+    "img", "details", "summary", 
+    "mx-reply" // "Allowed", but stripped via exclusiveFilter
 ];
 
 const allowedAttributes = {
@@ -107,6 +108,11 @@ const transformTags = {
     },
 }
 
+function filterRichReply(frame) {
+    /* Remove mx-reply tag */
+    return frame.tag === "mx-reply";
+}
+
 function cleanHtml(html) {
     const cleanedHtml = sanitizeHtml(html, {
         allowedTags: allowedTags,
@@ -116,6 +122,7 @@ function cleanHtml(html) {
         allowProtocolRelative: false,
         nestingLimit: 50,  // Inline with element
         transformTags: transformTags,
+        exclusiveFilter: filterRichReply,
     });
 
     return cleanedHtml;

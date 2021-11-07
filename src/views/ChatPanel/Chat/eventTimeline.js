@@ -1,6 +1,6 @@
 import Settings from "../../../utils/settings";
 import { debounce } from "../../../utils/utils";
-import { isMessageEvent, isEditEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent, isStickerEvent } from "../../../utils/event-grouping";
+import { isMessageEvent, isEditEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent, isStickerEvent } from "../../../utils/event";
 
 const msgLoadCount = 30;
 
