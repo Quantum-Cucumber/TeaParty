@@ -4,7 +4,7 @@ import { debounce } from "../../utils/utils";
 import { useStableState } from "../../utils/hooks";
 import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpaces, flatSubrooms, getRootSpaces } from "../../utils/roomFilters";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
-import { sortRooms } from "../../utils/event-grouping";
+import { sortRooms } from "../../utils/roomFilters";
 
 
 export function getChildRoomsFromGroup(groupKey) {
