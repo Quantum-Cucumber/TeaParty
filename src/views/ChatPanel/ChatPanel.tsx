@@ -85,15 +85,52 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
         <div className="chat-frame">
             <Chat currentRoom={currentRoom} />
         </div>
+        <ChatState />
         <TypingIndicator currentRoom={currentRoom} />
     </>);
 }
+
+function ChatState() {
+    const [status, setStatus] = useState(null) as [{text: string, type: "error"}, Function];
+
+    // Listen for client states that indicate an issue
+    useEffect(() => {
+        function clientState(_oldState: string, newState: string) {
+            switch (newState) {
+                case "ERROR":
+                    setStatus({text: "Error connecting to server...", type: "error"});
+                    break;
+                case "RECONNECTING":
+                    setStatus({text: "Reconnecting to server...", type: "error"});
+                    break;
+                default:
+                    setStatus(null);
+                    break;
+            }
+        }
+
+        global.matrix.on("sync", clientState);
+        return () => {
+            global.matrix.removeListener("sync", clientState)
+        }
+    }, [])
+
+    
+    if (!status) {return null}
+    return (
+        <div className={`chat__state chat__state--${status.type}`}>
+            <Icon path={mdiAlert} color="var(--text)" size="0.9rem" />
+            &nbsp;
+            {status.text}
+        </div>
+    )
+}
+
 
 type typingSetType = Set<string>;
 
 function TypingIndicator({currentRoom}: {currentRoom: string}) {
     const [typing, setTyping] = useState(new Set()) as [typingSetType, Function];
-    const [connError, setConnError] = useState(null) as [string | null, Function];
 
     // Listen for typing events
     useEffect(() => {
@@ -128,44 +165,21 @@ function TypingIndicator({currentRoom}: {currentRoom: string}) {
         };
     }, [currentRoom]);
 
-    useEffect(() => {
-        function clientState(_oldState: string, newState: string) {
-            if (newState === "ERROR" || newState === "RECONNECTING") {
-                setConnError(newState);
-            } else {
-                setConnError(false);
-            }
-        }
-
-        global.matrix.on("sync", clientState);
-        return () => {
-            global.matrix.removeListener("sync", clientState)
-        }
-    }, [])
-
     // Format text
     let text = "";
-    if (connError) {
-        if (connError === "ERROR") {
-            text = "Reconnecting to server..."
-        } else if (connError === "RECONNECTING") {
-            text = "Error connecting to server..."
-        }
-    } else {
-        const typingList = [...typing];
-        if (typingList.length > 3) {
-            text = "Several people are typing...";
-        }
-        else if (typingList.length !== 0) {  // Between 2 and 3 people
-            text = friendlyList(typingList, null, "are", "is") + " typing...";
-        }
+    const typingList = [...typing];
+    if (typingList.length > 3) {
+        text = "Several people are typing...";
+    }
+    else if (typingList.length !== 0) {  // Between 2 and 3 people
+        text = friendlyList(typingList, null, "are", "is") + " typing...";
     }
 
     return (
-        <div className="typing-indicator">
-            { text && !connError &&
+        <div className="chat__typing-indicator">
+            { text &&
             <>
-                <svg className="typing-indicator__dots">
+                <svg className="chat__typing-indicator__dots">
                     <circle />
                     <circle />
                     <circle />
@@ -173,13 +187,6 @@ function TypingIndicator({currentRoom}: {currentRoom: string}) {
                 <div>{text}</div>
             </>
             }
-            { connError && <>
-                <Icon path={mdiAlert} color="var(--error)" size="0.9rem" />
-                &nbsp;
-                <div className="typing-indicator__error">
-                    {text}
-                </div>
-            </>}
         </div>
     );
 }

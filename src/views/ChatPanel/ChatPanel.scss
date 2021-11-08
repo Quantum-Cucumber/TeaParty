@@ -52,10 +52,23 @@
     position: relative;
 }
 
+.chat__state {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    font-size: 0.9rem;
+    border-radius: 0.3rem 0.3rem 0 0;
+    padding: 0.1rem 0.2rem;
+
+    &--error {
+        color: var(--text);
+        background-color: var(--error);
+    }
+}
 
 /* Typing indicator */
 $halfDotSize: 0.3rem;
-.typing-indicator {
+.chat__typing-indicator {
     height: 1.5rem;
     flex: none;
     padding: 0 15px;
@@ -86,12 +99,6 @@ $halfDotSize: 0.3rem;
                 fill: var(--text);
             }
         }
-    }
-
-    &__error {
-        font-size: 0.9rem;
-        color: var(--error);
-        font-weight: bold;
     }
 }
 
@@ -147,7 +154,6 @@ $halfDotSize: 0.3rem;
     }
 
     &__loading {
-        width: 100%;
         display: flex;
         justify-content: center;
         padding: 5px 0;
