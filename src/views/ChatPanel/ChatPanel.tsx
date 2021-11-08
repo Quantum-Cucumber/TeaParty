@@ -1,5 +1,6 @@
 import "./ChatPanel.scss";
 import { useEffect, useState, useRef, useContext } from "react";
+import type { SyntheticEvent } from "react";
 
 import { friendlyList } from "../../utils/utils";
 import { getDirects } from "../../utils/roomFilters";
@@ -15,13 +16,21 @@ import Icon from "@mdi/react";
 import { mdiAccountMultiple, mdiAlert, mdiMenu, mdiPin } from "@mdi/js";
 import { FancyText } from "../../components/wrappers";
 
+import type { MatrixEvent, Room, RoomMember } from "matrix-js-sdk";
 
-export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}) {
-    const setPopup = useContext(popupCtx);
+
+type ChatPanelTypes = {
+    currentRoom: string,
+    hideMemberListState: ReturnType<typeof useState>,
+    hideRoomListState: ReturnType<typeof useState>,
+}
+
+export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}: ChatPanelTypes) {
+    const setPopup: Function = useContext(popupCtx);
 
     // Restore panel states on render
-    const [hideRoomList, setHideRoomList] = hideRoomListState;
-    const [hideMemberList, setHideMemberList] = hideMemberListState;
+    const [hideRoomList, setHideRoomList] = hideRoomListState as [boolean, Function];
+    const [hideMemberList, setHideMemberList] = hideMemberListState as [boolean, Function];
 
     useEffect(() => {
         setHideRoomList(Settings.get("startRoomsCollapsed"));
@@ -61,9 +70,11 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
                 </div>
             </>}
 
-            <Button path={mdiPin} size="25px" tipDir="bottom" tipText="Pinned Events" clickFunc={(e) => {
+            <Button path={mdiPin} size="25px" tipDir="bottom" tipText="Pinned Events" clickFunc={(e: SyntheticEvent) => {
+                e.stopPropagation();  // Needed to stop the popup from immediately closing
+                const target = e.target as HTMLElement;
                 setPopup(
-                    <PinnedMessages parent={e.target.closest(".button")} room={room.current} eventIds={
+                    <PinnedMessages parent={target.closest(".button")} room={room.current} eventIds={
                         room.current?.currentState.getStateEvents("m.room.pinned_events", "")?.getContent().pinned
                     }/>
                 )
@@ -78,15 +89,17 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
     </>);
 }
 
-function TypingIndicator({currentRoom}) {
-    const [typing, setTyping] = useState(new Set());
-    const [connError, setConnError] = useState(null);
+type typingSetType = Set<string>;
+
+function TypingIndicator({currentRoom}: {currentRoom: string}) {
+    const [typing, setTyping] = useState(new Set()) as [typingSetType, Function];
+    const [connError, setConnError] = useState(null) as [string | null, Function];
 
     // Listen for typing events
     useEffect(() => {
         setTyping(new Set());
 
-        function onTyping(event, member) {
+        function onTyping(_event: MatrixEvent, member: RoomMember) {
             const isTyping = member.typing;
             const name = member.rawDisplayName;
 
@@ -95,13 +108,13 @@ function TypingIndicator({currentRoom}) {
     
             // If needs to be added
             if (isTyping) {
-                setTyping((current) => {
+                setTyping((current: typingSetType) => {
                     return new Set(current).add(name);
                 })
             }
             // If needs to be removed
             else if (!isTyping) {
-                setTyping((current) => {
+                setTyping((current: typingSetType) => {
                     const temp = new Set(current);
                     temp.delete(name);
                     return temp;
@@ -116,7 +129,7 @@ function TypingIndicator({currentRoom}) {
     }, [currentRoom]);
 
     useEffect(() => {
-        function clientState(_oldState, newState) {
+        function clientState(_oldState: string, newState: string) {
             if (newState === "ERROR" || newState === "RECONNECTING") {
                 setConnError(newState);
             } else {
@@ -131,7 +144,7 @@ function TypingIndicator({currentRoom}) {
     }, [])
 
     // Format text
-    let text;
+    let text = "";
     if (connError) {
         if (connError === "ERROR") {
             text = "Reconnecting to server..."
@@ -171,24 +184,41 @@ function TypingIndicator({currentRoom}) {
     );
 }
 
-function PinnedMessages({ parent, room, eventIds }) {
-    const [events, setEvents] = useState([]);
+
+type PinnedMessagesTypes = {
+    parent: HTMLElement,
+    room: Room,
+    eventIds: string[],
+}
+
+function PinnedMessages({ parent, room, eventIds }: PinnedMessagesTypes) {
+    const [events, setEvents] = useState([]) as [MatrixEvent[], Function];
 
     // TODO : Will try setEvents if unmounted while going through for loop
     useEffect(() => {
         if (!room || !eventIds) {return};
         setEvents([]);
+        var isMounted = true;
+
+        function appendEvent(event: MatrixEvent) {
+            if (isMounted) {
+                setEvents((current: MatrixEvent[]) => current.concat(event));
+            }
+        }
 
         for (let i=0; i<eventIds.length; i++) {
             const eventId = eventIds[i];
 
-            getEventById(room.roomId, eventId).then((event) => {
-                setEvents((current) => current.concat(event));
-            })
+            getEventById(room.roomId, eventId).then(appendEvent);
+        }
+
+        return () => {
+            isMounted = false;
         }
     }, [eventIds, room])
     
     if (!room) {return null}
+
     return (
         <ContextMenu subClass="pinned-events" parent={parent} x="align-left" y="bottom">
             <div className="pinned-events__title">
@@ -198,6 +228,7 @@ function PinnedMessages({ parent, room, eventIds }) {
                 {
                     events.map((event) => {
                         return event ? (
+                            // @ts-ignore - TimelineEvent is memoized and the props get screwy
                             <TimelineEvent event={event} key={event.getId()} />
                         ) : null
                     })

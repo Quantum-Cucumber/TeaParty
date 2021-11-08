@@ -75,14 +75,13 @@ export function UserPopup({ user, room, parent, setPopup }) {
         setShowFullImage(false);
 
         function clicked(e) {
+            e.stopPropagation();
             // If anything other than the popup is clicked, or another component that opens the popup was clicked
             if ((!e.target.closest(".user-popup") && !e.target.closest(".data__user-popup")) || parent.contains(e.target)) {
                 setPopup(null);
             }
         }
 
-        // Attach click event to dismiss the popup
-        // I know the timeout is dumb but without it <ImagePopup> makes the userpopup hide instantly </3
         setTimeout(() => {
             document.addEventListener("click", clicked)
         }, 1);

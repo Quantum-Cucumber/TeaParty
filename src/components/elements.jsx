@@ -7,7 +7,7 @@ import { mdiChevronDown, mdiLoading } from "@mdi/js";
 import { useReducer } from "react";
 
 
-export function Button({ path, clickFunc, subClass, size=null, tipDir, tipText }) {
+export function Button({ path, clickFunc, subClass=null, size=null, tipDir, tipText }) {
     return (
         <div className={classList("button", subClass)} onClick={clickFunc}>
             {tipText ?

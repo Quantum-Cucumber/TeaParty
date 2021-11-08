@@ -61,6 +61,7 @@ $event-offset: 2.75rem;
 .event__timestamp {
     color: var(--text-greyed);
     font-size: 0.8em;
+    white-space: nowrap;
 }
 /* Event variations */
 .event-container--partial {

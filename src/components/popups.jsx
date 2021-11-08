@@ -257,30 +257,30 @@ export function ImagePopup({ sourceUrl, render, setRender, name }) {
 
 export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, children }) {
     const setVisible = useContext(popupCtx);
-    const [menu, setMenu] = useState();
+    const menuRef = useRef();
 
     useBindEscape(setVisible);
 
     useLayoutEffect(() => {  // Layout effect reduces visual bugs
-        if (!menu) {return}
-        positionFloating(menu, parent, x, y, 10, mouseEvent, true);
-    }, [menu, x, y, parent, mouseEvent])
+        if (!menuRef.current) {return}
+        positionFloating(menuRef.current, parent, x, y, 10, mouseEvent, true);
+    }, [x, y, parent, mouseEvent])
 
     useEffect(() => {
-        if (!menu) {return};
-
         function hide(e) {
             if (!e.target.closest(".context-menu")) {
-                setVisible();
+                setVisible(null);
             }
         }
 
         document.addEventListener("click", hide);
-        return () => {document.removeEventListener("click", hide)};
-    }, [setVisible, menu])
+        return () => {
+            document.removeEventListener("click", hide)
+        };
+    }, [setVisible])
 
     return (
-        <div className={classList("context-menu", subClass)} ref={setMenu}>
+        <div className={classList("context-menu", subClass)} ref={menuRef}>
             {children}
         </div>
     )
