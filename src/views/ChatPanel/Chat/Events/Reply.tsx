@@ -1,12 +1,13 @@
 import "./Reply.scss";
 
-import { getMember } from "../../../../utils/matrix-client";
+import { getEventById, getMember } from "../../../../utils/matrix-client";
 import { getUserColour } from "../../../../utils/utils";
 
 import Icon from "@mdi/react";
 
-import type { MatrixEvent, Room } from "matrix-js-sdk";
+import type { MatrixEvent } from "matrix-js-sdk";
 import { MessageText } from "./MessageContent";
+import { useEffect, useState } from "react";
 
 const mdiArrowDownLeft = "M20 4V6H13.5C11 6 9 8 9 10.5V16.17L12.09 13.09L13.5 14.5L8 20L2.5 14.5L3.91 13.08L7 16.17V10.5C7 6.91 9.91 4 13.5 4H20Z";
 
@@ -17,22 +18,40 @@ type ReplyProps = {
 }
 
 export default function Reply({ roomId, eventId }: ReplyProps) {
-    const room: Room = global.matrix.getRoom(roomId);
-    const event = room!.findEventById(eventId);
+    const [event, setEvent] = useState(null as MatrixEvent);
+    const [status, setStatus] = useState('Loading reply...');
 
-    const member = getMember(event?.getSender(), roomId);
-    const colour = member?.userId ? getUserColour(member.userId) : "var(--text-greyed)";
+    // Load event object
+    useEffect(() => {
+        getEventById(roomId, eventId).then((event) => {
+            if (event) {
+                setEvent(event);
+            }
+            else {
+                setStatus("Couldn't load reply");
+            }
+        }).catch(() => {
+            setStatus("Couldn't load reply");
+        });
+    }, [roomId, eventId]);
+
+
+    const member = event && getMember(event.getSender(), roomId);
+    const colour = member ? getUserColour(member.userId) : "var(--text-greyed)";
 
     return (
         <div className="event__reply">
-            <Icon className="event__reply__icon" path={mdiArrowDownLeft} size="1em" color={colour} />
-
-            { event && <>
+            { event ? 
+            <>
+                <Icon className="event__reply__icon" path={mdiArrowDownLeft} size="1em" color={colour} />
                 <span className="event__reply__username" style={{color: colour}}>
                     {member.name}
                 </span>
                 <ReplyBody event={event} />
-            </>}
+            </>
+            :
+            <span className="event__reply__loading">{status}</span>
+            }
         </div>
     )
 }

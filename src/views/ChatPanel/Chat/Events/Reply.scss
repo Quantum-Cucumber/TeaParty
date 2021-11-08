@@ -3,6 +3,7 @@
     margin-bottom: 4px;
     display: flex;
     flex-direction: row;
+    margin-left: calc(3.75rem);
 
     &__icon {
         flex: none;
@@ -13,20 +14,26 @@
         margin-right: 0.2em;
     }
 
+    &__loading {
+        color: var(--text-greyed);
+    }
+
     &__content {
         flex: 1 1 auto;
         display: inline;
 
+        
+        /* Render reply on one line with minimal formatting */
         overflow: hidden;
         text-overflow: ellipsis;
-        white-space: nowrap;
         padding-right: 60px;
-
+        
         * {
             padding: 0 !important;
             margin: 0 !important;
             display: inline !important;
             border: none !important;
+            white-space: nowrap !important;
         }
     }
 }

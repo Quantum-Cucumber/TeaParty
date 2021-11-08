@@ -1,10 +1,10 @@
 import "./ChatPanel.scss";
 import { useEffect, useState, useRef, useContext } from "react";
-import { MatrixEvent } from "matrix-js-sdk";
 
 import { friendlyList } from "../../utils/utils";
 import { getDirects } from "../../utils/roomFilters";
 import Settings from "../../utils/settings";
+import { getEventById } from "../../utils/matrix-client";
 
 import Chat from "./Chat/Chat";
 import { Button, Loading, RoomIcon } from "../../components/elements";
@@ -174,6 +174,7 @@ function TypingIndicator({currentRoom}) {
 function PinnedMessages({ parent, room, eventIds }) {
     const [events, setEvents] = useState([]);
 
+    // TODO : Will try setEvents if unmounted while going through for loop
     useEffect(() => {
         if (!room || !eventIds) {return};
         setEvents([]);
@@ -181,21 +182,9 @@ function PinnedMessages({ parent, room, eventIds }) {
         for (let i=0; i<eventIds.length; i++) {
             const eventId = eventIds[i];
 
-            // Try and get event from timeline 
-            if (room.findEventById(eventId)) {
-                const event = room.findEventById(eventId);
+            getEventById(room.roomId, eventId).then((event) => {
                 setEvents((current) => current.concat(event));
-            }
-            // Fetch from API
-            else {
-                global.matrix.fetchRoomEvent(room.roomId, eventId).then((event) => {
-                    setEvents((current) => current.concat(new MatrixEvent(event)));
-                })
-                .catch(() => {
-                    console.warn(`Could not find pinned event ${eventId}`);
-                    setEvents((current) => current.concat(null));  // To keep length up to date for loading wheel
-                })
-            }
+            })
         }
     }, [eventIds, room])
     

@@ -1,11 +1,14 @@
 import "./Chat.scss";
 import { useEffect, useState, useRef, useCallback, memo } from "react";
+
 import { Loading } from "../../../components/elements";
+import { TimelineEvent } from "./Events/Event";
 import eventTimeline, { shouldDisplayEvent } from "./eventTimeline";
+
 import { useBindEscape, useDebouncedState } from "../../../utils/hooks";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
-import { TimelineEvent } from "./Events/Event";
 import Settings, { isEventVisibility } from "../../../utils/settings";
+import { getReplyId } from "../../../utils/event";
 
 
 function nextShouldBePartial(thisMsg, lastMsg) {
@@ -13,6 +16,8 @@ function nextShouldBePartial(thisMsg, lastMsg) {
     if (!lastMsg) {return false}
     // Different senders
     if (thisMsg.getSender() !== lastMsg.getSender()) {return false}
+    // Is a reply
+    if (getReplyId(thisMsg) !== undefined) {return false}
     // Within 10 min of each other
     if ((thisMsg.getDate() - lastMsg.getDate()) > (10 * 60 * 1000)) {return false}
     // All others passed

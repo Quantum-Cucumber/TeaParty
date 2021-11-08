@@ -109,10 +109,10 @@ export function tryGetUser(userId: string) {
     return user;
 }
 
-export function getMember(userId: string, roomId: string): RoomMember | {} {
+export function getMember(userId: string, roomId: string) {
     const room: Room = global.matrix.getRoom(roomId);
     const member: RoomMember | null = room?.getMember(userId);
-    return member || {};
+    return member;
 }
 // These two mimic matrix-js-sdk's way of extracting this info
 export function getLocalpart(user: User) {
@@ -164,4 +164,15 @@ export function getMembersRead(event: MatrixEvent) {
     return readUpTo.map((read) => {
         return room.getMember(read);
     })
+}
+
+export async function getEventById(roomId: string, eventId: string) {
+    const room: Room = global.matrix.getRoom(roomId);
+    const event = room.findEventById(eventId);
+
+    if (!event) {
+        // Gets an event via an api call if needed
+        await global.matrix.getEventTimeline(room.getUnfilteredTimelineSet(), eventId);
+    }
+    return room.findEventById(eventId);
 }

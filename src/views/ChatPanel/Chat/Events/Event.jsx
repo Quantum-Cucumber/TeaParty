@@ -100,22 +100,24 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
 
     if (!author) {return}
     return (
-        <div className={classList("event", {"event--hover": hover}, {"event--partial": partial})}>
-            <div className="event__offset">
-                { partial ?
-                    <div className="event__timestamp-align">
-                        <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
-                                <span className="event__timestamp">{dateToTime(event.getDate())}</span>
-                        </Tooltip>
-                    </div>
-                :
-                <Avatar user={author} subClass={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} clickFunc={userPopup} />
-            }
-            </div>
-            <div className="event__body">
-                { replyId && <Reply roomId={event.getRoomId()} eventId={replyId} /> }
-                {children}
-                {reactionsRelation && <Reactions reactionsRelation={reactionsRelation} />}
+        <div className={classList("event-container", {"event-container--hover": hover}, {"event-container--partial": partial})}>
+            { replyId && <Reply roomId={event.getRoomId()} eventId={replyId} /> }
+            <div className="event">
+                <div className="event__offset">
+                    { partial ?
+                        <div className="event__timestamp-align">
+                            <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>
+                                    <span className="event__timestamp">{dateToTime(event.getDate())}</span>
+                            </Tooltip>
+                        </div>
+                    :
+                    <Avatar user={author} subClass={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} clickFunc={userPopup} />
+                }
+                </div>
+                <div className="event__body">
+                    {children}
+                    {reactionsRelation && <Reactions reactionsRelation={reactionsRelation} />}
+                </div>
             </div>
             <EventButtons event={event} setHover={setHover} reactions={reactionsRelation} />
         </div>
