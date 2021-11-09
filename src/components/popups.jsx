@@ -255,7 +255,7 @@ export function ImagePopup({ sourceUrl, render, setRender, name }) {
     );
 }
 
-export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, children }) {
+export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, padding = 10, children }) {
     const setVisible = useContext(popupCtx);
     const menuRef = useRef();
 
@@ -263,8 +263,8 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, childre
 
     useLayoutEffect(() => {  // Layout effect reduces visual bugs
         if (!menuRef.current) {return}
-        positionFloating(menuRef.current, parent, x, y, 10, mouseEvent, true);
-    }, [x, y, parent, mouseEvent])
+        positionFloating(menuRef.current, parent, x, y, padding, mouseEvent, true);
+    }, [x, y, parent, padding, mouseEvent])
 
     useEffect(() => {
         function hide(e) {

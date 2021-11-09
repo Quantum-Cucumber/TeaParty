@@ -1,10 +1,13 @@
 import "./elements.scss";
-import { Tooltip } from "./popups";
+import { useState, useReducer, useRef } from "react";
+
+import { ContextMenu, Tooltip } from "./popups";
 import { Avatar } from "./user";
+
 import { acronym, classList } from '../utils/utils';
+
 import Icon from '@mdi/react';
-import { mdiChevronDown, mdiLoading } from "@mdi/js";
-import { useReducer } from "react";
+import { mdiChevronDown, mdiChevronRight, mdiLoading } from "@mdi/js";
 
 
 export function Button({ path, clickFunc, subClass=null, size=null, tipDir, tipText }) {
@@ -62,6 +65,25 @@ export function Option({ text, k, selected, select = ()=>{}, danger=false, compa
             {indicator}
         </div>
     );
+}
+
+export function HoverOption({ icon, text, children }) {
+    const [show, setShow] = useState(false);
+    const anchor = useRef();
+
+    return (
+        <div className="option option--compact" onMouseOver={() => {setShow(true)}} onMouseLeave={() => {setShow(false)}} ref={anchor}>
+            {icon}
+            <div className="option__text">{text}</div>
+            <Icon path={mdiChevronRight} size="1em" color="var(--text)" />
+
+            { show && 
+                <ContextMenu parent={anchor.current} x="right" y="align-top" padding={0}>
+                    {children}
+                </ContextMenu>
+            }
+        </div>
+    )
 }
 
 export function DropDown({ icon, text, children, unread=false, notifications=0 }) {

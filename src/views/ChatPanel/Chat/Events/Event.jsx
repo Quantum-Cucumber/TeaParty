@@ -2,7 +2,7 @@ import "./Event.scss";
 import { useContext, memo, useState, useEffect, useRef } from "react";
 
 import { Avatar, Member, UserPopup } from "../../../../components/user";
-import { Button, Option } from "../../../../components/elements";
+import { Button, HoverOption, Option } from "../../../../components/elements";
 import { Tooltip, ContextMenu, Modal, popupCtx, modalCtx } from "../../../../components/popups";
 import { Code, TextCopy } from "../../../../components/wrappers";
 import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
@@ -163,8 +163,9 @@ const messageOptions = {
         label: "Read receipts",
         title: "Read By",
         bodyClass: "overlay__modal--read",
-        render: ({ event }) => 
-            <ReadReceipts event={event} />,
+        render: ({ event }) => (
+            <ReadReceipts event={event} />
+        ),
     },
     source: {
         path: mdiXml,
@@ -223,13 +224,24 @@ function MoreOptions({ parent, event, setHover, reactions }) {
                     const condition = messageOptions[key].condition;
                     return condition ? condition({event, reactions}) : true;
                 }).map((key) => {
-                    const {path, label} = messageOptions[key];
+                    const {path, label, type = "modalOption", ...props} = messageOptions[key];
 
-                    return (
-                        <Option text={label} select={() => {selectModal(key)}} key={key} compact>
-                            <Icon path={path} size="1em" color="var(--text)" />
-                        </Option>
-                    )
+                    switch (type) {
+                        case "menu":
+                            console.log(props.children)
+                            return (
+                                <HoverOption icon={path} text={label}>
+                                    {props.children}
+                                </HoverOption>
+                            )
+                        case "modalOption":
+                        default:
+                            return (
+                                <Option text={label} select={() => {selectModal(key)}} key={key} compact>
+                                    <Icon path={path} size="1em" color="var(--text)" />
+                                </Option>
+                            );
+                    }
                 })
             }
         </ContextMenu>
