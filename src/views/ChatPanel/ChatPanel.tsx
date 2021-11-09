@@ -60,19 +60,17 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
             <Button path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
 
             {room.current && <>
-                <div className="chat-header__icon">
-                    <div className="room__icon__crop">
-                        <RoomIcon room={room.current} directRoom={getDirects().includes(room.current)} />
-                    </div>
-                    { isRoomEncrypted &&
-                        <Tooltip text="This room is encrypted" dir="right" delay={0.15}>
-                            <Icon path={mdiShieldLock} color="var(--error)" className="room__icon__shield" size="0.75em" />
-                        </Tooltip>
-                    }
+                <div className="chat-header__icon room__icon__crop">
+                    <RoomIcon room={room.current} directRoom={getDirects().includes(room.current)} />
                 </div>
                 <div className="chat-header__name">
                     {room.current.name}
                 </div>
+                { isRoomEncrypted &&
+                    <Tooltip text="This room is encrypted" dir="bottom" delay={0.15}>
+                        <Icon path={mdiShieldLock} color="var(--text-greyed)" className="chat-header__shield" size="1.2rem" />
+                    </Tooltip>
+                }
                 <div className="chat-header__topic" title={room.current.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic}>
                     <FancyText>
                         {room.current.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic}

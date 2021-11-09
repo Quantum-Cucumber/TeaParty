@@ -1,7 +1,6 @@
 @use "../../../../utils/common";
 
 
-
 .message__content {
     width: 100%;
     overflow-wrap: break-word;
@@ -93,15 +92,18 @@
 }
 
 .spoiler {
-    background-color: var(--bg-dark);
-    color: var(--bg-dark);
     cursor: pointer;
-    user-select: none;
+    display: inline-block;
+    background-color: var(--bg-focus);
 
-    &--visible {
-        background-color: var(--bg-focus);
-        color: var(--text);
-        user-select: unset;
+    &--hidden {
+        background-color: var(--bg-dark);
+        color: var(--bg-dark);
+        border-radius: 3px;
+
+        & > * {
+            visibility: hidden;
+        }
     }
 }
 

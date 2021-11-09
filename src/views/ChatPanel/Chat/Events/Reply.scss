@@ -21,6 +21,7 @@
     &__content {
         flex: 1 1 auto;
         display: inline;
+        pointer-events: none;
 
         
         /* Render reply on one line with minimal formatting */

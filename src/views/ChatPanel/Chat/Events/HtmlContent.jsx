@@ -6,9 +6,9 @@ import hljs from 'highlight.js';
 import { genThumbnailUrl } from './MessageContent';
 import { Tooltip } from '../../../../components/popups';
 
-import { classList } from '../../../../utils/utils';
 import { parseMatrixto } from '../../../../utils/linking';
 import { getMember } from '../../../../utils/matrix-client';
+import { classList } from '../../../../utils/utils';
 
 const hexColourRegex = /^#[0-9a-f]{6}$/i;
 
@@ -196,13 +196,13 @@ function Spoiler({reason, content}) {
 
     return reason ?
         (
-            <Tooltip text={reason} dir="top" x="mouse">
-                <span className={classList("spoiler", {"spoiler--visible": visible})} onClick={toggleVisible} dangerouslySetInnerHTML={{__html: content}}></span>
+            <Tooltip text={reason} dir="top" delay={0.1}>
+                <span className={classList("spoiler", {"spoiler--hidden": !visible})} onClick={toggleVisible} dangerouslySetInnerHTML={{__html: content}}></span>
             </Tooltip>
         )
         :
         (
-            <span className={classList("spoiler", {"spoiler--visible": visible})} onClick={toggleVisible} dangerouslySetInnerHTML={{__html: content}}></span>
+            <span className={classList("spoiler", {"spoiler--hidden": !visible})} onClick={toggleVisible} dangerouslySetInnerHTML={{__html: content}}></span>
         )
 }
 

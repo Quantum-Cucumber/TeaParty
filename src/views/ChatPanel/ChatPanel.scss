@@ -25,23 +25,10 @@
         }
         .room__icon {
             background-color: var(--bg-focus);
-
-            &__shield {
-                position: absolute;
-                bottom: -0.2em;
-                right: -0.2em;
-                cursor: pointer;
-
-                background-color: var(--bg);
-                padding: 0.1em;
-                border-radius: 50%;
-                overflow: hidden;
-            }
         }
     }
     &__name {
         font-size: 1.1rem;
-        margin-right: 12px;
 
         flex: none;
         overflow: hidden;
@@ -49,12 +36,17 @@
         text-overflow: ellipsis;
         min-width: 0;
     }
+    &__shield {
+        margin-left: 6px;
+        cursor: pointer;
+    }
     &__topic {
         flex: 1 1 auto;
         overflow: hidden;
         /*white-space: nowrap;*/
         text-overflow: ellipsis;
         min-width: 0;
+        margin-left: 12px;
 
         color: var(--text-greyed);
         font-size: 0.85rem;
