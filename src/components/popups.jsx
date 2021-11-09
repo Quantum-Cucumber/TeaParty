@@ -92,7 +92,7 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
     return positionMe;
 }
 
-export function Tooltip({ text, x, y, dir, children, delay = 0 }) {
+export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }) {
     const [visible, setVisible] = useState(false);
     const tooltipRef = useRef();
     const childRef = useRef();

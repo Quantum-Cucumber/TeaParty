@@ -14,12 +14,29 @@
 
     &__icon {
         width: unset;
-        height: 65%;
+        height: 70%;
         margin-left: 12px;
         margin-right: 10px;
+        position: relative;
 
+        .room__icon__crop {
+            width: unset !important;
+            height: 100%;
+        }
         .room__icon {
             background-color: var(--bg-focus);
+
+            &__shield {
+                position: absolute;
+                bottom: -0.2em;
+                right: -0.2em;
+                cursor: pointer;
+
+                background-color: var(--bg);
+                padding: 0.1em;
+                border-radius: 50%;
+                overflow: hidden;
+            }
         }
     }
     &__name {

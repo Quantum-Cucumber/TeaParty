@@ -9,11 +9,11 @@ import { getEventById } from "../../utils/matrix-client";
 
 import Chat from "./Chat/Chat";
 import { Button, Loading, RoomIcon } from "../../components/elements";
-import { ContextMenu, popupCtx } from "../../components/popups";
+import { ContextMenu, popupCtx, Tooltip } from "../../components/popups";
 import { TimelineEvent } from "./Chat/Events/Event";
 
 import Icon from "@mdi/react";
-import { mdiAccountMultiple, mdiAlert, mdiMenu, mdiPin } from "@mdi/js";
+import { mdiAccountMultiple, mdiAlert, mdiMenu, mdiPin, mdiShieldLock } from "@mdi/js";
 import { FancyText } from "../../components/wrappers";
 
 import type { MatrixEvent, Room, RoomMember } from "matrix-js-sdk";
@@ -46,9 +46,12 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
 
     // Store the room as an object to be reused rather than needing getRoom for everything
     const room = useRef(currentRoom ? global.matrix.getRoom(currentRoom) : null);
+    // Store whether the room is encrypted
+    const [isRoomEncrypted, setIsRoomEncrypted] = useState(global.matrix.isRoomEncrypted(currentRoom) as boolean);
     useEffect(() => {
         if (currentRoom) {
             room.current = global.matrix.getRoom(currentRoom);
+            setIsRoomEncrypted(global.matrix.isRoomEncrypted(currentRoom));
         }
     }, [currentRoom])
 
@@ -57,8 +60,15 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
             <Button path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
 
             {room.current && <>
-                <div className="chat-header__icon room__icon__crop">
-                    <RoomIcon room={room.current} directRoom={getDirects().includes(room.current)} />
+                <div className="chat-header__icon">
+                    <div className="room__icon__crop">
+                        <RoomIcon room={room.current} directRoom={getDirects().includes(room.current)} />
+                    </div>
+                    { isRoomEncrypted &&
+                        <Tooltip text="This room is encrypted" dir="right" delay={0.15}>
+                            <Icon path={mdiShieldLock} color="var(--error)" className="room__icon__shield" size="0.75em" />
+                        </Tooltip>
+                    }
                 </div>
                 <div className="chat-header__name">
                     {room.current.name}
