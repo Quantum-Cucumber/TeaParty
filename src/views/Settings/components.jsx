@@ -1,4 +1,4 @@
-import { useCallback, useReducer, useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import Settings from "../../utils/settings";
 import { classList } from "../../utils/utils";
 import { useDrag } from "../../utils/hooks";
@@ -16,14 +16,19 @@ export function Section({ name, children }) {
 
 export function Toggle({ label, setting }) {
     /* Directly toggles a boolean setting, interacting with the settings.js util */
-    const [state, toggleState] = useReducer((current) => {return !current}, Settings.get(setting));
+    const [state, setState] = useState(Settings.get(setting));
 
     useEffect(() => {
+        setState(Settings.get(setting));
+    }, [setting])
+    
+    useEffect(() => {
         Settings.update(setting, state);
+        console.log(setting, Settings.get(setting), state)
     }, [setting, state])
 
     return (
-        <div className="settings__toggle" onClick={toggleState}>
+        <div className="settings__toggle" onClick={() => {console.log("click"); setState(current => !current)}}>
             <div className="settings__toggle__label">
                 {label}
             </div>
