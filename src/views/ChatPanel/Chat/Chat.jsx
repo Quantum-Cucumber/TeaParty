@@ -197,7 +197,7 @@ function ChatScroll({ children, timeline, updateEventList }) {
             atBottom.current = true;
             
             // Mark event as read when scrolled to the bottom, if the page is opened
-            if (document.hasFocus()) {
+            if (document.visibilityState === "visible") {
                 timeline.current.isReading = true;
                 markAsRead()
             }
