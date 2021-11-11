@@ -196,7 +196,7 @@ function MyUser() {
             <Tooltip text={tooltipText} dir="top" x="mouse" delay={0.5}>
                 <div className="user__text-box" onClick={click}>
                     <span className="user__text user__username">{user.displayName}</span>
-                    <span className="user__text user__homeserver">{getHomeserver(user)}</span>
+                    <span className="user__text user__homeserver">{getHomeserver(user.userId)}</span>
                 </div>
             </Tooltip>
     </>);

@@ -1,4 +1,6 @@
 import * as matrixsdk from "matrix-js-sdk";
+import globToRegexp from "glob-to-regexp";
+
 import type { MatrixEvent, Room, RoomMember, User } from "matrix-js-sdk";
 import type { IStore } from "matrix-js-sdk/lib/store";
 
@@ -118,9 +120,9 @@ export function getMember(userId: string, roomId: string) {
 export function getLocalpart(user: User) {
     return user.userId.split(":")[0].substring(1);
 }
-export function getHomeserver(user: User) {
+export function getHomeserver(userId: string) {
     /* Split user ID at first : to get homeserver portion */
-    return user.userId.replace(/^.*?:/, '');
+    return userId.replace(/^.*?:/, '');
 }
 
 export function powerLevelText(userId: string, roomId: string) {
@@ -175,4 +177,49 @@ export async function getEventById(roomId: string, eventId: string) {
         await global.matrix.getEventTimeline(room.getUnfilteredTimelineSet(), eventId);
     }
     return room.findEventById(eventId);
+}
+
+export class AclChecker {
+    room: matrixsdk.Room;
+    allowedServers: RegExp[];
+    disallowedServers: RegExp[];
+    constructor(room: Room) {
+        this.room = room;
+        this.allowedServers = [];
+        this.disallowedServers = [];
+
+        this.process();
+    }
+
+    private process() {
+    // Load allowed/denied servers
+        const aclState = this.room.currentState.getStateEvents("m.room.server_acl", "");
+        if (aclState) {
+            const allow: string[] = aclState.getContent().allow || [];
+            allow.forEach((rule) => {
+                this.allowedServers.push(aclGlobToRegex(rule))
+            })
+
+            const deny: string[] = aclState.getContent().deny || [];
+            deny.forEach((rule) => {
+                this.disallowedServers.push(aclGlobToRegex(rule))
+            })
+        }
+        else {
+            this.allowedServers = [/^.*$/];
+        }
+    }
+
+    isAllowed(homeserver: string) {
+        const isInAllowed = this.allowedServers.some((rule) => rule.test(homeserver));
+        const isInDisallowed = this.disallowedServers.some((rule) => rule.test(homeserver));
+        return isInAllowed && !isInDisallowed;
+    }
+}
+
+function aclGlobToRegex(rule: string) {
+    const regex: RegExp = globToRegexp(rule, {extended: false, globstar: false});
+    const regexStr: string = regex.toString().replace(/\\\?/g, ".");
+    // Conver to regex & strip beginning and trailing /
+    return new RegExp(regexStr.substring(1, regexStr.length - 1));
 }

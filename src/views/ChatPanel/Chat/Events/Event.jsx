@@ -15,8 +15,9 @@ import Settings from "../../../../utils/settings";
 import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
 import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent, isStickerEvent, getReplyId } from "../../../../utils/event";
 import { useScrollPaginate } from "../../../../utils/hooks";
+import { MatrixtoPermalink } from "../../../../utils/linking";
 
-import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon } from "@mdi/js";
+import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon, mdiShareVariant } from "@mdi/js";
 import Icon from "@mdi/react";
 
 function eventIsSame(oldProps, newProps) {
@@ -167,6 +168,16 @@ const messageOptions = {
             <ReadReceipts event={event} />
         ),
     },
+    share: {
+        path: mdiShareVariant,
+        label: "Copy Permalink",
+        type: "button",
+        action: ({ event, setPopup }) => {
+            const url = (new MatrixtoPermalink()).event(event.getRoomId(), event.getId());
+            navigator.clipboard.writeText(url);
+            setPopup();
+        },
+    },
     source: {
         path: mdiXml,
         condition: () => {return Settings.get("devMode") === true},
@@ -228,12 +239,17 @@ function MoreOptions({ parent, event, setHover, reactions }) {
 
                     switch (type) {
                         case "menu":
-                            console.log(props.children)
                             return (
                                 <HoverOption icon={path} text={label}>
                                     {props.children}
                                 </HoverOption>
                             )
+                        case "button":
+                            return (
+                                <Option text={label} select={() => {props.action({ event, setPopup })}} key={key} compact>
+                                    <Icon path={path} size="1em" color="var(--text)" />
+                                </Option>
+                            );
                         case "modalOption":
                         default:
                             return (
