@@ -1,8 +1,8 @@
 import "./ChatPanel.scss";
-import { useEffect, useState, useRef, useContext } from "react";
-import type { SyntheticEvent } from "react";
+import { useEffect, useState, useRef, useContext, useCallback, useReducer } from "react";
+import { Link } from "react-router-dom";
 
-import { friendlyList } from "../../utils/utils";
+import { classList, friendlyList } from "../../utils/utils";
 import { getDirects } from "../../utils/roomFilters";
 import Settings from "../../utils/settings";
 import { getEventById } from "../../utils/matrix-client";
@@ -13,9 +13,10 @@ import { ContextMenu, popupCtx, Tooltip } from "../../components/popups";
 import { TimelineEvent } from "./Chat/Events/Event";
 
 import Icon from "@mdi/react";
-import { mdiAccountMultiple, mdiAlert, mdiMenu, mdiPin, mdiShieldLock } from "@mdi/js";
+import { mdiAccountMultiple, mdiAlert, mdiUpdate, mdiMenu, mdiPin, mdiShieldLock } from "@mdi/js";
 import { FancyText } from "../../components/wrappers";
 
+import type { SyntheticEvent } from "react";
 import type { MatrixEvent, Room, RoomMember } from "matrix-js-sdk";
 
 
@@ -93,26 +94,70 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
         <div className="chat-frame">
             <Chat currentRoom={currentRoom} />
         </div>
-        <ChatState />
+        <Status room={room.current} />
         <TypingIndicator currentRoom={currentRoom} />
     </>);
 }
 
-function ChatState() {
-    const [status, setStatus] = useState(null) as [{text: string, type: "error"}, Function];
+
+type statusType = {
+    class: string, 
+    contents: string | JSX.Element, 
+    path: string
+} | null;
+type statusesType = {
+    type?: statusType,
+}
+type reducerActionType = {
+    action: "set" | "clear",
+    type: "conn" | "tombstone" | null,
+    status?: statusType,
+} | null;
+
+const statusTypeOrder = {
+    "conn": 1,
+    "tombstone": 0,
+};
+
+function statusReducer(state: statusesType, action: reducerActionType) {
+    switch (action.action) {
+        case "set":
+            state[action.type] = action.status;
+            return {...state};
+        case "clear":
+            delete state[action.type];
+            return {...state};
+        default:
+            throw new Error();
+    }
+}
+
+function Status({ room }: {room: Room | null}) {
+    const [statuses, setStatus] = useReducer(statusReducer, {});
 
     // Listen for client states that indicate an issue
     useEffect(() => {
         function clientState(_oldState: string, newState: string) {
             switch (newState) {
                 case "ERROR":
-                    setStatus({text: "Error connecting to server...", type: "error"});
+                    setStatus({
+                        action: "set",
+                        type: "conn",
+                        status: { contents: "Error connecting to server...", class: "chat__state--error", path: mdiAlert }
+                    });
                     break;
                 case "RECONNECTING":
-                    setStatus({text: "Reconnecting to server...", type: "error"});
+                    setStatus({
+                        action: "set",
+                        type: "conn",
+                        status: { contents: "Reconnecting to server...", class: "chat__state--error", path: mdiAlert }
+                    });
                     break;
                 default:
-                    setStatus(null);
+                    setStatus({
+                        action: "clear",
+                        type: "conn"
+                    })
                     break;
             }
         }
@@ -123,15 +168,65 @@ function ChatState() {
         }
     }, [])
 
-    
-    if (!status) {return null}
-    return (
-        <div className={`chat__state chat__state--${status.type}`}>
-            <Icon path={mdiAlert} color="var(--text)" size="0.9rem" />
-            &nbsp;
-            {status.text}
-        </div>
-    )
+
+    // Check for if the room is tombstoned
+
+    const setTombstoneStatus = useCallback((tombstone: MatrixEvent) => {
+        if (tombstone?.getContent()) {
+            const {body, replacement_room} = tombstone.getContent();
+
+            setStatus({
+                action: "set",
+                type: "tombstone",
+                status: { 
+                    contents: (<>
+                        <div style={{flex: "1 1 auto"}}>{body || "This room has been replaced"}</div>
+                        <Link to={`/${replacement_room}`} className="chat__state--info__link">Go to new room</Link>
+                    </>),
+                    class: "chat__state--info",
+                    path: mdiUpdate
+                }
+            });
+        }
+    }, [setStatus])
+    useEffect(() => {
+        // Set on first render
+        const tombstone = room?.currentState.getStateEvents("m.room.tombstone", "");
+        setTombstoneStatus(tombstone)
+
+        // Pass new m.room.tombstone events to the handler
+        function checkTombstone(event: MatrixEvent, _room: Room, toStartOfTimeline: boolean) {
+            if (event.getRoomId() === room.roomId && event.getType() === "m.room.tombstone" && !toStartOfTimeline) {
+                setTombstoneStatus(event);
+            }
+        }
+
+        // Bind listener
+        global.matrix.on("Room.timeline", checkTombstone);
+        return () => {
+            global.matrix.removeListener("Room.timeline", checkTombstone);
+
+            // Clear the current tombstone
+            setStatus({
+                action: "clear",
+                type: "tombstone"
+            })
+        }
+    }, [room, setTombstoneStatus])
+
+    return (<>{
+        Object.entries(statuses)
+        .sort((a, b) => {
+            return statusTypeOrder[b[0]] - statusTypeOrder[a[0]]
+        })
+        .map(([type, status]) => (
+            <div className={classList("chat__state", status.class)} key={type}>
+                <Icon path={status.path} color="var(--text)" size="1em" />
+                &nbsp;
+                {status.contents}
+            </div>
+        ))
+    }</>)
 }
 
 

@@ -10,7 +10,8 @@ import { messageTimestamp, messageTimestampFull } from "../../../../utils/dateti
 import { getMember, tryGetUser } from "../../../../utils/matrix-client";
 import { classList, getUserColour } from "../../../../utils/utils";
 
-import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiAccountMinus, mdiPencil, mdiImage, mdiTextBox, mdiPin, mdiShield, mdiAsterisk } from "@mdi/js";
+import { mdiAccountCancel, mdiAccountPlus, mdiAccountRemove, mdiAccountMinus, mdiPencil,
+         mdiImage, mdiTextBox, mdiPin, mdiShield, mdiAsterisk, mdiUpdate } from "@mdi/js";
 import Icon from "@mdi/react";
 
 
@@ -137,6 +138,10 @@ export function RoomEditEvent({ event, partial }) {
         case "m.room.server_acl":
             icon = mdiShield;
             what = "ACL";
+            break;
+        case "m.room.tombstone":
+            icon = mdiUpdate;
+            what = "version: " + content.body;
             break;
         default: 
             break;

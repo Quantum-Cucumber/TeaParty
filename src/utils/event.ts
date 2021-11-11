@@ -28,7 +28,8 @@ export function isRoomEditEvent(event: MatrixEvent) {
         event.getType() === "m.room.name" ||
         event.getType() === "m.room.avatar" ||
         event.getType() === "m.room.topic" ||
-        event.getType() === "m.room.server_acl"
+        event.getType() === "m.room.server_acl" ||
+        event.getType() === "m.room.tombstone"
     )
 }
 

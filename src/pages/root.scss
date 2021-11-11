@@ -84,11 +84,6 @@ a {
     color: var(--primary);
 }
 
-*::selection {
-    background-color: var(--primary-hover);
-    color: var(--text)
-}
-
 .mention {
     background-color: var(--primary-hover);
     color: var(--text);
