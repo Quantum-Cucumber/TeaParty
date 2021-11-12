@@ -1,8 +1,8 @@
 import "./Event.scss";
 import { useContext, memo, useState, useEffect, useRef } from "react";
 
-import { Avatar, Member, UserPopup } from "../../../../components/user";
-import { Button, HoverOption, Option } from "../../../../components/elements";
+import { Avatar, Member, UserOptions, UserPopup } from "../../../../components/user";
+import { Button, Option } from "../../../../components/elements";
 import { Tooltip, ContextMenu, Modal, popupCtx, modalCtx } from "../../../../components/popups";
 import { Code, TextCopy } from "../../../../components/wrappers";
 import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
@@ -101,7 +101,20 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
 
     if (!author) {return}
     return (
-        <div className={classList("event-container", {"event-container--hover": hover}, {"event-container--partial": partial})}>
+        <div className={classList("event-container", {"event-container--hover": hover}, {"event-container--partial": partial})}
+            onContextMenu={(e) => {
+                // Don't show the message popup if a link is right clicked
+                // TODO: Add extra options if the A tag is clicked - copy link/open link
+                if (e.target.tagName === "A") {return};
+
+                e.preventDefault();
+                e.stopPropagation();  // Not totally necessary unless a parent has a listener too
+                setPopup(
+                    <EventOptions parent={e.target} x="align-mouse-left" y="align-mouse-top" 
+                                  mouseEvent={e} event={event} reactions={reactionsRelation} setHover={setHover} />
+                );
+            }}
+        >
             { replyId && <Reply roomId={event.getRoomId()} eventId={replyId} /> }
             <div className="event">
                 <div className="event__offset">
@@ -112,7 +125,15 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
                             </Tooltip>
                         </div>
                     :
-                    <Avatar user={author} subClass={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} clickFunc={userPopup} />
+                    <Avatar user={author} subClass={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} 
+                            onClick={userPopup} onContextMenu={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setPopup(
+                                    <UserOptions parent={e.target} userId={author.userId} x="align-mouse-left" y="align-mouse-top" mouseEvent={e} />
+                                )
+                            }}
+                    />
                 }
                 </div>
                 <div className="event__body">
@@ -136,7 +157,7 @@ function EventButtons(props) {
             <Button subClass="event__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
                 clickFunc={(e) => {
                     setPopup(
-                        <MoreOptions parent={e.target.closest(".event__buttons__entry")} {...props} />
+                        <EventOptions parent={e.target.closest(".event__buttons__entry")} {...props} x="right" y="align-top" />
                     );
                 }}
             />
@@ -144,64 +165,8 @@ function EventButtons(props) {
     )
 }
 
-const messageOptions = {
-    reacts: {
-        path: mdiEmoticon,
-        condition: ({ reactions }) => {
-            return reactions ? true : false
-        },
-        title: "Reactions",
-        label: "Reactions",
-        bodyClass: "overlay__modal--reacts",
-        render: ({ event, reactions }) => {
-            return (
-                <ReactionViewer event={event} reactions={reactions} />
-            )
-        },
-    },
-    read: {
-        path: mdiCheckAll,
-        label: "Read receipts",
-        title: "Read By",
-        bodyClass: "overlay__modal--read",
-        render: ({ event }) => (
-            <ReadReceipts event={event} />
-        ),
-    },
-    share: {
-        path: mdiShareVariant,
-        label: "Copy Permalink",
-        type: "button",
-        action: ({ event, setPopup }) => {
-            const url = (new MatrixtoPermalink()).event(event.getRoomId(), event.getId());
-            navigator.clipboard.writeText(url);
-            setPopup();
-        },
-    },
-    source: {
-        path: mdiXml,
-        condition: () => {return Settings.get("devMode") === true},
-        label: "View source",
-        title: "Event Source",
-        render: ({ trueEvent }) => {
-            const eventJSON = JSON.stringify(trueEvent.toJSON(), null, 4);
-            return (<>
-               <TextCopy text={trueEvent.getId()}>
-                    <b>Event ID:</b> {trueEvent.getId()}
-                </TextCopy>
-                <TextCopy text={trueEvent.getRoomId()}>
-                    <b>Room ID:</b> {trueEvent.getRoomId()}
-                </TextCopy>
-                <br />
-                <Code className="language-json">
-                    {eventJSON}
-                </Code>
-            </>)
-        },
-    },
-}
 
-function MoreOptions({ parent, event, setHover, reactions }) {
+function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
     const setModal = useContext(modalCtx);
     const setPopup = useContext(popupCtx);
 
@@ -211,54 +176,64 @@ function MoreOptions({ parent, event, setHover, reactions }) {
         return () => {setHover(false)};
     }, [setHover])
 
-    
-    function hide() {
-        setModal();
-    }
-    function selectModal(key) {
-        const {title, render, modalClass, bodyClass} = messageOptions[key];
-        const trueEvent = event.replacingEvent() || event;
-
+    function selectModal(title, render, modalClass=null, bodyClass=null) {
         setModal(
-            <Modal title={title} hide={hide} modalClass={modalClass} bodyClass={bodyClass}>
-                {render({ trueEvent, event, reactions})}
+            <Modal title={title} hide={() => setModal()} modalClass={modalClass} bodyClass={bodyClass}>
+                {render}
             </Modal>
         );
         // Hide popup as it would render over the top of the modal
         setPopup();
     }
+    const trueEvent = event.replacingEvent() || event;
 
     return (
-        <ContextMenu parent={parent} x="left" y="align-top">
-            {
-                Object.keys(messageOptions).filter((key) => {
-                    const condition = messageOptions[key].condition;
-                    return condition ? condition({event, reactions}) : true;
-                }).map((key) => {
-                    const {path, label, type = "modalOption", ...props} = messageOptions[key];
+        <ContextMenu {...contextMenuProps}>
+            { reactions && 
+                <Option text="Reactions" compact select={() => {
+                    selectModal("Reactions", 
+                                <ReactionViewer event={event} reactions={reactions} />, 
+                                null, "overlay__modal--reacts"
+                    )
+                }}>
+                    <Icon path={mdiEmoticon} size="1em" color="var(--text)" />
+                </Option>
+            }
 
-                    switch (type) {
-                        case "menu":
-                            return (
-                                <HoverOption icon={path} text={label}>
-                                    {props.children}
-                                </HoverOption>
-                            )
-                        case "button":
-                            return (
-                                <Option text={label} select={() => {props.action({ event, setPopup })}} key={key} compact>
-                                    <Icon path={path} size="1em" color="var(--text)" />
-                                </Option>
-                            );
-                        case "modalOption":
-                        default:
-                            return (
-                                <Option text={label} select={() => {selectModal(key)}} key={key} compact>
-                                    <Icon path={path} size="1em" color="var(--text)" />
-                                </Option>
-                            );
-                    }
-                })
+            <Option text="Read Receipts" compact select={() => {
+                selectModal("Read By", <ReadReceipts event={event} />, null, "overlay__modal--read")
+            }}>
+                <Icon path={mdiCheckAll} size="1em" color="var(--text)" />
+            </Option>
+
+            <Option text="Copy link" compact select={() => {
+                    const url = (new MatrixtoPermalink()).event(event.getRoomId(), event.getId());
+                    navigator.clipboard.writeText(url);
+                    setPopup();
+            }}>
+                <Icon path={mdiShareVariant} size="1em" color="var(--text)" />
+            </Option>
+
+            
+            { Settings.get("devMode") &&
+                <Option text="View source" compact select={() => {
+                    selectModal("Event Source", 
+                        <>
+                            <TextCopy text={trueEvent.getId()}>
+                                <b>Event ID:</b> {trueEvent.getId()}
+                            </TextCopy>
+                            <TextCopy text={trueEvent.getRoomId()}>
+                                <b>Room ID:</b> {trueEvent.getRoomId()}
+                            </TextCopy>
+                            <br />
+                            <Code className="language-json">
+                                {JSON.stringify(trueEvent.toJSON(), null, 4)}
+                            </Code>
+                        </>
+                    )
+                }}>
+                    <Icon path={mdiXml} size="1em" color="var(--text)" />
+                </Option>
             }
         </ContextMenu>
     )

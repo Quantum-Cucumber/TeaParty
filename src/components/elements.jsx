@@ -45,7 +45,7 @@ export function RoomIcon({ room, directRoom = false }) {
 }
 
 
-export function Option({ text, k, selected, select = ()=>{}, danger=false, compact=false, unread=false, notifications=0, children }) {
+export function Option({ text, k = null, selected = null, select = ()=>{}, danger=false, compact=false, unread=false, notifications=0, children }) {
     const className = classList("option",
                                 {"option--selected": k ? selected===k : null}, 
                                 {"option--danger": danger},

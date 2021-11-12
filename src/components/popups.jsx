@@ -8,7 +8,11 @@ import { mdiDownload, mdiClose, mdiOpenInNew } from "@mdi/js";
 
 
 export function positionFloating(positionMe, referenceNode, x, y, offset=0, mouseEvent=null, constrain=false) {
-    const referenceRect = referenceNode.getBoundingClientRect();;
+    // What to position relative to
+    const referenceRect = referenceNode.getBoundingClientRect();
+
+    const mouseX = mouseEvent ? mouseEvent.clientX : null;
+    const mouseY = mouseEvent ? mouseEvent.clientY : null;
 
     // Determine horizontal positioning
     switch (x) {
@@ -24,11 +28,6 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
         case "right":
             positionMe.style.left = `${referenceRect.x + referenceRect.width + offset}px`;
             break;
-        // Center node over the mouseEvent x position
-        case "mouse":
-            const centerX = mouseEvent.clientX;
-            positionMe.style.left = `${centerX - (positionMe.offsetWidth / 2)}px`;
-            break;
         // Align the left edge of both nodes
         case "align-left":
             positionMe.style.left = `${referenceRect.x}px`;
@@ -36,6 +35,18 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
         // Align the right edge of both nodes
         case "align-right":
             positionMe.style.left = `${referenceRect.x - positionMe.offsetWidth + referenceRect.width}px`;
+            break;
+        // Center node over the mouseEvent x position
+        case "mouse":
+            positionMe.style.left = `${mouseX - (positionMe.offsetWidth / 2)}px`;
+            break;
+        // Align left edge with mouse
+        case "align-mouse-left":
+            positionMe.style.left = `${mouseX}px`;
+            break;
+        // Align right edge with mouse
+        case "align-mouse-right":
+            positionMe.style.left = `${mouseX - positionMe.offsetWidth}px`;
             break;
         default:
             break;
@@ -54,11 +65,6 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
         case "bottom":
             positionMe.style.top = `${referenceRect.y + referenceRect.height + offset}px`;
             break;
-        // Center node over the mouseEvent y position
-        case "mouse":
-            const centerY = mouseEvent.clientY;
-            positionMe.style.top = `${centerY - (positionMe.offsetHeight / 2)}px`;
-            break;
         // Align the top edge of both nodes
         case "align-top": 
             positionMe.style.top = `${referenceRect.y}px`;
@@ -66,6 +72,18 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
         // Align the bottom edge of both nodes
         case "align-bottom":
             positionMe.style.top = `${referenceRect.y - positionMe.offsetHeight + referenceRect.height}px`;
+            break;
+        // Center node over the mouseEvent y position
+        case "mouse":
+            positionMe.style.top = `${mouseY - (positionMe.offsetHeight / 2)}px`;
+            break;
+        // Align top edge with mouse position
+        case "align-mouse-top":
+            positionMe.style.top = `${mouseY}px`;
+            break;
+        // Align bottom edge with mouse position
+        case "align-mouse-bottom":
+            positionMe.style.top = `${mouseY - positionMe.offsetHeight}px`;
             break;
         default:
             break;
@@ -84,8 +102,9 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
             const inverseX = {
                 "left": "right", "right": "left",
                 "align-left": "align-right", "align-right": "align-left",
+                "align-mouse-left": "align-mouse-right", "align-mouse-right": "align-mouse-left",
             }
-            positionFloating(positionMe, referenceNode, inverseX[x], null, offset);
+            positionFloating(positionMe, referenceNode, inverseX[x], null, offset, mouseEvent);
         }
     }
 
@@ -110,7 +129,7 @@ export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }) 
             "top": {x: "center", y: "top"},
             "bottom": {x: "center", y: "bottom"},
             "left": {x: "left", y: "center"},
-            "right": {x: "right", "y": "center"}
+            "right": {x: "right", "y": "center"},
         }
 
         positionFloating(tooltip, child, x || presets[dir]?.x, y || presets[dir]?.y, offset, e);

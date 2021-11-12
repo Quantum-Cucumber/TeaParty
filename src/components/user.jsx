@@ -1,13 +1,19 @@
 import "./user.scss";
+import { useState, useEffect, useRef, useLayoutEffect, useContext } from "react";
+
 import { getUserColour, acronym, classList } from "../utils/utils";
-import { useState, useEffect, useRef, useLayoutEffect } from "react";
 import { useBindEscape } from '../utils/hooks';
 import { getLocalpart, powerLevelText } from "../utils/matrix-client";
-import { ImagePopup, positionFloating } from "./popups";
+
+import { ContextMenu, ImagePopup, popupCtx, positionFloating } from "./popups";
 import { TextCopy } from "./wrappers";
+import { Option } from "./elements";
+
+import Icon from "@mdi/react";
+import { mdiContentCopy } from "@mdi/js";
 
 
-export function Avatar({ user, subClass, clickFunc }) {
+export function Avatar({ user, subClass, ...props }) {
     // Get mxc:// url 
     const mxc = user.avatarUrl;
     // Convert mxc url to https if it exists
@@ -26,7 +32,7 @@ export function Avatar({ user, subClass, clickFunc }) {
     }
 
     return (
-        <div className={classList("avatar__crop", subClass)} onClick={clickFunc} >
+        <div className={classList("avatar__crop", subClass)} {...props}>
             {icon}
         </div>
     );
@@ -34,10 +40,18 @@ export function Avatar({ user, subClass, clickFunc }) {
 
 export function Member({ member, subClass = null, clickFunc }) {
     /* A component containing the user avatar, user localpart/displayname */
+    const setPopup = useContext(popupCtx);
     const user = global.matrix.getUser(member.userId);
 
     return (
-        <div className={classList("user", subClass)} onClick={clickFunc}>
+        <div className={classList("user", subClass)} onClick={clickFunc} onContextMenu={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setPopup(
+                    <UserOptions parent={e.target} userId={member.userId} x="align-mouse-left" y="align-mouse-top" mouseEvent={e} />
+                )
+            }}
+        >
             <Avatar subClass="user__avatar" user={user} />
             <div className="user__text-box">
                 <span className="user__text user__username">{member.name}</span>
@@ -95,7 +109,7 @@ export function UserPopup({ user, room, parent, setPopup }) {
 
     return (
         <div className="user-popup" ref={popupRef}>
-            <Avatar user={user} subClass="user-popup__avatar" clickFunc={user.avatarUrl ? () => {setShowFullImage(true)} : null} />
+            <Avatar user={user} subClass="user-popup__avatar" onClick={user.avatarUrl ? () => {setShowFullImage(true)} : null} />
             { user.avatarUrl &&
                 <ImagePopup sourceUrl={global.matrix.mxcUrlToHttp(user.avatarUrl)} render={showFullImage} setRender={setShowFullImage} name="avatar" />
             }
@@ -108,4 +122,21 @@ export function UserPopup({ user, room, parent, setPopup }) {
             <div className="user-popup__text">{powerLevelText(user.userId, room)}</div>
         </div>
     );
+}
+
+
+export function UserOptions({ userId, ...props }) {
+    /* Context menu for when a user is right clicked */
+    const setPopup = useContext(popupCtx);
+
+    return (
+        <ContextMenu {...props}>
+            <Option compact text="Copy user id" select={() => {
+                    navigator.clipboard.writeText(userId);
+                    setPopup();
+            }}>
+                    <Icon path={mdiContentCopy} size="1em" color="var(--text)" />
+            </Option>
+        </ContextMenu>
+    )
 }
