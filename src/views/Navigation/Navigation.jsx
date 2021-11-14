@@ -1,19 +1,21 @@
 import "./Navigation.scss";
 import { useContext, useEffect, useState } from "react";
-import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose } from "@mdi/js";
-import { Icon } from "@mdi/react";
 
 import { Button, Option, DropDown, Loading, RoomIcon } from "../../components/elements";
-import { Tooltip, Modal, modalCtx } from "../../components/popups";
+import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
-
 import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup } from "./RoomStates";
+
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { useBindEscape } from "../../utils/hooks";
 import { classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
 import Settings from "../../utils/settings";
+
+import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy } from "@mdi/js";
+import { Icon } from "@mdi/react";
+import RoomSettings from "./RoomSettings";
 
 
 function Navigation({ setPage, currentRoom, selectRoom, hideRoomListState }) {
@@ -116,6 +118,8 @@ function GroupList(props) {
     return groups;
 }
 function Group({ setGroup = ()=>{}, currentGroup, roomStates, groupName, k, children, builtin = false }) {
+    const setPopup = useContext(popupCtx);
+
     const roomState = roomStates[k];
     const read = roomState ? roomState.read : true;
     const notifications = roomState ? roomState.notifications : 0;
@@ -130,6 +134,13 @@ function Group({ setGroup = ()=>{}, currentGroup, roomStates, groupName, k, chil
                             setGroup({ name: groupName, key: k })
                         }
                     }}
+                    onContextMenu={builtin ? null : (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setPopup(
+                            <RoomOptions roomId={k} parent={e.target} mouseEvent={e} />
+                        )
+                    }}
                 >
                     {children}
                     {notifications > 0 && <div className="group__notification">{notifications}</div>}
@@ -141,6 +152,7 @@ function Group({ setGroup = ()=>{}, currentGroup, roomStates, groupName, k, chil
 }
 
 function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) {
+    const setPopup = useContext(popupCtx);
     const showRoomIcons = Settings.get("showRoomIcons");
 
     const elements = rooms.map((room) => {
@@ -160,7 +172,15 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
             const children = getSpaceChildren(room);
 
             return (
-                <DropDown key={key} icon={icon} text={room.name} notifications={notifications} unread={unreadDot}>
+                <DropDown key={key} icon={icon} text={room.name} notifications={notifications} unread={unreadDot}
+                    onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setPopup(
+                            <RoomOptions roomId={key} parent={e.target} mouseEvent={e} />
+                        )
+                    }}
+                >
                     <RoomList rooms={children} currentGroup={currentGroup} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} /> 
                 </DropDown>
             )
@@ -168,7 +188,16 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
         else {
             return (
                 <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom} 
-                        unread={unreadDot} notifications={notifications}>
+                    unread={unreadDot} notifications={notifications}
+            
+                    onContextMenu={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setPopup(
+                            <RoomOptions roomId={key} parent={e.target} mouseEvent={e} />
+                        )
+                    }}
+                >
                     {icon}
                 </Option>
             )
@@ -177,6 +206,33 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
 
     return elements.length !== 0 ? elements : (<div className="room__placeholder">No joined rooms</div>);
 }
+
+function RoomOptions({ roomId, ...props }) {
+    const setPopup = useContext(popupCtx);
+    const setModal = useContext(modalCtx);
+
+    return (
+        <ContextMenu {...props} x="align-mouse-left" y="align-mouse-top">
+            <Option compact text="Copy Room ID" select={() => {
+                    navigator.clipboard.writeText(roomId);
+                    setPopup();
+                }}
+            >
+                <Icon path={mdiContentCopy} size="1em" color="var(--text)" />
+            </Option>
+            <Option compact text="Settings" select={() => {
+                    setModal(
+                        <RoomSettings roomId={roomId} />
+                    )
+                    setPopup();
+                }}
+            >
+                <Icon path={mdiCog} size="1em" color="var(--text)" />
+            </Option>
+        </ContextMenu>
+    )
+}
+
 
 function MyUser() {
     const defaultText = "Copy user ID";

@@ -131,7 +131,7 @@ export function UserOptions({ userId, ...props }) {
 
     return (
         <ContextMenu {...props}>
-            <Option compact text="Copy user id" select={() => {
+            <Option compact text="Copy user ID" select={() => {
                     navigator.clipboard.writeText(userId);
                     setPopup();
             }}>

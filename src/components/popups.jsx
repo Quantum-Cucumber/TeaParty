@@ -234,6 +234,8 @@ export function Modal(props) {
     /* High order component of overlay that gives the modal styling and adds a title/close button */
     const { title, hide, children, modalClass, bodyClass, ...passThroughProps } = props;
 
+    useBindEscape(hide)
+
     return (
         <Overlay modalClass={classList("overlay__modal--bg", modalClass)} click={hide} {...passThroughProps}>
             <div className="overlay__title">

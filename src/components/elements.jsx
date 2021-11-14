@@ -45,7 +45,7 @@ export function RoomIcon({ room, directRoom = false }) {
 }
 
 
-export function Option({ text, k = null, selected = null, select = ()=>{}, danger=false, compact=false, unread=false, notifications=0, children }) {
+export function Option({ text, k = null, selected = null, select = ()=>{}, danger=false, compact=false, unread=false, notifications=0, children, ...props }) {
     const className = classList("option",
                                 {"option--selected": k ? selected===k : null}, 
                                 {"option--danger": danger},
@@ -59,7 +59,7 @@ export function Option({ text, k = null, selected = null, select = ()=>{}, dange
     }
 
     return (
-        <div className={className} onClick={() => select(k)}>
+        <div className={className} onClick={() => select(k)} {...props}>
             {children}
             <div className="option__text">{text}</div>
             {indicator}
@@ -86,7 +86,7 @@ export function HoverOption({ icon, text, children }) {
     )
 }
 
-export function DropDown({ icon, text, children, unread=false, notifications=0 }) {
+export function DropDown({ icon, text, children, unread=false, notifications=0, ...props }) {
     const [open, toggleOpen] = useReducer((current) => !current, false);
 
     let indicator = null;
@@ -98,7 +98,7 @@ export function DropDown({ icon, text, children, unread=false, notifications=0 }
 
     return (
         <div className="dropdown-wrapper">
-            <div className="dropdown" onClick={toggleOpen}>
+            <div className="dropdown" onClick={toggleOpen} {...props}>
                 <Icon path={mdiChevronDown} color={open ? "var(--text)" : "var(--text-greyed)"} size="1.5rem" className="dropdown__chevron" rotate={open ? 0 : -90} />
                 { icon }
                 <div className="dropdown__text">{text}</div>

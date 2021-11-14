@@ -190,7 +190,7 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
     return (
         <ContextMenu {...contextMenuProps}>
             { reactions && 
-                <Option text="Reactions" compact select={() => {
+                <Option compact text="Reactions" select={() => {
                     selectModal("Reactions", 
                                 <ReactionViewer event={event} reactions={reactions} />, 
                                 null, "overlay__modal--reacts"
@@ -200,13 +200,13 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
                 </Option>
             }
 
-            <Option text="Read Receipts" compact select={() => {
+            <Option compact text="Read Receipts" select={() => {
                 selectModal("Read By", <ReadReceipts event={event} />, null, "overlay__modal--read")
             }}>
                 <Icon path={mdiCheckAll} size="1em" color="var(--text)" />
             </Option>
 
-            <Option text="Copy link" compact select={() => {
+            <Option compact text="Copy link" select={() => {
                     const url = (new MatrixtoPermalink()).event(event.getRoomId(), event.getId());
                     navigator.clipboard.writeText(url);
                     setPopup();
@@ -216,7 +216,7 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
 
             
             { Settings.get("devMode") &&
-                <Option text="View source" compact select={() => {
+                <Option compact text="View source" select={() => {
                     selectModal("Event Source", 
                         <>
                             <TextCopy text={trueEvent.getId()}>
