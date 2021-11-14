@@ -38,12 +38,15 @@ class SettingsManager extends EventEmitter {
     constructor() {
         super();
         this.settings = {};
-        this._loadSettings();
     }
 
-    _loadSettings() {
+    init() {
         const settings = localStorage.getItem("settings");
         this.settings = settings ? JSON.parse(settings) : {};
+
+        Object.keys(default_settings).forEach((key) => {
+            this.emit("settingUpdate", key, this.get(key));
+        })
     }
 
     get(key: string) {
@@ -86,6 +89,7 @@ Settings.on("settingUpdate", (setting, value) => {
             break;
     }
 })
+Settings.init();
 
 
 export default Settings;

@@ -86,7 +86,7 @@ function Client({ urlRoom }) {
             </Resize>
 
             
-            <Overlay dim={false} render={page === "settings"} mountAnimation="page__zoom-in 0.1s ease 0s 1" unmountAnimation="page__zoom-out 0.1s ease 0s 1">
+            <Overlay dim={false} render={!!page} mountAnimation="page__zoom-in 0.1s ease 0s 1" unmountAnimation="page__zoom-out 0.1s ease 0s 1">
                 <Settings setPage={setPage} />
             </Overlay>
             
