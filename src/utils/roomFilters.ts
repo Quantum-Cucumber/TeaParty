@@ -131,9 +131,10 @@ const tagPriority = {
 function tagToInt(roomTags: Room["tags"]): [number, number] {
     /* Processes a room's tags and returns an int that can be compared easily */
     for (let tag in tagPriority) {
-        if (roomTags.hasOwnProperty(tag)) {
+        if (tag in roomTags) {
             // Priority of tag + order of tag (between 0 and 1) (or 2 if no order supplied - to go below those with orders)
-            return [tagPriority[tag], (roomTags[tag].hasOwnProperty("order") ? roomTags[tag].order : 2)];
+            console.log(roomTags[tag])
+            return [tagPriority[tag], ("order" in roomTags[tag] ? roomTags[tag].order : 2)];
         }
     }
     // No special tags

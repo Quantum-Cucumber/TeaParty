@@ -3,12 +3,11 @@ import { useEffect, useState } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
 import { useHistory } from "react-router-dom";
 
-import { popupCtx, modalCtx, Overlay } from "../../components/popups";
+import { popupCtx, modalCtx } from "../../components/popups";
 import { Loading } from "../../components/elements";
 import { Resize } from "../../components/wrappers";
 
 import Navigation from "../../views/Navigation/Navigation";
-import Settings from "../../views/Settings/Settings";
 import ChatPanel from "../../views/ChatPanel/ChatPanel";
 import MemberList from "../../views/MemberList/MemberList";
 
@@ -17,7 +16,6 @@ function Client({ urlRoom }) {
     // On first load, start syncing. Once synced, change state to reload as client
     const [synced, syncState] = useState(false);  // Whether to show the syncing page
 
-    const [page, setPage] = useState();  // Used to set full screen pages
     const [popup, setPopup] = useState();
     const [modal, setModal] = useState();
     const hideMemberListState = useState(false);
@@ -31,7 +29,7 @@ function Client({ urlRoom }) {
     // Change url to match selected room
     useEffect(() => {
         if (currentRoom) {
-            history.push("/" + currentRoom);
+            history.push("/room/" + currentRoom);
             history.goForward();
         }
     }, [currentRoom, history])
@@ -75,7 +73,7 @@ function Client({ urlRoom }) {
         <modalCtx.Provider value={setModal}>
 
         <div className="client">
-            <Navigation setPage={setPage} currentRoom={currentRoom} selectRoom={selectRoom} hideRoomListState={hideRoomListState} />
+            <Navigation currentRoom={currentRoom} selectRoom={selectRoom} hideRoomListState={hideRoomListState} />
             <div className="column column--chat">
                 <ChatPanel currentRoom={currentRoom} hideMemberListState={hideMemberListState} hideRoomListState={hideRoomListState} />
             </div>
@@ -84,11 +82,6 @@ function Client({ urlRoom }) {
                     <MemberList currentRoom={currentRoom} />
                 </div>
             </Resize>
-
-            
-            <Overlay dim={false} render={!!page} mountAnimation="page__zoom-in 0.1s ease 0s 1" unmountAnimation="page__zoom-out 0.1s ease 0s 1">
-                <Settings setPage={setPage} />
-            </Overlay>
             
             {modal}
             {popup}

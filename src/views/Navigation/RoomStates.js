@@ -273,7 +273,7 @@ export function useGroupBreadcrumbs({ currentGroup, currentRoom, selectRoom }) {
             // Get direct children that are not spaces
             const children = getChildRoomsFromGroup(currentGroup.key).filter((room) => !room.isSpaceRoom());
             if (children.length !== 0) {
-                selectRoom(children[0]);
+                selectRoom(children[0].roomId);
             }
             // No suitable room, select nothing
             else {

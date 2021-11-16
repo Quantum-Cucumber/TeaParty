@@ -1,31 +1,47 @@
-import "./Settings.scss";
 import { useEffect, useState } from "react";
 
+import SettingsPage from "./Settings";
+import { A, Loading, Option } from "../../components/elements";
+import { Section, Slider, Toggle } from "./components";
+
 import Settings from "../../utils/settings";
-import { logoutMatrix } from "../../utils/matrix-client";
 import { msToDate } from "../../utils/datetime";
 import { classList } from "../../utils/utils";
-import { useBindEscape } from "../../utils/hooks";
+import { logoutMatrix } from "../../utils/matrix-client";
 
-import { Section, Slider, Toggle } from "./components";
-import { A, Loading, Option } from "../../components/elements";
-
-import { mdiClose, mdiBrush, mdiLock, mdiHammerWrench, mdiTune, mdiGithub } from "@mdi/js";
-import { Icon } from "@mdi/react";
+import { Icon } from "@mdi/react" ;
+import { mdiBrush, mdiLock, mdiHammerWrench, mdiTune, mdiGithub } from "@mdi/js";
 import {ReactComponent as MatrixLogo} from "./matrix-logo.svg";
+import { IMyDevice } from "matrix-js-sdk";
 
-const settings_pages = [
+
+export default function ClientSettings() {
+    return (
+        <SettingsPage pages={clientPages}
+            tabsFooter={<>
+                <div className="options-divider"></div>
+                <Option danger text="Logout" select={logoutMatrix} />
+                <div className="options-divider"></div>
+                <About />
+            </>} 
+        />
+    )
+}
+
+const clientPages = [
     {
         title: "Appearance",
         icon: mdiBrush,
         render: () => {
-            const currentTheme = Settings.get("theme");
+            const currentTheme: string = Settings.get("theme");
             return (<>
                 <Section name="Theme">
-                    <ThemeSelect initial={currentTheme} themeList={[
-                        {label: "Dark", theme: "dark"},
-                        {label: "Light", theme: "light"}
-                    ]}/>
+                    <ThemeSelect initial={currentTheme}
+                        themeList={[
+                            {label: "Dark", theme: "dark"},
+                            {label: "Light", theme: "light"}
+                        ]}
+                    />
                 </Section>
                 <Section name="Appearance">
                     <Toggle label="Circular avatars" setting="circularAvatars" />
@@ -77,59 +93,12 @@ const settings_pages = [
 ];
 
 
-export default function SettingsPage({ setPage }) {
-    const [tab, setTab] = useState(settings_pages[0].title);
-    const [settingsPage, setSettingsPage] = useState(settings_pages[0].render());
-
-
-    function SettingsTab({ icon, title, children }) {
-        function select(k) {
-            setTab(k);
-            setSettingsPage(children);
-        }
-
-        return (
-            <Option k={title} text={title} select={select} selected={tab}>
-                <Icon path={icon} size="1.4rem" color="var(--text)" />
-            </Option>
-        );
-    }
-
-    const tabs = settings_pages.map((tab) => {
-        return (
-            <SettingsTab icon={tab.icon} title={tab.title} key={tab.title}>
-                {tab.render()}
-            </SettingsTab>
-        );
-    });
-    
-    useBindEscape(setPage, null);
-
-    return (
-        <div className="page--settings">
-            <div className="page--settings__close" onClick={() => setPage(null)}>
-                <Icon path={mdiClose} size="100%" color="var(--text-greyed)" />
-            </div>
-            <div className="settings__holder">
-                <div className="settings__categories">
-                    {tabs}
-                    <div className="options-divider"></div>
-                    <Option danger text="Log Out" k="logout" select={logoutMatrix}/>
-                    <div className="options-divider"></div>
-                    <About />
-                </div>
-
-                <div className="settings__divider"></div>
-                
-                <div className="settings__panel">
-                    {settingsPage}
-                </div>
-            </div>
-        </div>
-    );
+type ThemeSelectProps = {
+    initial: string,
+    themeList: {label: string, theme: string}[],
 }
 
-function ThemeSelect({ initial, themeList }) {
+function ThemeSelect({ initial, themeList }: ThemeSelectProps) {
     const [selected, Select] = useState(initial);
 
     function Theme({ label, name }) {
@@ -147,23 +116,23 @@ function ThemeSelect({ initial, themeList }) {
         );
     }
 
-    themeList = themeList.map((theme) => {
-        return (
-            <Theme label={theme.label} name={theme.theme} key={theme.theme}/>
-        );
-    });
-
-    return (
-        themeList
-    );
+    return (<>
+        {
+            themeList.map((theme) => {
+                return (
+                    <Theme label={theme.label} name={theme.theme} key={theme.theme}/>
+                );
+            })
+        }
+    </>)
 }
 
 function DeviceTable() {
-    const [deviceList, setDeviceList] = useState();
+    const [deviceList, setDeviceList] = useState(null as IMyDevice[]);
 
     useEffect(() => {
         global.matrix.getDevices()
-        .then((result) => {
+        .then((result: {devices: IMyDevice[]}) => {
             setDeviceList(result.devices);
         });
     }, [setDeviceList]);
@@ -189,7 +158,7 @@ function DeviceTable() {
     if (!deviceList) {
         return (
             <Table>
-                <tr><td colSpan="4">
+                <tr><td colSpan={4}>
                         <div className="device-table__loading">
                             <Loading size="60px"></Loading>
                         </div>

@@ -54,7 +54,7 @@ export async function attemptLogin(username: string, homeserver: string, passwor
 
     localStorage.setItem("token", response.access_token);
     localStorage.setItem("device_id", response.device_id);
-    if (response.hasOwnProperty("well_known")) {
+    if ("well_known" in response) {
         localStorage.setItem("base_url", response.well_known["m.homeserver"].base_url);
     } else {
         localStorage.setItem("base_url", base_url);

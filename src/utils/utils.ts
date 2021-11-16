@@ -28,16 +28,18 @@ export function acronym(text: string, len = 3) {
 }
 
 
-export function classList(...classes: (string | {string: boolean} | null | undefined)[]) {
+export function classList(...classes: (string | {[key: string]: boolean} | null | undefined)[]) {
     /* Takes a dict of classNames: bool and outputs a string of the classes that are true */
     var output: string[] = [];
     classes.forEach((item) => {
-        if (typeof item === "object" && item !== null) {
-            Object.keys(item).forEach((className) => {
-                if (item[className]) {
-                    output.push(className)
-                }
-            });
+        if (typeof item === "object") {
+            if (item !== null) {
+                Object.keys(item).forEach((className) => {
+                    if (item[className]) {
+                        output.push(className)
+                    }
+                });
+            }
         }
         else if (item !== null && item !== undefined) {
             output.push(item)

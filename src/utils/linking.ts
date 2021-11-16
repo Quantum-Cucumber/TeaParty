@@ -120,7 +120,7 @@ function getCandidates(room: Room) {
     const homeservers = {} as {string: number};
     room.getJoinedMembers().forEach((member) => {
         let homeserver = getHomeserver(member.userId);
-        if (!homeservers.hasOwnProperty(homeserver)) {
+        if (homeserver in homeservers) {
             homeservers[homeserver] = 0;
         }
         homeservers[homeserver]++;

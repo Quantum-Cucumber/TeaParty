@@ -50,7 +50,7 @@ class SettingsManager extends EventEmitter {
     }
 
     get(key: string) {
-        return this.settings.hasOwnProperty(key) ? this.settings[key] : default_settings[key];
+        return key in this.settings ? this.settings[key] : default_settings[key];
     }
     
     update(key: string, value: any) {

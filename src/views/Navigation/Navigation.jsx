@@ -1,11 +1,13 @@
 import "./Navigation.scss";
 import { useContext, useEffect, useState } from "react";
+import { useHistory } from "react-router-dom";
 
 import { Button, Option, DropDown, Loading, RoomIcon } from "../../components/elements";
 import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
 import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup } from "./RoomStates";
+import RoomSettings from "./RoomSettings";
 
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { useBindEscape } from "../../utils/hooks";
@@ -15,10 +17,10 @@ import Settings from "../../utils/settings";
 
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy } from "@mdi/js";
 import { Icon } from "@mdi/react";
-import RoomSettings from "./RoomSettings";
 
 
-function Navigation({ setPage, currentRoom, selectRoom, hideRoomListState }) {
+function Navigation({ currentRoom, selectRoom, hideRoomListState }) {
+    const history = useHistory();
     // Name will be displayed above the room list and can't (always) be inferred from the key
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
     const [groupRooms, setGroupRooms] = useState(getChildRoomsFromGroup(currentGroup.key))
@@ -83,7 +85,7 @@ function Navigation({ setPage, currentRoom, selectRoom, hideRoomListState }) {
                     <div className="client__user-bar">
                         <MyUser />
                         <div className="client__user-bar__options-box">
-                            <Button path={mdiCog} clickFunc={() => {setPage("settings")}} subClass="client__user-bar__options" size="24px" tipDir="top" tipText="Settings" />
+                            <Button path={mdiCog} clickFunc={() => {history.push("/settings/client")}} subClass="client__user-bar__options" size="24px" tipDir="top" tipText="Settings" />
                         </div>
                     </div>
                 </div>

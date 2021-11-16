@@ -43,7 +43,7 @@ const allowedSchemes = ["https", "http", "ftp", "mailto", "magnet"];
 function customTagToStyle(attribs, customTag, style, validation = ()=>{return true}) {
     let output = "";
 
-    if (attribs.hasOwnProperty(customTag)) {
+    if (customTag in attribs) {
         if (validation(attribs[customTag])) {
             output = `${style}:${attribs[customTag]};`
         }
@@ -97,7 +97,7 @@ const transformTags = {
         style += customTagToStyle(attribs, "data-mx-bg-color", "background-color", (value) => hexColourRegex.test);
 
         // Check that color property is valid
-        if (attribs.hasOwnProperty("color")) {
+        if ("color" in attribs) {
             if (!hexColourRegex.test(attribs.color)) {
                 delete attribs.color;
             }
