@@ -5,6 +5,7 @@ import { ContextMenu, Tooltip } from "./popups";
 import { Avatar } from "./user";
 
 import { acronym, classList } from '../utils/utils';
+import { isDirect } from "../utils/roomFilters";
 
 import Icon from '@mdi/react';
 import { mdiChevronDown, mdiChevronRight, mdiLoading } from "@mdi/js";
@@ -31,8 +32,9 @@ export function Loading({ size }) {
 }
 
 
-export function RoomIcon({ room, directRoom = false }) {
+export function RoomIcon({ room }) {
     const iconUrl = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+    const directRoom = isDirect(room);
 
     if (!iconUrl && directRoom) {
         const user = global.matrix.getUser(room.guessDMUserId());

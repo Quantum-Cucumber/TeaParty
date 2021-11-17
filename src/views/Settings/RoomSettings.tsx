@@ -65,7 +65,7 @@ function RoomOverview({roomId}) {
             </div>
         </div>
         
-        <Section>
+        <Section name="Availability">
             <DropDown label="Visibility" current={roomVisibility} options={visibilityMap} canEdit={canEditJoinRules} />
         </Section>
     </>)

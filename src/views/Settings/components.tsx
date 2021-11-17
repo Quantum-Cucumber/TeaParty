@@ -13,7 +13,7 @@ import Icon from "@mdi/react";
 import { mdiCheck, mdiChevronDown, mdiPencil } from "@mdi/js";
 
 
-export function Section({ name, children }: {name?: string, children: JSX.Element | string}) {
+export function Section({ name, children }: {name?: string, children: React.ReactNode}) {
     return (
         <div className="settings__panel__group">
             { name &&

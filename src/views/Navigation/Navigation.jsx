@@ -160,7 +160,7 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
         const key = room.roomId;
         const icon = showRoomIcons ? (
                                         <div className="room__icon__crop">
-                                            <RoomIcon room={room} directRoom={currentGroup.key === "directs"} />
+                                            <RoomIcon room={room} />
                                         </div>
                                      ) 
                                    : null;

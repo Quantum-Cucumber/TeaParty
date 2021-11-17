@@ -74,6 +74,10 @@ export function getDirects() {
     return _roomIdsToRoom([...directs]);  // set => array of room Ids
 }
 
+export function isDirect(room: Room) {
+    return getDirects().includes(room);
+}
+
 export function getOrpanedRooms() {
     /* Get rooms that are not spaces, space children, or directs */
 

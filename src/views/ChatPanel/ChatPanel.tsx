@@ -3,7 +3,6 @@ import { useEffect, useState, useRef, useContext, useCallback, useReducer } from
 import { useHistory } from "react-router-dom";
 
 import { classList, friendlyList } from "../../utils/utils";
-import { getDirects } from "../../utils/roomFilters";
 import Settings from "../../utils/settings";
 import { getEventById } from "../../utils/matrix-client";
 
@@ -62,7 +61,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
 
             {room.current && <>
                 <div className="chat-header__icon room__icon__crop">
-                    <RoomIcon room={room.current} directRoom={getDirects().includes(room.current)} />
+                    <RoomIcon room={room.current} />
                 </div>
                 <div className="chat-header__name">
                     {room.current.name}
