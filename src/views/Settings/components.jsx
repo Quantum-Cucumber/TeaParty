@@ -79,25 +79,26 @@ export function Slider({label, setting, min, max, interval, units}) {
     const startDrag = useDrag(mouseMove);
 
     return (
-        <div className="settings__slider">
-            <div className="settings__slider__labels">
+        <div className="slider">
+            <div className="slider__labels">
                 <div>{label}</div>
-                <div className="settings__slider__labels--right">{current}{units}</div>
+                <div className="slider__labels--right">{current}{units}</div>
             </div>
 
-            <div className="settings__slider__bar" ref={barRef} onMouseDown={startDrag}>
+            <div className="slider__bar" ref={barRef} onMouseDown={startDrag}>
                 {
                     // Array with null values, with the appropriate number of steps
                     Array.apply(null, Array( Math.round((max - min) / interval) + 1 ))
                     .map((_, index) => {
                         const perc = (index * interval) / (max - min) * 100;
                         return (
-                            <div className="settings__slider__bar__marker" style={{left: `calc(${perc}% - (var(--width) / 2))`}} key={perc}></div>
+                            <div className="slider__bar__marker" style={{left: `calc(${perc}% - (var(--width) / 2))`}} key={perc}></div>
                         )
                     })
                 }
 
-                <div className="settings__slider__bar__indicator" style={{left: `calc( ${ (current - min) / (max - min) * 100 }% - (var(--width) / 2) )`}}></div>
+                <div className="slider__bar__fill" style={{width: `calc( ${ (current - min) / (max - min) * 100 }%`}}></div>
+                <div className="slider__bar__indicator" style={{left: `calc( ${ (current - min) / (max - min) * 100 }% - (var(--width) / 2) )`}}></div>
             </div>
         </div>
     )

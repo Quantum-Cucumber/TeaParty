@@ -68,7 +68,7 @@
     }
 }
 
-.settings__slider {
+.slider {
     padding: 10px 0;
 
     &__labels {
@@ -106,6 +106,12 @@
             background-color: var(--toggle-indicator);
         }
 
+        &__fill {
+            position: absolute; /* Just to get the z-index stacking right */
+            height: $bar-height;
+            background-color: var(--primary);
+        }
+
         &__marker {
             $marker-height: 0.9 * $indicator-height;
             position: absolute;
@@ -115,7 +121,7 @@
             --width: #{$marker-width};
             width: var(--width);
 
-            border-radius: 1px;
+            border-radius: calc(var(--width) / 2);
             background-color: var(--text-greyed);
         }
     }
