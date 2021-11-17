@@ -1,16 +1,17 @@
-.room-settings--overview {
+.room-settings__basic {
     display: flex;
     flex-direction: row;
+    margin-bottom: 30px;
 
-    &__stretch {
+    &__body {
         flex: 1 1 auto;
         overflow-x: hidden;
     }
-    & > .room__icon__crop {
+    .room__icon__crop {
         flex: none;
-        height: 3.5em;
-        width: 3.5em;
-        margin: 0 5%;
+        height: 4.5em;
+        width: 4.5em;
+        margin: 0.5em 1.5em;
 
         .room__icon {
             font-size: 1.2em;
@@ -23,4 +24,9 @@
         border-bottom: 2px solid var(--text-greyed);
         margin-bottom: 0.5em;
     }
+}
+
+.room-settings__visibility__icon {
+    vertical-align: text-bottom;
+    margin-right: 0.2em;
 }

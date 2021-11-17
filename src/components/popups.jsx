@@ -276,7 +276,7 @@ export function ImagePopup({ sourceUrl, render, setRender, name }) {
     );
 }
 
-export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, padding = 10, children }) {
+export function ContextMenu({ parent, x, y, mouseEvent = null, subClass = null, padding = 10, children }) {
     const setVisible = useContext(popupCtx);
     const menuRef = useRef();
 

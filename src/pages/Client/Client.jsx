@@ -3,7 +3,6 @@ import { useEffect, useState } from "react";
 import { buildMatrix } from "../../utils/matrix-client";
 import { useHistory } from "react-router-dom";
 
-import { popupCtx, modalCtx } from "../../components/popups";
 import { Loading } from "../../components/elements";
 import { Resize } from "../../components/wrappers";
 
@@ -16,8 +15,6 @@ function Client({ urlRoom }) {
     // On first load, start syncing. Once synced, change state to reload as client
     const [synced, syncState] = useState(false);  // Whether to show the syncing page
 
-    const [popup, setPopup] = useState();
-    const [modal, setModal] = useState();
     const hideMemberListState = useState(false);
     const hideRoomListState = useState(false);
 
@@ -68,9 +65,6 @@ function Client({ urlRoom }) {
     }
 
     return (
-        <popupCtx.Provider value={setPopup}>
-        <modalCtx.Provider value={setModal}>
-
         <div className="client">
             <Navigation currentRoom={currentRoom} selectRoom={selectRoom} hideRoomListState={hideRoomListState} />
             <div className="column column--chat">
@@ -81,13 +75,7 @@ function Client({ urlRoom }) {
                     <MemberList currentRoom={currentRoom} />
                 </div>
             </Resize>
-            
-            {modal}
-            {popup}
         </div>
-
-        </modalCtx.Provider>
-        </popupCtx.Provider>
     );
 }
 

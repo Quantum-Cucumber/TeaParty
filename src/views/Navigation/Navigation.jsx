@@ -2,7 +2,7 @@ import "./Navigation.scss";
 import { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Button, Option, DropDown, Loading, RoomIcon } from "../../components/elements";
+import { Button, Option, OptionDropDown, Loading, RoomIcon } from "../../components/elements";
 import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
@@ -173,7 +173,7 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
             const children = getSpaceChildren(room);
 
             return (
-                <DropDown key={key} icon={icon} text={room.name} notifications={notifications} unread={unreadDot}
+                <OptionDropDown key={key} icon={icon} text={room.name} notifications={notifications} unread={unreadDot}
                     onContextMenu={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -183,7 +183,7 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
                     }}
                 >
                     <RoomList rooms={children} currentGroup={currentGroup} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} /> 
-                </DropDown>
+                </OptionDropDown>
             )
         }
         else {

@@ -86,26 +86,26 @@ export function HoverOption({ icon, text, children }) {
     )
 }
 
-export function DropDown({ icon, text, children, unread=false, notifications=0, ...props }) {
+export function OptionDropDown({ icon, text, children, unread=false, notifications=0, ...props }) {
     const [open, toggleOpen] = useReducer((current) => !current, false);
 
     let indicator = null;
     if (notifications > 0) {
-        indicator = (<div className="dropdown__notification">{notifications}</div>);
+        indicator = (<div className="option--dropdown__notification">{notifications}</div>);
     } else if (unread) {
-        indicator = (<div className="dropdown__unread"></div>);
+        indicator = (<div className="option--dropdown__unread"></div>);
     }
 
     return (
-        <div className="dropdown-wrapper">
-            <div className="dropdown" onClick={toggleOpen} {...props}>
-                <Icon path={mdiChevronDown} color={open ? "var(--text)" : "var(--text-greyed)"} size="1.5rem" className="dropdown__chevron" rotate={open ? 0 : -90} />
+        <div className="option--dropdown-wrapper">
+            <div className="option--dropdown" onClick={toggleOpen} {...props}>
+                <Icon path={mdiChevronDown} color={open ? "var(--text)" : "var(--text-greyed)"} size="1.5rem" className="option--dropdown__chevron" rotate={open ? 0 : -90} />
                 { icon }
-                <div className="dropdown__text">{text}</div>
+                <div className="option--dropdown__text">{text}</div>
                 {indicator}
             </div>
             { open &&
-                <div className="dropdown__content">
+                <div className="option--dropdown__content">
                     {children}
                 </div>
             }
