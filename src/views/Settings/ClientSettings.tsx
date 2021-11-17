@@ -1,3 +1,4 @@
+import "./ClientSettings.scss";
 import { useEffect, useState } from "react";
 
 import SettingsPage from "./Settings";

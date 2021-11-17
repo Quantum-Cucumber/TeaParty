@@ -1,0 +1,174 @@
+@use "sass:math";
+@use "../../utils/common.scss";
+
+.settings__panel__group {
+    width: 100%;
+
+    &:not(:last-child){
+        margin-bottom: 30px;
+    }
+
+    &__label {
+        width: 100%;
+        border-bottom: 2px solid var(--text-greyed);
+        font-size: 1.1rem;
+    }
+
+    &__options {
+        padding: 15px 10px;
+        overflow-x: auto;
+        @include common.scroll-style();
+    }
+}
+
+.settings__toggle {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    cursor: pointer;
+
+    &:not(:last-child) {
+        border-bottom: 2px solid var(--bg);
+    }
+
+    &__label {
+        padding: 10px 0; 
+        flex: 1 1 auto;
+    }
+    &__switch {
+        $height: 25px;
+        $width: $height * 1.75;
+        $padding: 4px;
+        flex: none;
+        height: $height;
+        width: $width;
+        position: relative;
+
+        border-radius: 30px;
+        background-color: var(--toggle-bg-off);
+        transition: 0.3s;
+
+        &__indicator {
+            position: absolute;
+            top: $padding;
+            left: $padding;
+            height: $height - ($padding * 2);
+            width: $height - ($padding * 2);
+
+            border-radius: 50%;
+            background-color: var(--toggle-indicator);
+            transition: 0.3s;
+        }
+        &--on {
+            background-color: var(--success);
+        }
+        &--on &__indicator {
+            left: $width - $padding - ($height - ($padding * 2)) ;  /* Overly complicated so it animates */
+        }
+    }
+}
+
+.settings__slider {
+    padding: 10px 0;
+
+    &__labels {
+        > div {
+            display: inline-block;
+        }
+
+        &--right {
+            float: right;
+        }
+    }
+
+    $bar-height: 0.3rem;
+    $indicator-height: 1.2rem;
+    $marker-width: 2px;
+    &__bar {
+        position: relative;
+        margin: 1rem #{math.div($marker-width, 2)};
+
+        width: 100%;
+        height: $bar-height;
+
+        background-color: var(--toggle-bg-off);
+        cursor: pointer;
+
+        &__indicator {
+            position: absolute;
+            top: math.div(-$indicator-height, 2) + math.div($bar-height, 2);
+
+            height: $indicator-height;
+            --width: 0.4rem;  /* As a variable to use the right offset in js */
+            width: var(--width);
+
+            border-radius: 0.15rem;
+            background-color: var(--toggle-indicator);
+        }
+
+        &__marker {
+            $marker-height: 0.9 * $indicator-height;
+            position: absolute;
+            top: math.div(-$marker-height, 2) + math.div($bar-height, 2);
+
+            height: $marker-height;
+            --width: #{$marker-width};
+            width: var(--width);
+
+            border-radius: 1px;
+            background-color: var(--text-greyed);
+        }
+    }
+}
+
+.text-edit {
+    display: flex;
+    flex-direction: row;
+
+    &__button {
+        flex: none;
+        display: inline;
+        font-size: 0.9em;
+        margin-left: 0.5em;
+        
+        .button__icon {
+            display: inline;
+            vertical-align: text-bottom;
+            color: var(--text-greyed);
+        }
+    }
+
+    form, textarea, input {
+        width: 100%;
+    }
+    &__input {
+        flex: 1 1 auto;
+        font-family: inherit;
+        resize: vertical;
+
+        background-color: transparent;
+        color: var(--text);
+        border: none;
+        border-bottom: 2px solid var(--bg);
+        font-size: 1em;
+
+        &:focus {
+            outline: none;
+            border-bottom: 2px solid var(--primary);
+        }
+    }
+
+    &__current {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+
+        &--multiline {
+            white-space: pre-wrap;
+        }
+
+        &--placeholder {
+            color: var(--text-greyed);
+        }
+    }
+}

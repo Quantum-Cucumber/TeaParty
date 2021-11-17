@@ -1,7 +1,15 @@
+import "./components.scss";
 import { useCallback, useState, useRef, useEffect } from "react";
+
+import { Button } from "../../components/elements";
+
 import Settings from "../../utils/settings";
 import { classList } from "../../utils/utils";
 import { useDrag } from "../../utils/hooks";
+
+import { mdiCheck, mdiPencil } from "@mdi/js";
+import { FancyText } from "../../components/wrappers";
+
 
 export function Section({ name, children }) {
     return (
@@ -91,6 +99,55 @@ export function Slider({label, setting, min, max, interval, units}) {
 
                 <div className="settings__slider__bar__indicator" style={{left: `calc( ${ (current - min) / (max - min) * 100 }% - (var(--width) / 2) )`}}></div>
             </div>
+        </div>
+    )
+}
+
+
+export function EditText({ label, text, subClass = null, saveFunc = () => {}, multiline = false, canEdit = true }) {
+    const [editing, setEditing] = useState(false);
+    const [currentText, setText] = useState(text);
+    const [textboxRef, setTextboxRef] = useState();
+
+    function save() {
+        saveFunc(currentText); 
+        setEditing(false);
+    }
+
+    // When the textbox is rendered, focus it
+    useEffect(() => {
+        if (textboxRef) {
+            textboxRef.focus();
+        }
+    }, [textboxRef])
+
+    return (
+        <div className={classList("text-edit", subClass)}>
+            { editing && canEdit ?
+                <>
+                <form onSubmit={(e) => {
+                        e.preventDefault();
+                        save()
+                    }}
+                >
+                    {   multiline ?
+                        <textarea className="text-edit__input" placeholder={label} value={currentText} rows={4} onChange={(e) => {setText(e.target.value)}} ref={setTextboxRef} />
+                    :
+                    <input className="text-edit__input" type="text" placeholder={label} value={currentText} onChange={(e) => {setText(e.target.value)}} ref={setTextboxRef} />
+                    }
+                </form>
+                <Button path={mdiCheck} clickFunc={save} subClass="text-edit__button" tipText="Save" tipDir="right" />
+                </>
+            :
+                <>
+                <FancyText className={classList("text-edit__current", {"text-edit__current--multiline": multiline}, {"text-edit__current--placeholder": !currentText})}>
+                    {currentText || label}
+                </FancyText>
+                { canEdit &&
+                    <Button path={mdiPencil} clickFunc={() => {setEditing(true)}} subClass="text-edit__button" tipText="Edit" tipDir="right" />
+                }
+                </>
+            }
         </div>
     )
 }

@@ -1,6 +1,6 @@
 import "./ChatPanel.scss";
 import { useEffect, useState, useRef, useContext, useCallback, useReducer } from "react";
-import { Link } from "react-router-dom";
+import { useHistory } from "react-router-dom";
 
 import { classList, friendlyList } from "../../utils/utils";
 import { getDirects } from "../../utils/roomFilters";
@@ -134,6 +134,7 @@ function statusReducer(state: statusesType, action: reducerActionType) {
 
 function Status({ room }: {room: Room | null}) {
     const [statuses, setStatus] = useReducer(statusReducer, {});
+    const history = useHistory();
 
     // Listen for client states that indicate an issue
     useEffect(() => {
@@ -181,14 +182,14 @@ function Status({ room }: {room: Room | null}) {
                 status: { 
                     contents: (<>
                         <div style={{flex: "1 1 auto"}}>{body || "This room has been replaced"}</div>
-                        <Link to={`/${replacement_room}`} className="chat__state--info__link">Go to new room</Link>
+                        <div onClick={() => history.push(`/room/${replacement_room}`)} className="chat__state--info__link">Go to new room</div>
                     </>),
                     class: "chat__state--info",
                     path: mdiUpdate
                 }
             });
         }
-    }, [setStatus])
+    }, [setStatus, history])
     useEffect(() => {
         // Set on first render
         const tombstone = room?.currentState.getStateEvents("m.room.tombstone", "");

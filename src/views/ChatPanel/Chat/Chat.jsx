@@ -5,7 +5,7 @@ import { Loading } from "../../../components/elements";
 import { TimelineEvent } from "./Events/Event";
 import eventTimeline, { shouldDisplayEvent } from "./eventTimeline";
 
-import { useBindEscape, useDebouncedState } from "../../../utils/hooks";
+import { useOnKeypress, useDebouncedState } from "../../../utils/hooks";
 import { dayBorder, dateToDateStr } from "../../../utils/datetime";
 import Settings, { isEventVisibility } from "../../../utils/settings";
 import { getReplyId } from "../../../utils/event";
@@ -134,7 +134,7 @@ function ChatScroll({ children, timeline, updateEventList }) {
         scrollToBottom();
         timeline.current.markAsRead();
     }, [timeline]);
-    useBindEscape(markAsRead);
+    useOnKeypress("Escape", markAsRead);
 
     // Callback to load more messages
     const loadMore = useCallback(() => {
@@ -227,7 +227,7 @@ function EventBorder({ text, color }) {
 
 function UnreadBorder() {
     const [visible, setVisible] = useState(true);
-    useBindEscape(setVisible, false, "unread border");
+    useOnKeypress("Escape", setVisible, false, "unread border");
 
     return visible && <EventBorder text="New Messages" color="var(--error)"/>;
 }

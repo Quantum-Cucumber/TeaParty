@@ -2,7 +2,7 @@ import "./user.scss";
 import { useState, useEffect, useRef, useLayoutEffect, useContext } from "react";
 
 import { getUserColour, acronym, classList } from "../utils/utils";
-import { useBindEscape } from '../utils/hooks';
+import { useOnKeypress } from '../utils/hooks';
 import { getLocalpart, powerLevelText } from "../utils/matrix-client";
 
 import { ContextMenu, ImagePopup, popupCtx, positionFloating } from "./popups";
@@ -65,7 +65,7 @@ export function UserPopup({ user, room, parent, setPopup }) {
     const popupRef = useRef();
     const [showFullImage, setShowFullImage] = useState(false);
 
-    useBindEscape(setPopup, null, !!(user && parent));
+    useOnKeypress("Escape", setPopup, null, !!(user && parent));
 
     // useLayoutEffect to set position before render
     useLayoutEffect(() => {

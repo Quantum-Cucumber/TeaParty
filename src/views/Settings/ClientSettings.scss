@@ -1,0 +1,114 @@
+
+/* Appearance */
+
+.theme {
+    display: inline-block;
+    margin-right: 15px;
+    margin-bottom: 25px;
+    position: relative;
+    cursor: pointer;
+    box-sizing: border-box;
+    border-radius: 13px;
+    padding: 5px;
+
+    &:hover, &--selected {
+        box-shadow: 0px 0px 0px 2px var(--primary);
+    }
+
+    &__colours {
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+        height: 4rem;
+        width: 4.7rem;
+        margin-bottom: 5px;
+        
+        div {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+    }
+
+    &__bg {
+        background-color: var(--bg);
+        clip-path: polygon(0 100%, 20% 100%, 80% 0, 0 0);
+    }
+
+    &__primary {
+        background-color: var(--primary);
+        clip-path: polygon(20% 100%, 100% 100%, 100% 0, 80% 0);
+    }
+
+    &__label {
+        text-align: center;
+    }
+}
+
+
+/* Security section */
+
+.device-table {
+    border-collapse: collapse;
+    width: 100%;
+
+    th, td {
+        border: none;
+    }
+
+    th {
+        border-bottom: 2px solid var(--text-greyed);
+        text-align: left;
+        padding: 10px 10px 5px;
+    }
+
+    &__loading {
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+    }
+
+    tr{
+        td {
+            padding: 10px;
+        }
+
+        &:nth-child(even) {
+            background-color: var(--bg);
+        }
+    }
+
+    &--current {
+        box-shadow: inset 3px 0px 0px 0px var(--primary);
+
+        td:first-child::after {
+            content: "(Current)";
+            color: var(--text-greyed);
+            font-size: 0.8rem;
+            margin-left: 0.25rem;
+        }
+    }
+}
+
+/* About page */
+.settings__categories__about {
+    margin-top: 5px;
+
+    &__icon {
+        margin: calc(2px + 0.125rem);
+
+        &:hover {
+            opacity: 0.7;
+        }
+    }
+}
+.matrix-logo {
+    height: calc(16px + 1rem);  /* Match option's height */
+    width: auto;
+    overflow: visible;  /* Needed otherwise there can be some clipping */
+
+    /* Override SVG's colour so it can be modified by the theme */
+    #Made-for-Matrix-\\u2014-Preferred {
+        fill: var(--matrix-logo);
+    }
+}

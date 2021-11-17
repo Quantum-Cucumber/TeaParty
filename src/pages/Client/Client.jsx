@@ -30,7 +30,6 @@ function Client({ urlRoom }) {
     useEffect(() => {
         if (currentRoom) {
             history.push("/room/" + currentRoom);
-            history.goForward();
         }
     }, [currentRoom, history])
     useEffect(() => {

@@ -1,21 +1,31 @@
 import { Switch, Route } from "react-router-dom";
-import ClientSettings from "../../views/Settings/ClientSettings";
 
 import Client from "./Client";
+import ClientSettings from "../../views/Settings/ClientSettings";
+import RoomSettings from "../../views/Settings/RoomSettings";
+
 
 export default function ClientRouter() {
-    return (
+    return (<>
+        <Route exact path={["/room/:roomId?", "/"]}
+            children={({match}) => {
+                return (
+                    <Client urlRoom={(match && "roomId" in match.params) ? match.params.roomId : null} />
+                )
+            }}
+        />
+
         <Switch>
-            <Route exact path={["/", "/room/:roomId?"]}
+            <Route path="/settings/client">
+                <ClientSettings />
+            </Route>
+            <Route exact path="/settings/room/:roomId"
                 render={({match}) => {
                     return (
-                        <Client urlRoom={"roomId" in match.params ? match.params.roomId : null} />
+                        <RoomSettings roomId={match.params.roomId} />
                     )
                 }}
             />
-            <Route path="/settings">
-                <ClientSettings />
-            </Route>
         </Switch>
-    )
+    </>)
 }

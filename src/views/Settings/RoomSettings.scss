@@ -1,0 +1,26 @@
+.room-settings--overview {
+    display: flex;
+    flex-direction: row;
+
+    &__stretch {
+        flex: 1 1 auto;
+        overflow-x: hidden;
+    }
+    & > .room__icon__crop {
+        flex: none;
+        height: 3.5em;
+        width: 3.5em;
+        margin: 0 5%;
+
+        .room__icon {
+            font-size: 1.2em;
+        }
+    }
+    
+    &__name {
+        font-size: 1.4em;
+
+        border-bottom: 2px solid var(--text-greyed);
+        margin-bottom: 0.5em;
+    }
+}

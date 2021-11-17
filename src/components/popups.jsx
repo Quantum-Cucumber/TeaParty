@@ -2,7 +2,7 @@ import "./popups.scss";
 import { useState, useEffect, useRef, useCallback, createContext, useContext, useLayoutEffect, cloneElement } from "react";
 import { A, Button } from "./elements";
 import { classList } from '../utils/utils';
-import { useBindEscape, useDownloadUrl } from "../utils/hooks";
+import { useOnKeypress, useDownloadUrl } from "../utils/hooks";
 import Icon from "@mdi/react";
 import { mdiDownload, mdiClose, mdiOpenInNew } from "@mdi/js";
 
@@ -176,8 +176,8 @@ export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }) 
     );
 }
 
-export function Overlay({ children, opacity = "85%", click, modalClass, dim = true, 
-                          fade = 0, render = true, mountAnimation, unmountAnimation }) {
+export function Overlay({ children, opacity = "85%", click = null, modalClass = "", dim = true, 
+                          fade = 0, render = true, mountAnimation = null, unmountAnimation = null }) {
     /* click refers to the onClick function for the dim bg
        dim is whether to add a transparent overlay to the background
        fade determines how long the dim element will fade for
@@ -234,7 +234,7 @@ export function Modal(props) {
     /* High order component of overlay that gives the modal styling and adds a title/close button */
     const { title, hide, children, modalClass, bodyClass, ...passThroughProps } = props;
 
-    useBindEscape(hide)
+    useOnKeypress("Escape", hide)
 
     return (
         <Overlay modalClass={classList("overlay__modal--bg", modalClass)} click={hide} {...passThroughProps}>
@@ -258,7 +258,7 @@ export function Modal(props) {
 export function ImagePopup({ sourceUrl, render, setRender, name }) {
     const [blobUrl, download] = useDownloadUrl(sourceUrl);
 
-    useBindEscape(setRender, false, render);
+    useOnKeypress("Escape", setRender, false, render);
 
     return (
         <Overlay click={() => {setRender(false)}} render={render} fade={0.15}
@@ -280,7 +280,7 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, subClass, padding
     const setVisible = useContext(popupCtx);
     const menuRef = useRef();
 
-    useBindEscape(setVisible);
+    useOnKeypress("Escape", setVisible);
 
     useLayoutEffect(() => {  // Layout effect reduces visual bugs
         if (!menuRef.current) {return}

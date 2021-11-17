@@ -133,7 +133,6 @@ function tagToInt(roomTags: Room["tags"]): [number, number] {
     for (let tag in tagPriority) {
         if (tag in roomTags) {
             // Priority of tag + order of tag (between 0 and 1) (or 2 if no order supplied - to go below those with orders)
-            console.log(roomTags[tag])
             return [tagPriority[tag], ("order" in roomTags[tag] ? roomTags[tag].order : 2)];
         }
     }

@@ -7,10 +7,9 @@ import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx } from "../../component
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
 import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup } from "./RoomStates";
-import RoomSettings from "./RoomSettings";
 
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
-import { useBindEscape } from "../../utils/hooks";
+import { useOnKeypress } from "../../utils/hooks";
 import { classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
 import Settings from "../../utils/settings";
@@ -211,7 +210,7 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
 
 function RoomOptions({ roomId, ...props }) {
     const setPopup = useContext(popupCtx);
-    const setModal = useContext(modalCtx);
+    const history = useHistory();
 
     return (
         <ContextMenu {...props} x="align-mouse-left" y="align-mouse-top">
@@ -223,9 +222,7 @@ function RoomOptions({ roomId, ...props }) {
                 <Icon path={mdiContentCopy} size="1em" color="var(--text)" />
             </Option>
             <Option compact text="Settings" select={() => {
-                    setModal(
-                        <RoomSettings roomId={roomId} />
-                    )
+                    history.push("/settings/room/" + roomId);
                     setPopup();
                 }}
             >
@@ -287,7 +284,7 @@ function Invites({ invitedRooms }) {
     }
 
     if (invitedRooms.length === 0) {hide()};
-    useBindEscape(hide);
+    useOnKeypress("Escape", hide);
 
     // Make a holder for each invite type and populate with its values
     const holders = Object.keys(invitedRooms).reduce((holders, name) => {

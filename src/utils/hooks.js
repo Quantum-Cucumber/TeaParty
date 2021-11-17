@@ -1,15 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { mediaToBlob } from "./utils";
 
-
-export function useBindEscape(setState, value, bind=true) {
-    /* Listen for escape key to hide unread indicator */
-
+export function useOnKeypress(key, setState, value, bind=true) {
     const keyPress = useCallback((e) => {
-        if (e.key === "Escape") {
+        if (e.key === key) {
             setState(value);
         }
-    }, [setState, value])
+    }, [setState, value, key])
 
     useEffect(() => {
         if (bind) {
