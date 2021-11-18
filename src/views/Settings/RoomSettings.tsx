@@ -1,4 +1,5 @@
 import "./RoomSettings.scss";
+import { useHistory } from "react-router-dom";
 
 import SettingsPage from "./Settings"
 import { EditText, DropDown, Section } from "./components";
@@ -44,11 +45,17 @@ const visibilityMap = Object.freeze({
 })
 
 function RoomOverview({roomId}) {
+    const history = useHistory();
     const room: Room = global.matrix?.getRoom(roomId);
-    if (!room) {return null}
+    if (!room) {
+        // TODO: Just show the loading screen if the client isn't initialised
+        history.push(`/room/${roomId}`)
+        return null;
+    }
 
     const roomTopic: string = room.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic;
     const roomVisibility: keyof typeof visibilityMap = room.currentState.getStateEvents("m.room.join_rules")[0]?.getContent().join_rule;
+    const roomAliases = room.getCanonicalAlias() ? [...room.getAltAliases(), room.getCanonicalAlias()] : room.getAltAliases();
 
     const canEditName = false  // room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
     const canEditTopic = false  // room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
@@ -65,8 +72,25 @@ function RoomOverview({roomId}) {
             </div>
         </div>
         
-        <Section name="Availability">
-            <DropDown label="Visibility" current={roomVisibility} options={visibilityMap} canEdit={canEditJoinRules} />
+        <Section name="Visibility">
+            <DropDown label="Join rule" current={roomVisibility} options={visibilityMap} canEdit={canEditJoinRules} />
+            <div className="settings__row settings__row__label">
+                <Section name="Room Aliases">
+                    {roomAliases.length > 0 ?
+                        roomAliases.map((alias) => {
+                            return (
+                                <div className="settings__row" key={alias}>
+                                    {alias}
+                                </div>
+                            )
+                        })
+                    :
+                        <div className="settings__row">
+                            <div style={{color: "var(--text-greyed)"}}>None</div>
+                        </div>
+                    }
+                </Section>
+            </div>
         </Section>
     </>)
 }
