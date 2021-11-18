@@ -180,16 +180,17 @@ type DropDownProps = {
     label: string,
     current: string,
     options: {
-        [key: string]: {
+        [key: string | number]: {
             text: string,
-            icon: string,
+            icon?: string,
         }
     },
     saveFunc?: (value: string) => void,
     canEdit?: boolean,
+    allowCustom?: boolean,
 }
 
-export function DropDown({ label, current, options, saveFunc = () => {}, canEdit = true }: DropDownProps) {
+export function DropDown({ label, current, options, saveFunc = () => {}, canEdit = true, allowCustom = false }: DropDownProps) {
     const [value, setValue] = useState(current);
     const setPopup: (popup: JSX.Element) => void = useContext(popupCtx)
 
@@ -198,7 +199,7 @@ export function DropDown({ label, current, options, saveFunc = () => {}, canEdit
             <ContextMenu parent={e.target.closest(".dropdown")} x="align-left" y="align-top">
                 {
                     Object.keys(options).map((key) => {
-                        const {text, icon} = options[key];
+                        const {text, icon = null} = key in options ? options[key] : {text: allowCustom ? `Custom (${key})` : "Unknown value"};
                         return (
                             <Option compact text={text} k={key} selected={value} key={key} 
                                 select={() => {
@@ -207,24 +208,27 @@ export function DropDown({ label, current, options, saveFunc = () => {}, canEdit
                                     saveFunc(key);
                                 }}
                             >
-                                <Icon path={icon} color="var(--text)" size="1em"/>
+                                {icon && 
+                                    <Icon path={icon} color="var(--text)" size="1em"/>
+                                }
                             </Option>
                         )
                     })
                 }
             </ContextMenu>
         )
-    }, [setPopup, options, value, saveFunc])
+    }, [setPopup, options, value, saveFunc, allowCustom])
 
+    const {text, icon = null} = value in options ? options[value] : {text: allowCustom ? `Custom (${value})` : "Unknown value"};
     return (
         <div className="settings__row">
             <div className="settings__row__label">
                 {label}
             </div>
             <div className={classList("dropdown", {"dropdown--disabled": !canEdit})} onClick={canEdit ? (e) => showOptions(e) : null}>
-                <Icon path={options[value].icon} color="var(--text)" size="1em" />
+                { icon && <Icon path={options[value].icon} color="var(--text)" size="1em" /> }
                 <div className="dropdown__value">
-                    {options[value].text}
+                    {text}
                 </div>
                 { canEdit &&
                     <Icon path={mdiChevronDown} color="var(--text)" size="1em" />

@@ -206,6 +206,9 @@
     }
 
     &__value {
+        flex: 1 1 auto;
+        overflow: hidden;
+        text-overflow: ellipsis;
         margin: 0 4px;
     }
 }

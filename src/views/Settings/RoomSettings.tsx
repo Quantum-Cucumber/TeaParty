@@ -5,15 +5,23 @@ import SettingsPage from "./Settings"
 import { EditText, DropDown, Section } from "./components";
 import { RoomIcon } from "../../components/elements";
 
-import { mdiChatQuestion, mdiEarth, mdiEmail, mdiText } from "@mdi/js"
+import { mdiChatQuestion, mdiEarth, mdiEmail, mdiShield, mdiText } from "@mdi/js"
 
 import type { Room } from "matrix-js-sdk";
 import type {pagesType} from "./Settings";
 
 
 export default function RoomSettings({ roomId }) {
+    const history = useHistory();
+    const room: Room = global.matrix?.getRoom(roomId);
+    if (!room) {
+        // TODO: Just show the loading screen if the client isn't initialised
+        history.push(`/room/${roomId}`)
+        return null;
+    }
+
     return (
-        <SettingsPage pages={roomPages} roomId={roomId} />
+        <SettingsPage pages={roomPages} room={room} />
     )
 }
 
@@ -21,9 +29,18 @@ const roomPages: pagesType = [
     {
         title: "Overview",
         icon: mdiText,
-        render: ({ roomId }) => {
+        render: ({ room }) => {
             return (
-                <RoomOverview roomId={roomId} />
+                <Overview room={room} />
+            )
+        },
+    },
+    {
+        title: "Permissions",
+        icon: mdiShield,
+        render: ({ room }) => {
+            return (
+                <PowerLevels room={room} />
             )
         },
     },
@@ -44,15 +61,7 @@ const visibilityMap = Object.freeze({
     },
 })
 
-function RoomOverview({roomId}) {
-    const history = useHistory();
-    const room: Room = global.matrix?.getRoom(roomId);
-    if (!room) {
-        // TODO: Just show the loading screen if the client isn't initialised
-        history.push(`/room/${roomId}`)
-        return null;
-    }
-
+function Overview({ room }: {room: Room}) {
     const roomTopic: string = room.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic;
     const roomVisibility: keyof typeof visibilityMap = room.currentState.getStateEvents("m.room.join_rules")[0]?.getContent().join_rule;
     const roomAliases = room.getCanonicalAlias() ? [...room.getAltAliases(), room.getCanonicalAlias()] : room.getAltAliases();
@@ -86,7 +95,7 @@ function RoomOverview({roomId}) {
                         })
                     :
                         <div className="settings__row">
-                            <div style={{color: "var(--text-greyed)"}}>None</div>
+                            <div style={{color: "var(--text-greyed)"}}>No aliases have been set</div>
                         </div>
                     }
                 </Section>
@@ -94,3 +103,64 @@ function RoomOverview({roomId}) {
         </Section>
     </>)
 }
+
+
+const powerLevelContent = Object.freeze({
+    "events_default": {
+        text: "Send events",
+        defaultValue: 0
+    },
+    "invite": {
+        text: "Invite users",
+        defaultValue: 50
+    },
+    
+    "redact": {
+        text: "Redact events",
+        defaultValue: 50
+    },
+    "kick": {
+        text: "Kick members",
+        defaultValue: 50
+    },
+    "ban": {
+        text: "Ban members",
+        defaultValue: 50
+    },
+    "state_default": {
+        text: "Change room settings",
+        defaultValue: 50
+    },
+})
+
+
+function PowerLevels({ room }: {room: Room}) {
+    const powerLevelState = room.currentState.getStateEvents("m.room.power_levels")[0]?.getContent();
+    const canEditPowerLevels = false  // room.currentState.maySendStateEvent("m.room.power_levels", global.matrix.getUserId());
+
+    const powerLevelOptions = {
+        50: {
+            text: "Moderator (50)",
+        },
+        100: {
+            text: "Administrator (100)"
+        },
+    };
+
+    const defaultPowerLevel = powerLevelState.users_default || 0;
+    powerLevelOptions[defaultPowerLevel] = {text: `User (${defaultPowerLevel})`}
+
+    return (
+        <Section name="Permissions">
+            {
+                Object.entries(powerLevelContent).map(([key, {text, defaultValue}]) => {
+                    return (
+                        <DropDown label={text} current={powerLevelState[key] || defaultValue} options={powerLevelOptions} allowCustom canEdit={canEditPowerLevels} />
+                    )
+                })
+            }
+        </Section>
+    )
+}
+
+
