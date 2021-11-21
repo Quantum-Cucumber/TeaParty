@@ -205,6 +205,10 @@
         user-select: none;
     }
 
+    &--custom__input {
+        flex: none;
+    }
+
     &__value {
         flex: 1 1 auto;
         overflow: hidden;

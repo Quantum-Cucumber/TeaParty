@@ -1,4 +1,5 @@
 import "./RoomSettings.scss";
+import { useCallback, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import SettingsPage from "./Settings"
@@ -61,20 +62,56 @@ const visibilityMap = Object.freeze({
     },
 })
 
-function Overview({ room }: {room: Room}) {
-    const roomTopic: string = room.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic;
-    const roomVisibility: keyof typeof visibilityMap = room.currentState.getStateEvents("m.room.join_rules")[0]?.getContent().join_rule;
-    const roomAliases = room.getCanonicalAlias() ? [...room.getAltAliases(), room.getCanonicalAlias()] : room.getAltAliases();
+const getTopic = (room: Room) => room.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic as string;
+const getJoinRule = (room: Room) => room.currentState.getStateEvents("m.room.join_rules")[0]?.getContent().join_rule as keyof typeof visibilityMap as string;
+const getAllAliases = (room: Room) => room.getCanonicalAlias() ? [...room.getAltAliases(), room.getCanonicalAlias()] : room.getAltAliases();
 
-    const canEditName = false  // room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
-    const canEditTopic = false  // room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
-    const canEditJoinRules = false // room.currentState.maySendStateEvent("m.room.join_rules", global.matrix.getUserId());
+function Overview({ room }: {room: Room}) {
+    const [roomName, setName] = useState(room.name);
+    const [roomTopic, setTopic] = useState(getTopic(room));
+    const [roomVisibility, setVisibility] = useState(getJoinRule(room));
+    const [roomAliases, setAliases] = useState(getAllAliases(room));
+
+
+    // Determine what state events can be sent
+    const canEditName = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
+    const canEditTopic = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
+    const canEditJoinRules = room.currentState.maySendStateEvent("m.room.join_rules", global.matrix.getUserId());
+
+
+    // Display the updated data -> send the event -> if an error occurs, use the previous state
+    const saveName = useCallback((name: string) => {
+        setName(name);
+        global.matrix.setRoomName(room.roomId, name)
+        .catch(() => {
+            setName(roomName);
+        });
+    }, [room, roomName]);
+
+    const saveTopic = useCallback((topic: string) => {
+        setTopic(topic);
+        global.matrix.setRoomTopic(room.roomId, topic)
+        .catch(() => {
+            setName(roomTopic);
+        });
+    }, [room, roomTopic]);
+
+    const saveVisibility = useCallback((join_rule: string) => {
+        setVisibility(join_rule);
+        const content = {
+            join_rule: join_rule,
+        }
+        global.matrix.sendStateEvent(room.roomId, "m.room.join_rules", content, "")
+        .catch(() => {
+            setName(roomVisibility);
+        });
+    }, [room, roomVisibility])
 
     return (<>
         <div className="room-settings__basic">
             <div className="room-settings__basic__body">
-                <EditText label="Room name" text={room.name} subClass="room-settings__basic__name" canEdit={canEditName} />
-                <EditText multiline label="Room topic" text={roomTopic} subClass="settings__panel__group__options" canEdit={canEditTopic} />
+                <EditText label="Room name" text={roomName} subClass="room-settings__basic__name" canEdit={canEditName} saveFunc={saveName} />
+                <EditText multiline label="Room topic" text={roomTopic} subClass="settings__panel__group__options" canEdit={canEditTopic} saveFunc={saveTopic}/>
             </div>
             <div className="room__icon__crop">
                 <RoomIcon room={room} />
@@ -82,7 +119,7 @@ function Overview({ room }: {room: Room}) {
         </div>
         
         <Section name="Visibility">
-            <DropDown label="Join rule" current={roomVisibility} options={visibilityMap} canEdit={canEditJoinRules} />
+            <DropDown label="Join rule" value={roomVisibility} options={visibilityMap} canEdit={canEditJoinRules} saveFunc={saveVisibility} />
             <div className="settings__row settings__row__label">
                 <Section name="Room Aliases">
                     {roomAliases.length > 0 ?
@@ -133,10 +170,22 @@ const powerLevelContent = Object.freeze({
     },
 })
 
+const getPowerLevels = (room: Room) => room.currentState.getStateEvents("m.room.power_levels")[0]?.getContent();
 
 function PowerLevels({ room }: {room: Room}) {
-    const powerLevelState = room.currentState.getStateEvents("m.room.power_levels")[0]?.getContent();
-    const canEditPowerLevels = false  // room.currentState.maySendStateEvent("m.room.power_levels", global.matrix.getUserId());
+    const [powerLevelState, setPowerLevels] = useState(getPowerLevels(room));
+    const canEditPowerLevels = room.currentState.maySendStateEvent("m.room.power_levels", global.matrix.getUserId());
+
+
+    const savePowerLevels = useCallback((key: string, value: number) => {
+        const newState = {...powerLevelState, [key]: value};
+        setPowerLevels(newState);
+        global.matrix.sendStateEvent(room.roomId, "m.room.power_levels", newState, "")
+        .catch(() => {
+            setPowerLevels(powerLevelState);
+        })
+    }, [powerLevelState, room]);
+
 
     const powerLevelOptions = {
         50: {
@@ -146,7 +195,6 @@ function PowerLevels({ room }: {room: Room}) {
             text: "Administrator (100)"
         },
     };
-
     const defaultPowerLevel = powerLevelState.users_default || 0;
     powerLevelOptions[defaultPowerLevel] = {text: `User (${defaultPowerLevel})`}
 
@@ -155,7 +203,9 @@ function PowerLevels({ room }: {room: Room}) {
             {
                 Object.entries(powerLevelContent).map(([key, {text, defaultValue}]) => {
                     return (
-                        <DropDown label={text} current={powerLevelState[key] || defaultValue} options={powerLevelOptions} allowCustom canEdit={canEditPowerLevels} />
+                        <DropDown key={key} label={text} value={powerLevelState[key] || defaultValue} options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels}
+                            saveFunc={(value) => {savePowerLevels(key, value)}}
+                        />
                     )
                 })
             }

@@ -129,12 +129,19 @@ type EditTextProps = {
 
 export function EditText({ label, text, subClass = null, saveFunc = () => {}, multiline = false, canEdit = true }: EditTextProps) {
     const [editing, setEditing] = useState(false);
-    const [currentText, setText] = useState(text);
+    const [editedText, setEditedText] = useState(text);
     const [textboxRef, setTextboxRef] = useState<HTMLElement>();
 
+    // If value changes externally, update current state
+    useEffect(() => {
+        setEditedText(text);
+    }, [text])
+
     function save() {
-        saveFunc(currentText); 
         setEditing(false);
+        if (text !== editedText) {
+            saveFunc(editedText); 
+        }
     }
 
     // When the textbox is rendered, focus it
@@ -154,17 +161,17 @@ export function EditText({ label, text, subClass = null, saveFunc = () => {}, mu
                         }}
                     >
                         {   multiline ?
-                            <textarea className="text-edit__input" placeholder={label} value={currentText} rows={4} onChange={(e) => {setText(e.target.value)}} ref={setTextboxRef} />
+                            <textarea className="text-edit__input" placeholder={label} value={editedText} rows={4} onChange={(e) => {setEditedText(e.target.value)}} ref={setTextboxRef} />
                         :
-                        <input className="text-edit__input" type="text" placeholder={label} value={currentText} onChange={(e) => {setText(e.target.value)}} ref={setTextboxRef} />
+                        <input className="text-edit__input" type="text" placeholder={label} value={editedText} onChange={(e) => {setEditedText(e.target.value)}} ref={setTextboxRef} />
                         }
                     </form>
                     <Button path={mdiCheck} clickFunc={save} subClass="text-edit__button" tipText="Save" tipDir="right" />
                 </>
             :
                 <>
-                    <FancyText className={classList("text-edit__current", {"text-edit__current--multiline": multiline}, {"text-edit__current--placeholder": !currentText})}>
-                        {currentText || label}
+                    <FancyText className={classList("text-edit__current", {"text-edit__current--multiline": multiline}, {"text-edit__current--placeholder": !text})}>
+                        {text || label}
                     </FancyText>
                     { canEdit &&
                         <Button path={mdiPencil} clickFunc={() => {setEditing(true)}} subClass="text-edit__button" tipText="Edit" tipDir="right" />
@@ -176,23 +183,49 @@ export function EditText({ label, text, subClass = null, saveFunc = () => {}, mu
 }
 
 
-type DropDownProps = {
+
+interface DropDownProps {
     label: string,
-    current: string,
+    value: string,
     options: {
         [key: string | number]: {
             text: string,
             icon?: string,
         }
     },
-    saveFunc?: (value: string) => void,
+    saveFunc?: (value: any) => void,  // Not sure if "any" is the right way to do it
     canEdit?: boolean,
     allowCustom?: boolean,
+    number?: boolean,
+}
+interface DropDownStringProps extends DropDownProps {
+    options: {
+        [key: string]: {
+            text: string,
+            icon?: string,
+        }
+    },
+    saveFunc?: (value: string) => void,
+    number?: false,
+}
+interface DropDownNumberProps extends DropDownProps {
+    options: {
+        [key: number]: {
+            text: string,
+            icon?: string,
+        }
+    },
+    saveFunc?: (value: number) => void,
+    number: true,
 }
 
-export function DropDown({ label, current, options, saveFunc = () => {}, canEdit = true, allowCustom = false }: DropDownProps) {
-    const [value, setValue] = useState(current);
-    const setPopup: (popup: JSX.Element) => void = useContext(popupCtx)
+export function DropDown(props: DropDownStringProps): JSX.Element;
+export function DropDown(props: DropDownNumberProps): JSX.Element;
+export function DropDown({ label, value, options, saveFunc = () => {}, canEdit = true, allowCustom = false, number = false }: DropDownProps) {
+    const [isCustom, setCustom] = useState(false);
+    const [customValue, setCustomValue] = useState("");
+    const setPopup: (popup: JSX.Element) => void = useContext(popupCtx);
+
 
     const showOptions = useCallback((e) => {
         setPopup(
@@ -204,8 +237,7 @@ export function DropDown({ label, current, options, saveFunc = () => {}, canEdit
                             <Option compact text={text} k={key} selected={value} key={key} 
                                 select={() => {
                                     setPopup(null);
-                                    setValue(key);
-                                    saveFunc(key);
+                                    saveFunc(number ? parseInt(key) : key);
                                 }}
                             >
                                 {icon && 
@@ -215,9 +247,18 @@ export function DropDown({ label, current, options, saveFunc = () => {}, canEdit
                         )
                     })
                 }
+                {   allowCustom &&
+                    <Option compact text="Custom"
+                        select={() => {
+                            setPopup(null);
+                            setCustom(true);
+                        }} 
+                    />
+                }
             </ContextMenu>
         )
-    }, [setPopup, options, value, saveFunc, allowCustom])
+    }, [setPopup, options, value, saveFunc, allowCustom, number])
+
 
     const {text, icon = null} = value in options ? options[value] : {text: allowCustom ? `Custom (${value})` : "Unknown value"};
     return (
@@ -225,15 +266,32 @@ export function DropDown({ label, current, options, saveFunc = () => {}, canEdit
             <div className="settings__row__label">
                 {label}
             </div>
-            <div className={classList("dropdown", {"dropdown--disabled": !canEdit})} onClick={canEdit ? (e) => showOptions(e) : null}>
-                { icon && <Icon path={options[value].icon} color="var(--text)" size="1em" /> }
-                <div className="dropdown__value">
-                    {text}
+            
+            { isCustom ? 
+                <form
+                    onSubmit={(e) => {
+                        e.preventDefault();
+                        setCustom(false);
+                        saveFunc(customValue);
+                    }}
+                >
+                    <input className="dropdown--custom__input text-edit__input" type={number ? "number" : "text"} placeholder="Custom" value={customValue} 
+                        onChange={(e) => {
+                            setCustomValue(e.target.value)
+                        }}
+                    />
+                </form>
+            :
+                <div className={classList("dropdown", {"dropdown--disabled": !canEdit})} onClick={canEdit ? (e) => showOptions(e) : null}>
+                    { icon && <Icon path={options[value].icon} color="var(--text)" size="1em" /> }
+                    <div className="dropdown__value">
+                        {text}
+                    </div>
+                    { canEdit &&
+                        <Icon path={mdiChevronDown} color="var(--text)" size="1em" />
+                    }
                 </div>
-                { canEdit &&
-                    <Icon path={mdiChevronDown} color="var(--text)" size="1em" />
-                }
-            </div>
+            }
         </div>
     )
 }
