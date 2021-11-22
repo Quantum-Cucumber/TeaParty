@@ -14,7 +14,7 @@ import { classList } from "../../utils/utils";
 import { getHomeserver } from "../../utils/matrix-client";
 import Settings from "../../utils/settings";
 
-import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy } from "@mdi/js";
+import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy, mdiEye } from "@mdi/js";
 import { Icon } from "@mdi/react";
 
 
@@ -212,6 +212,8 @@ function RoomOptions({ roomId, ...props }) {
     const setPopup = useContext(popupCtx);
     const history = useHistory();
 
+    const room = global.matrix.getRoom(roomId);
+
     return (
         <ContextMenu {...props} x="align-mouse-left" y="align-mouse-top">
             <Option compact text="Copy Room ID" select={() => {
@@ -221,6 +223,17 @@ function RoomOptions({ roomId, ...props }) {
             >
                 <Icon path={mdiContentCopy} size="1em" color="var(--text)" />
             </Option>
+
+            {   room.isSpaceRoom() && Settings.get("devMode") &&
+                <Option compact text="View Timeline"
+                    select={() => {
+                        history.push("/room/" + roomId);
+                    }}
+                >
+                    <Icon path={mdiEye} size="1em" color="var(--text)" />
+                </Option>
+            }
+
             <Option compact text="Settings" select={() => {
                     history.push("/settings/room/" + roomId);
                     setPopup();

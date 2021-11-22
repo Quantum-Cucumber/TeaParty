@@ -1,15 +1,16 @@
 import "./RoomSettings.scss";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import SettingsPage from "./Settings"
-import { EditText, DropDown, Section } from "./components";
+import { EditText, DropDown, Section, Toggle } from "./components";
 import { RoomIcon } from "../../components/elements";
 
 import { mdiChatQuestion, mdiEarth, mdiEmail, mdiShield, mdiText } from "@mdi/js"
 
 import type { Room } from "matrix-js-sdk";
 import type {pagesType} from "./Settings";
+import type { Visibility } from "matrix-js-sdk/lib/@types/partials";
 
 
 export default function RoomSettings({ roomId }) {
@@ -50,7 +51,7 @@ const roomPages: pagesType = [
 const visibilityMap = Object.freeze({
     "public": {
         icon: mdiEarth,
-        text: "Public",
+        text: "Anyone can join",
     },
     "knock": {
         icon: mdiChatQuestion,
@@ -71,12 +72,14 @@ function Overview({ room }: {room: Room}) {
     const [roomTopic, setTopic] = useState(getTopic(room));
     const [roomVisibility, setVisibility] = useState(getJoinRule(room));
     const [roomAliases, setAliases] = useState(getAllAliases(room));
+    const [roomIsPublished, setIsPublished] = useState<boolean>(null);  // Start as null to indicate the true value hasn't loaded
 
 
     // Determine what state events can be sent
     const canEditName = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
     const canEditTopic = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
     const canEditJoinRules = room.currentState.maySendStateEvent("m.room.join_rules", global.matrix.getUserId());
+    const canEditAliases = room.currentState.maySendStateEvent("m.room.canonical_aliases", global.matrix.getUserId());
 
 
     // Display the updated data -> send the event -> if an error occurs, use the previous state
@@ -107,6 +110,24 @@ function Overview({ room }: {room: Room}) {
         });
     }, [room, roomVisibility])
 
+    const saveIsPublished = useCallback((value: boolean) => {
+        setIsPublished(value);
+        global.matrix.setRoomDirectoryVisibility(room.roomId, value ? "public" : "private")
+        .catch(() => {
+            setIsPublished(roomIsPublished);
+        })
+    }, [room, roomIsPublished])
+
+
+    // Fetch whether the room is published to the HS's directory
+    useEffect(() => {
+        global.matrix.getRoomDirectoryVisibility(room.roomId)
+        .then((response: {visibility: Visibility}) => {
+            setIsPublished(response.visibility === "public");
+        });
+    }, [room])
+
+
     return (<>
         <div className="room-settings__basic">
             <div className="room-settings__basic__body">
@@ -120,6 +141,7 @@ function Overview({ room }: {room: Room}) {
         
         <Section name="Visibility">
             <DropDown label="Join rule" value={roomVisibility} options={visibilityMap} canEdit={canEditJoinRules} saveFunc={saveVisibility} />
+            <Toggle label="Publish this room to the public room directory" value={!!roomIsPublished} canEdit={canEditAliases && roomIsPublished !== null} saveFunc={saveIsPublished} />
             <div className="settings__row settings__row__label">
                 <Section name="Room Aliases">
                     {roomAliases.length > 0 ?
@@ -203,7 +225,7 @@ function PowerLevels({ room }: {room: Room}) {
             {
                 Object.entries(powerLevelContent).map(([key, {text, defaultValue}]) => {
                     return (
-                        <DropDown key={key} label={text} value={powerLevelState[key] || defaultValue} options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels}
+                        <DropDown key={key} label={text} value={key in powerLevelState ? powerLevelState[key] : defaultValue} options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels}
                             saveFunc={(value) => {savePowerLevels(key, value)}}
                         />
                     )

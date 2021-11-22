@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 
 import SettingsPage from "./Settings";
 import { A, Loading, Option } from "../../components/elements";
-import { Section, Slider, Toggle } from "./components";
+import { Section, Slider, ToggleSetting } from "./components";
 
 import Settings from "../../utils/settings";
 import { msToDate } from "../../utils/datetime";
@@ -45,15 +45,15 @@ const clientPages = [
                     />
                 </Section>
                 <Section name="Appearance">
-                    <Toggle label="Circular avatars" setting="circularAvatars" />
-                    <Toggle label="Show room avatars in sidebar" setting="showRoomIcons" />
+                    <ToggleSetting label="Circular avatars" setting="circularAvatars" />
+                    <ToggleSetting label="Show room avatars in sidebar" setting="showRoomIcons" />
                     <Slider label="Text size" setting="fontSize" min={10} max={26} interval={2} units="px" />
                 </Section>
                 <Section name="Events">
-                    <Toggle label="Show deleted events" setting="showRedactedEvents" />
-                    <Toggle label="Show member join events" setting="showJoinEvents" />
-                    <Toggle label="Show member leave events" setting="showLeaveEvents" />
-                    <Toggle label="Show room edit events" setting="showRoomEdits" />
+                    <ToggleSetting label="Show deleted events" setting="showRedactedEvents" />
+                    <ToggleSetting label="Show member join events" setting="showJoinEvents" />
+                    <ToggleSetting label="Show member leave events" setting="showLeaveEvents" />
+                    <ToggleSetting label="Show room edit events" setting="showRoomEdits" />
                 </Section>
             </>);
         },
@@ -64,7 +64,7 @@ const clientPages = [
         render: () => {
             return (
                 <Section name="Behaviour">
-                    <Toggle label="Collapse group list" setting="collapseGroups" />
+                    <ToggleSetting label="Collapse group list" setting="collapseGroups" />
                 </Section>
             )
         }
@@ -86,7 +86,7 @@ const clientPages = [
         render: () => {
             return (
                 <Section name="Advanced">
-                    <Toggle label="Developer Tools" setting="devMode" />
+                    <ToggleSetting label="Developer Tools" setting="devMode" />
                 </Section>
             );
         }

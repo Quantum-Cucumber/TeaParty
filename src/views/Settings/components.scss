@@ -43,7 +43,13 @@
 }
 
 .toggle {
-    cursor: pointer;
+    &:not(&--disabled) {
+        cursor: pointer;
+    }
+    &--disabled &__switch {
+        opacity: 0.7;
+    }
+    
     &__switch {
         $height: 25px;
         $width: $height * 1.75;

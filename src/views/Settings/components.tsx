@@ -26,7 +26,29 @@ export function Section({ name, children }: {name?: string, children: React.Reac
     );
 }
 
-export function Toggle({ label, setting }: {label: string, setting: string}) {
+
+type ToggleType = {
+    label: string,
+    value: boolean,
+    saveFunc: (value: boolean) => void,
+    canEdit?: boolean,
+}
+
+export function Toggle({ label, value, saveFunc, canEdit = true }: ToggleType) {
+    return (
+        <div className={classList("settings__row", "toggle", {"toggle--disabled": !canEdit})} onClick={canEdit ? () => {saveFunc(!value)} : null}>
+            <div className="settings__row__label">
+                {label}
+            </div>
+            <div className={classList("toggle__switch", {"toggle__switch--on": value})}>
+                <div className="toggle__switch__indicator"></div>
+            </div>
+        </div>
+    )
+}
+
+
+export function ToggleSetting({ label, setting }: {label: string, setting: string}) {
     /* Directly toggles a boolean setting, interacting with the settings.js util */
     const [state, setState] = useState(Settings.get(setting) as boolean);
 
@@ -34,22 +56,16 @@ export function Toggle({ label, setting }: {label: string, setting: string}) {
         setState(Settings.get(setting));
     }, [setting])
     
-    useEffect(() => {
-        Settings.update(setting, state);
-        console.log(setting, Settings.get(setting), state)
+    const save = useCallback((value: boolean) => {
+        Settings.update(setting, value);
+        setState(value);
     }, [setting, state])
 
     return (
-        <div className="settings__row toggle" onClick={() => {console.log("click"); setState(current => !current)}}>
-            <div className="settings__row__label">
-                {label}
-            </div>
-            <div className={classList("toggle__switch", {"toggle__switch--on": state})}>
-                <div className="toggle__switch__indicator"></div>
-            </div>
-        </div>
+        <Toggle label={label} value={state} saveFunc={save} />
     )
 }
+
 
 const clamp = (min: number, value: number, max: number) => Math.min(Math.max(value, min), max);
 
@@ -193,7 +209,7 @@ interface DropDownProps {
             icon?: string,
         }
     },
-    saveFunc?: (value: any) => void,  // Not sure if "any" is the right way to do it
+    saveFunc: (value: any) => void,  // Not sure if "any" is the right way to do it
     canEdit?: boolean,
     allowCustom?: boolean,
     number?: boolean,
@@ -205,7 +221,7 @@ interface DropDownStringProps extends DropDownProps {
             icon?: string,
         }
     },
-    saveFunc?: (value: string) => void,
+    saveFunc: (value: string) => void,
     number?: false,
 }
 interface DropDownNumberProps extends DropDownProps {
@@ -215,7 +231,7 @@ interface DropDownNumberProps extends DropDownProps {
             icon?: string,
         }
     },
-    saveFunc?: (value: number) => void,
+    saveFunc: (value: number) => void,
     number: true,
 }
 
@@ -226,6 +242,11 @@ export function DropDown({ label, value, options, saveFunc = () => {}, canEdit =
     const [customValue, setCustomValue] = useState("");
     const setPopup: (popup: JSX.Element) => void = useContext(popupCtx);
 
+    const save = useCallback((newValue) => {
+        if (value !== newValue) {
+            saveFunc(newValue);
+        }
+    }, [value, saveFunc]);
 
     const showOptions = useCallback((e) => {
         setPopup(
@@ -237,7 +258,7 @@ export function DropDown({ label, value, options, saveFunc = () => {}, canEdit =
                             <Option compact text={text} k={key} selected={value} key={key} 
                                 select={() => {
                                     setPopup(null);
-                                    saveFunc(number ? parseInt(key) : key);
+                                    save(number ? parseInt(key) : key);
                                 }}
                             >
                                 {icon && 
@@ -257,7 +278,7 @@ export function DropDown({ label, value, options, saveFunc = () => {}, canEdit =
                 }
             </ContextMenu>
         )
-    }, [setPopup, options, value, saveFunc, allowCustom, number])
+    }, [setPopup, options, value, allowCustom, number, save])
 
 
     const {text, icon = null} = value in options ? options[value] : {text: allowCustom ? `Custom (${value})` : "Unknown value"};
@@ -272,7 +293,7 @@ export function DropDown({ label, value, options, saveFunc = () => {}, canEdit =
                     onSubmit={(e) => {
                         e.preventDefault();
                         setCustom(false);
-                        saveFunc(customValue);
+                        save(customValue);
                     }}
                 >
                     <input className="dropdown--custom__input text-edit__input" type={number ? "number" : "text"} placeholder="Custom" value={customValue} 
