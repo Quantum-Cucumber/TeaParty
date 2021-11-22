@@ -3,14 +3,16 @@ import { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import SettingsPage from "./Settings"
-import { EditText, DropDown, Section, Toggle } from "./components";
+import { EditText, DropDown, Section, Toggle, DropDownRow } from "./components";
 import { RoomIcon } from "../../components/elements";
+import { Avatar } from "../../components/user";
 
 import { mdiChatQuestion, mdiEarth, mdiEmail, mdiShield, mdiText } from "@mdi/js"
 
 import type { Room } from "matrix-js-sdk";
 import type {pagesType} from "./Settings";
 import type { Visibility } from "matrix-js-sdk/lib/@types/partials";
+import { getMember } from "../../utils/matrix-client";
 
 
 export default function RoomSettings({ roomId }) {
@@ -140,7 +142,7 @@ function Overview({ room }: {room: Room}) {
         </div>
         
         <Section name="Visibility">
-            <DropDown label="Join rule" value={roomVisibility} options={visibilityMap} canEdit={canEditJoinRules} saveFunc={saveVisibility} />
+            <DropDownRow label="Join rule" value={roomVisibility} options={visibilityMap} canEdit={canEditJoinRules} saveFunc={saveVisibility} />
             <Toggle label="Publish this room to the public room directory" value={!!roomIsPublished} canEdit={canEditAliases && roomIsPublished !== null} saveFunc={saveIsPublished} />
             <div className="settings__row settings__row__label">
                 <Section name="Room Aliases">
@@ -220,19 +222,59 @@ function PowerLevels({ room }: {room: Room}) {
     const defaultPowerLevel = powerLevelState.users_default || 0;
     powerLevelOptions[defaultPowerLevel] = {text: `User (${defaultPowerLevel})`}
 
-    return (
+    return (<>
         <Section name="Permissions">
             {
                 Object.entries(powerLevelContent).map(([key, {text, defaultValue}]) => {
                     return (
-                        <DropDown key={key} label={text} value={key in powerLevelState ? powerLevelState[key] : defaultValue} options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels}
+                        <DropDownRow key={key} label={text} value={key in powerLevelState ? powerLevelState[key] : defaultValue} options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels}
                             saveFunc={(value) => {savePowerLevels(key, value)}}
                         />
                     )
                 })
             }
         </Section>
-    )
+        <Section name="Members">
+            <MemberPowerLevels room={room} mapping={powerLevelState.users} powerLevelOptions={powerLevelOptions} canEdit={canEditPowerLevels} />
+        </Section>
+    </>)
+}
+
+
+type MemberPowerLevelsProps = {
+    room: Room,
+    mapping: {
+        [key: string]: number
+    },
+    powerLevelOptions: {
+        [key: number]: {
+            text: string,
+        },
+    },
+    canEdit: boolean,
+}
+
+function MemberPowerLevels({ room, mapping = {}, powerLevelOptions, canEdit = true }: MemberPowerLevelsProps) {
+    return (<>
+        {
+            Object.entries(mapping).map(([userId, powerLevel]) => {
+                const member = getMember(userId, room.roomId);
+                const user = global.matrix.getUser(userId);
+
+                return (
+                    <div className="settings__row">
+                        { user &&
+                            <Avatar user={user} subClass="user__avatar" />
+                        }
+                        <div className="settings__row__label">
+                            {member ? member.name : userId}
+                        </div>
+                        <DropDown key={userId} value={powerLevel} options={powerLevelOptions} allowCustom number saveFunc={() => {}} canEdit={canEdit} />
+                    </div>
+                )
+            })
+        }
+    </>)
 }
 
 

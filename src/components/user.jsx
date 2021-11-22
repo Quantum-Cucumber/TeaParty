@@ -13,7 +13,7 @@ import Icon from "@mdi/react";
 import { mdiContentCopy } from "@mdi/js";
 
 
-export function Avatar({ user, subClass, ...props }) {
+export function Avatar({ user, subClass = null, ...props }) {
     // Get mxc:// url 
     const mxc = user.avatarUrl;
     // Convert mxc url to https if it exists

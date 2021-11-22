@@ -12,6 +12,8 @@ import { useDrag } from "../../utils/hooks";
 import Icon from "@mdi/react";
 import { mdiCheck, mdiChevronDown, mdiPencil } from "@mdi/js";
 
+import type { ComponentProps } from "react";
+
 
 export function Section({ name, children }: {name?: string, children: React.ReactNode}) {
     return (
@@ -59,7 +61,7 @@ export function ToggleSetting({ label, setting }: {label: string, setting: strin
     const save = useCallback((value: boolean) => {
         Settings.update(setting, value);
         setState(value);
-    }, [setting, state])
+    }, [setting])
 
     return (
         <Toggle label={label} value={state} saveFunc={save} />
@@ -199,12 +201,10 @@ export function EditText({ label, text, subClass = null, saveFunc = () => {}, mu
 }
 
 
-
 interface DropDownProps {
-    label: string,
-    value: string,
+    value: any,
     options: {
-        [key: string | number]: {
+        [key: number | string]: {
             text: string,
             icon?: string,
         }
@@ -215,6 +215,7 @@ interface DropDownProps {
     number?: boolean,
 }
 interface DropDownStringProps extends DropDownProps {
+    value: string,
     options: {
         [key: string]: {
             text: string,
@@ -222,9 +223,10 @@ interface DropDownStringProps extends DropDownProps {
         }
     },
     saveFunc: (value: string) => void,
-    number?: false,
+    number: false,
 }
 interface DropDownNumberProps extends DropDownProps {
+    value: number,
     options: {
         [key: number]: {
             text: string,
@@ -237,7 +239,7 @@ interface DropDownNumberProps extends DropDownProps {
 
 export function DropDown(props: DropDownStringProps): JSX.Element;
 export function DropDown(props: DropDownNumberProps): JSX.Element;
-export function DropDown({ label, value, options, saveFunc = () => {}, canEdit = true, allowCustom = false, number = false }: DropDownProps) {
+export function DropDown({value, options, saveFunc, canEdit = true, allowCustom = false, number = false}: DropDownProps) {
     const [isCustom, setCustom] = useState(false);
     const [customValue, setCustomValue] = useState("");
     const setPopup: (popup: JSX.Element) => void = useContext(popupCtx);
@@ -283,36 +285,45 @@ export function DropDown({ label, value, options, saveFunc = () => {}, canEdit =
 
     const {text, icon = null} = value in options ? options[value] : {text: allowCustom ? `Custom (${value})` : "Unknown value"};
     return (
+        isCustom ? 
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    setCustom(false);
+                    save(customValue);
+                }}
+            >
+                <input className="dropdown--custom__input text-edit__input" type={number ? "number" : "text"} placeholder="Custom" value={customValue} 
+                    onChange={(e) => {
+                        setCustomValue(e.target.value)
+                    }}
+                />
+            </form>
+        :
+            <div className={classList("dropdown", {"dropdown--disabled": !canEdit})} onClick={canEdit ? (e) => showOptions(e) : null}>
+                { icon && <Icon path={options[value].icon} color="var(--text)" size="1em" /> }
+                <div className="dropdown__value">
+                    {text}
+                </div>
+                { canEdit &&
+                    <Icon path={mdiChevronDown} color="var(--text)" size="1em" />
+                }
+            </div>
+    )
+}
+
+
+interface DropDownRowProps extends ComponentProps<typeof DropDown> {
+    label: string,
+}
+
+export function DropDownRow({ label, ...dropdownProps }: DropDownRowProps) {
+    return (
         <div className="settings__row">
             <div className="settings__row__label">
                 {label}
             </div>
-            
-            { isCustom ? 
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        setCustom(false);
-                        save(customValue);
-                    }}
-                >
-                    <input className="dropdown--custom__input text-edit__input" type={number ? "number" : "text"} placeholder="Custom" value={customValue} 
-                        onChange={(e) => {
-                            setCustomValue(e.target.value)
-                        }}
-                    />
-                </form>
-            :
-                <div className={classList("dropdown", {"dropdown--disabled": !canEdit})} onClick={canEdit ? (e) => showOptions(e) : null}>
-                    { icon && <Icon path={options[value].icon} color="var(--text)" size="1em" /> }
-                    <div className="dropdown__value">
-                        {text}
-                    </div>
-                    { canEdit &&
-                        <Icon path={mdiChevronDown} color="var(--text)" size="1em" />
-                    }
-                </div>
-            }
+            <DropDown {...dropdownProps} />
         </div>
     )
 }
