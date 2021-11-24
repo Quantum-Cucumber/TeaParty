@@ -6,6 +6,8 @@ import type { IStore } from "matrix-js-sdk/lib/store";
 
 export const logged_in = () => { return localStorage.getItem("token") !== null };
 
+export const userIdRegex = /^@\S+:\S+$/
+
 async function discover_base_url(homeserver: string): Promise<string> {
     /* Query the selected homeserver to get the base_url */
 
@@ -111,7 +113,7 @@ export function tryGetUser(userId: string) {
     return user;
 }
 
-export function getMember(userId: string, roomId: string) {
+export function getMember(roomId: string, userId: string) {
     const room: Room = global.matrix.getRoom(roomId);
     const member: RoomMember | null = room?.getMember(userId);
     return member;

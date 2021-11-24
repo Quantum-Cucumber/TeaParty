@@ -36,7 +36,7 @@ function getReacted(relation) {
             }
             return !event.isRedacted();  // Don't show redacted reactions
         }).map((event) => {
-            return getMember(event.getSender(), event.getRoomId());
+            return getMember(event.getRoomId(), event.getSender());
         }).filter(member => Boolean(member))
 
         output[emote] = {count: count, me: me, members: members};

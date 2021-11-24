@@ -79,3 +79,42 @@ $settings-padding: 50px;
     margin-bottom: 10px;
     margin-top: 5px;
 }
+
+.settings__row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+
+    &:not(:last-child) {
+        border-bottom: 2px solid var(--bg);
+    }
+    
+    &__label {
+        padding: 10px 0; 
+        flex: 1 1 auto;
+
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    &__action {
+        padding: 0 0.5em;
+    }
+}
+
+.settings__button {
+    font-size: 1em;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 0.3em;
+    cursor: pointer;
+    margin: 0.25em;
+
+    background-color: var(--primary);
+    color: var(--text);
+
+    &:active {
+        opacity: 0.7;
+    }
+}

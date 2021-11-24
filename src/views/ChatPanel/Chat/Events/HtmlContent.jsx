@@ -247,7 +247,7 @@ function UserMention({ userId, roomId }) {
     }
     */
 
-   const member = getMember(userId, roomId);
+   const member = getMember(roomId, userId);
 
     return (
         <span className="mention data__user-popup">{member ? `@${member.name}` : userId}</span>

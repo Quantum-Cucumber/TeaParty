@@ -96,3 +96,8 @@ export async function mediaToBlob(url: string) {
         return url;
     }
 }
+
+export function stringSize(value: string) {
+    /* Number of bytes of a string */
+    return new Blob([value]).size
+}

@@ -12,7 +12,7 @@ import { useDrag } from "../../utils/hooks";
 import Icon from "@mdi/react";
 import { mdiCheck, mdiChevronDown, mdiPencil } from "@mdi/js";
 
-import type { ComponentProps } from "react";
+import type { ChangeEvent, ComponentProps } from "react";
 
 
 export function Section({ name, children }: {name?: string, children: React.ReactNode}) {
@@ -136,6 +136,61 @@ export function Slider({label, setting, min, max, interval, units}: SliderProps)
 }
 
 
+type TextBoxProps = {
+    initialValue?: string,
+    placeholder: string,
+    multiline?: boolean,
+    saveFunc: (value: string) => void,
+    focus?: boolean,
+    validation?: (value: string) => boolean,
+}
+
+
+type TextInput = HTMLInputElement & HTMLTextAreaElement;
+
+export function TextBox({ initialValue = "", placeholder, multiline = false, focus = false, saveFunc, validation = () => true }: TextBoxProps) {
+    const [value, setValue] = useState(initialValue);
+    const inputRef = useRef<TextInput>();
+    const [valid, setValid] = useState(true);
+
+    // Focus on render if flag is set
+    useEffect(() => {
+        if(inputRef && focus) {
+            inputRef.current.focus()
+        }
+    }, [focus])
+
+    function save() {
+        if (validation(value.trim())) {
+            saveFunc(value.trim());
+        }
+        else {
+            setValid(false);
+        }
+    }
+
+    function onChange(e: ChangeEvent<TextInput>) {
+        setValue(e.target.value);
+        setValid(true);  // Reset to valid until submitted for validation again
+    }
+
+    return (
+        <div className="textbox">
+            <form
+                onSubmit={(e) => {e.preventDefault(); save()}}
+            >
+                {   multiline ?
+                    <textarea className={classList("textbox__input", {"textbox__input--error": !valid})} placeholder={placeholder} value={value} rows={4} onChange={onChange} ref={inputRef} />
+                :
+                    <input className={classList("textbox__input", {"textbox__input--error": !valid})} type="text" placeholder={placeholder} value={value} onChange={onChange} ref={inputRef} />
+                }
+            </form>
+            <Button path={mdiCheck} clickFunc={save} subClass="textbox__button" tipText="Save" tipDir="right" />
+        </div>
+    )
+}
+
+
 type EditTextProps = {
     label: string,
     text: string,
@@ -143,49 +198,23 @@ type EditTextProps = {
     saveFunc?: (value: string) => void;
     multiline?: boolean,
     canEdit?: boolean,
+    validation?: (value: string) => boolean,
 }
 
-export function EditText({ label, text, subClass = null, saveFunc = () => {}, multiline = false, canEdit = true }: EditTextProps) {
+export function EditableText({ label, text, subClass = null, saveFunc = () => {}, multiline = false, canEdit = true, validation }: EditTextProps) {
     const [editing, setEditing] = useState(false);
-    const [editedText, setEditedText] = useState(text);
-    const [textboxRef, setTextboxRef] = useState<HTMLElement>();
 
-    // If value changes externally, update current state
-    useEffect(() => {
-        setEditedText(text);
-    }, [text])
-
-    function save() {
+    function save(value: string) {
         setEditing(false);
-        if (text !== editedText) {
-            saveFunc(editedText); 
+        if (text !== value) {
+            saveFunc(value); 
         }
     }
-
-    // When the textbox is rendered, focus it
-    useEffect(() => {
-        if (textboxRef) {
-            textboxRef.focus();
-        }
-    }, [textboxRef])
 
     return (
         <div className={classList("text-edit", subClass)}>
             { editing && canEdit ?
-                <>
-                    <form onSubmit={(e) => {
-                            e.preventDefault();
-                            save()
-                        }}
-                    >
-                        {   multiline ?
-                            <textarea className="text-edit__input" placeholder={label} value={editedText} rows={4} onChange={(e) => {setEditedText(e.target.value)}} ref={setTextboxRef} />
-                        :
-                        <input className="text-edit__input" type="text" placeholder={label} value={editedText} onChange={(e) => {setEditedText(e.target.value)}} ref={setTextboxRef} />
-                        }
-                    </form>
-                    <Button path={mdiCheck} clickFunc={save} subClass="text-edit__button" tipText="Save" tipDir="right" />
-                </>
+                <TextBox placeholder={label} initialValue={text} multiline={multiline} saveFunc={save} validation={validation} focus />
             :
                 <>
                     <FancyText className={classList("text-edit__current", {"text-edit__current--multiline": multiline}, {"text-edit__current--placeholder": !text})}>
@@ -202,7 +231,7 @@ export function EditText({ label, text, subClass = null, saveFunc = () => {}, mu
 
 
 interface DropDownProps {
-    value: any,
+    value?: any,
     options: {
         [key: number | string]: {
             text: string,
@@ -213,9 +242,11 @@ interface DropDownProps {
     canEdit?: boolean,
     allowCustom?: boolean,
     number?: boolean,
+    min?: number;
+    max?: number;
 }
 interface DropDownStringProps extends DropDownProps {
-    value: string,
+    value?: string,
     options: {
         [key: string]: {
             text: string,
@@ -226,7 +257,7 @@ interface DropDownStringProps extends DropDownProps {
     number: false,
 }
 interface DropDownNumberProps extends DropDownProps {
-    value: number,
+    value?: number,
     options: {
         [key: number]: {
             text: string,
@@ -235,26 +266,29 @@ interface DropDownNumberProps extends DropDownProps {
     },
     saveFunc: (value: number) => void,
     number: true,
+    min?: number;
+    max?: number;
 }
 
 export function DropDown(props: DropDownStringProps): JSX.Element;
 export function DropDown(props: DropDownNumberProps): JSX.Element;
-export function DropDown({value, options, saveFunc, canEdit = true, allowCustom = false, number = false}: DropDownProps) {
+export function DropDown({value, options, saveFunc, canEdit = true, allowCustom = false, number = false, min = 0, max = Infinity}: DropDownProps) {
     const [isCustom, setCustom] = useState(false);
-    const [customValue, setCustomValue] = useState("");
     const setPopup: (popup: JSX.Element) => void = useContext(popupCtx);
 
     const save = useCallback((newValue) => {
         if (value !== newValue) {
-            saveFunc(newValue);
+            saveFunc(number ? parseInt(newValue) : newValue);
         }
-    }, [value, saveFunc]);
+    }, [value, saveFunc, number]);
 
     const showOptions = useCallback((e) => {
         setPopup(
             <ContextMenu parent={e.target.closest(".dropdown")} x="align-left" y="align-top">
                 {
                     Object.keys(options).map((key) => {
+                        if (number && (key < min || key > max)) {return null}  // Only show options in the specified range
+
                         const {text, icon = null} = key in options ? options[key] : {text: allowCustom ? `Custom (${key})` : "Unknown value"};
                         return (
                             <Option compact text={text} k={key} selected={value} key={key} 
@@ -283,22 +317,24 @@ export function DropDown({value, options, saveFunc, canEdit = true, allowCustom 
     }, [setPopup, options, value, allowCustom, number, save])
 
 
-    const {text, icon = null} = value in options ? options[value] : {text: allowCustom ? `Custom (${value})` : "Unknown value"};
+    const {text, icon = null} = value in options ? options[value] : {text: allowCustom && value ? `Custom (${value})` : "Unknown value"};
     return (
         isCustom ? 
-            <form
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    setCustom(false);
-                    save(customValue);
-                }}
-            >
-                <input className="dropdown--custom__input text-edit__input" type={number ? "number" : "text"} placeholder="Custom" value={customValue} 
-                    onChange={(e) => {
-                        setCustomValue(e.target.value)
+            <div className="dropdown__custom">
+                <TextBox placeholder="Custom" focus
+                    saveFunc={(value) => {
+                        setCustom(false);
+                        save(value);
                     }}
+                    validation={
+                        number ? ((value) => {
+                            const asInt = parseInt(value, 10);
+                            return !isNaN(asInt) && asInt >= min && asInt <= max;
+                        })
+                        : null
+                    }
                 />
-            </form>
+            </div>
         :
             <div className={classList("dropdown", {"dropdown--disabled": !canEdit})} onClick={canEdit ? (e) => showOptions(e) : null}>
                 { icon && <Icon path={options[value].icon} color="var(--text)" size="1em" /> }

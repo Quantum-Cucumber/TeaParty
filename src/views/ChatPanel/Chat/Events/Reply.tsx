@@ -36,7 +36,7 @@ export default function Reply({ roomId, eventId }: ReplyProps) {
     }, [roomId, eventId]);
 
 
-    const member = event && getMember(event.getSender(), roomId);
+    const member = event && getMember(roomId, event.getSender());
     const colour = member ? getUserColour(member.userId) : "var(--text-greyed)";
 
     return (

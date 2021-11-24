@@ -48,10 +48,10 @@ function MemberList({ currentRoom }) {
 
         const collator = Intl.Collator("en", {sensitivity: "base", ignorePunctuation: true})
         members.sort((a, b) => {
-            if (a.powerLevel !== b.powerLevel) {
-                return  b.powerLevel - a.powerLevel;
-            }
             return collator.compare(filterName(a.name), filterName(b.name));
+        })
+        .sort((a, b) => {
+            return b.powerLevel - a.powerLevel;
         });
         setMembers(members);
     }, [updateVal, currentRoom])

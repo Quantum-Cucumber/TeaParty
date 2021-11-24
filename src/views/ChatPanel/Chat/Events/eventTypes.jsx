@@ -32,7 +32,7 @@ export function Message({ event, partial, children }) {
             {!partial &&
                 <div className="message__info">
                     <span className="message__info__author data__user-popup" style={{color: getUserColour(author.userId)}} onClick={userPopup}>
-                        {getMember(event.getSender(), event.getRoomId())?.name}
+                        {getMember(event.getRoomId(), event.getSender())?.name}
                     </span>
 
                     <Tooltip delay={0.5} dir="top" text={messageTimestampFull(event.getDate())}>

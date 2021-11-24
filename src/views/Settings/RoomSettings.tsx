@@ -1,18 +1,20 @@
 import "./RoomSettings.scss";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useHistory } from "react-router-dom";
 
 import SettingsPage from "./Settings"
-import { EditText, DropDown, Section, Toggle, DropDownRow } from "./components";
-import { RoomIcon } from "../../components/elements";
+import { EditableText, DropDown, Section, Toggle, DropDownRow } from "./components";
+import { Button, RoomIcon } from "../../components/elements";
 import { Avatar } from "../../components/user";
 
-import { mdiChatQuestion, mdiEarth, mdiEmail, mdiShield, mdiText } from "@mdi/js"
+import { getMember, userIdRegex } from "../../utils/matrix-client";
+import { classList, stringSize } from "../../utils/utils";
 
-import type { Room } from "matrix-js-sdk";
+import { mdiChatQuestion, mdiCheck, mdiClose, mdiEarth, mdiEmail, mdiShield, mdiText } from "@mdi/js"
+
+import type { IContent, Room } from "matrix-js-sdk";
 import type {pagesType} from "./Settings";
 import type { Visibility } from "matrix-js-sdk/lib/@types/partials";
-import { getMember } from "../../utils/matrix-client";
 
 
 export default function RoomSettings({ roomId }) {
@@ -133,8 +135,8 @@ function Overview({ room }: {room: Room}) {
     return (<>
         <div className="room-settings__basic">
             <div className="room-settings__basic__body">
-                <EditText label="Room name" text={roomName} subClass="room-settings__basic__name" canEdit={canEditName} saveFunc={saveName} />
-                <EditText multiline label="Room topic" text={roomTopic} subClass="settings__panel__group__options" canEdit={canEditTopic} saveFunc={saveTopic}/>
+                <EditableText label="Room name" text={roomName} subClass="room-settings__basic__name" canEdit={canEditName} saveFunc={saveName} validation={(value) => stringSize(value) <= 255} />
+                <EditableText multiline label="Room topic" text={roomTopic} subClass="settings__panel__group__options" canEdit={canEditTopic} saveFunc={saveTopic}/>
             </div>
             <div className="room__icon__crop">
                 <RoomIcon room={room} />
@@ -219,15 +221,19 @@ function PowerLevels({ room }: {room: Room}) {
             text: "Administrator (100)"
         },
     };
-    const defaultPowerLevel = powerLevelState.users_default || 0;
+    const defaultPowerLevel = powerLevelState.users_default || 0;    
     powerLevelOptions[defaultPowerLevel] = {text: `User (${defaultPowerLevel})`}
+
+    const member = getMember(room.roomId, global.matrix.getUserId());
+    const maxPowerLevel = member ? member.powerLevel : defaultPowerLevel;
 
     return (<>
         <Section name="Permissions">
             {
                 Object.entries(powerLevelContent).map(([key, {text, defaultValue}]) => {
                     return (
-                        <DropDownRow key={key} label={text} value={key in powerLevelState ? powerLevelState[key] : defaultValue} options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels}
+                        <DropDownRow key={key} label={text} value={key in powerLevelState ? powerLevelState[key] : defaultValue}
+                            options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels} min={0} max={maxPowerLevel}
                             saveFunc={(value) => {savePowerLevels(key, value)}}
                         />
                     )
@@ -235,7 +241,7 @@ function PowerLevels({ room }: {room: Room}) {
             }
         </Section>
         <Section name="Members">
-            <MemberPowerLevels room={room} mapping={powerLevelState.users} powerLevelOptions={powerLevelOptions} canEdit={canEditPowerLevels} />
+            <MemberPowerLevels room={room} maxPowerLevel={maxPowerLevel} powerLevelOptions={powerLevelOptions} />
         </Section>
     </>)
 }
@@ -243,37 +249,110 @@ function PowerLevels({ room }: {room: Room}) {
 
 type MemberPowerLevelsProps = {
     room: Room,
-    mapping: {
-        [key: string]: number
-    },
+    maxPowerLevel: number,
     powerLevelOptions: {
         [key: number]: {
             text: string,
         },
     },
-    canEdit: boolean,
 }
 
-function MemberPowerLevels({ room, mapping = {}, powerLevelOptions, canEdit = true }: MemberPowerLevelsProps) {
+function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPowerLevelsProps) {
+    const powerLevelEvent = useRef<IContent>();
+    const [powerLevelUsers, setPowerLevelUsers] = useState<{[userId: string]: number}>({});
+    // New power level entry field trackers
+    const [newUserId, setNewUserId] = useState("");
+    const [newUserIdValid, setNewUserIdValid] = useState(true);
+    const [newPowerLevel, setNewPowerlevel] = useState(0);
+
+    useEffect(() => {
+        const event = getPowerLevels(room);
+        powerLevelEvent.current = event;
+        setPowerLevelUsers(event.users || {});
+    }, [room])
+
+    const canEditPowerLevels = room.currentState.maySendStateEvent("m.room.power_levels", global.matrix.getUserId());
+
+    const save = useCallback(() => {
+        const newState = {...powerLevelEvent.current};
+        newState.users = powerLevelUsers;
+
+        global.matrix.sendStateEvent(room.roomId, "m.room.power_levels", newState, "")
+        .catch(() => {
+            setPowerLevelUsers(powerLevelEvent.current.users || {});
+        })
+    }, [room, powerLevelUsers])
+
     return (<>
         {
-            Object.entries(mapping).map(([userId, powerLevel]) => {
-                const member = getMember(userId, room.roomId);
+            Object.entries(powerLevelUsers)
+            .sort((a, b) => b[1] - a[1])  // Sort by power level
+            .map(([userId, powerLevel]) => {
+                const member = getMember(room.roomId, userId);
                 const user = global.matrix.getUser(userId);
 
                 return (
-                    <div className="settings__row">
+                    <div className="settings__row" key={userId}>
                         { user &&
-                            <Avatar user={user} subClass="user__avatar" />
+                            <Avatar user={user} subClass="room-settings__members__avatar" />
                         }
                         <div className="settings__row__label">
                             {member ? member.name : userId}
                         </div>
-                        <DropDown key={userId} value={powerLevel} options={powerLevelOptions} allowCustom number saveFunc={() => {}} canEdit={canEdit} />
+
+                        <DropDown value={powerLevel} options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels} min={0} max={maxPowerLevel}
+                            saveFunc={(value) => {
+                                setPowerLevelUsers((current) => {
+                                    const newMapping = {...current};
+                                    newMapping[userId] = value;
+                                    return newMapping;
+                                })
+                            }}
+                        />
+
+                        { canEditPowerLevels &&
+                            <Button path={mdiClose} subClass="settings__row__action" size="1em" 
+                                clickFunc={() => {
+                                    setPowerLevelUsers((current) => {
+                                        const newMapping = {...current};
+                                        delete newMapping[userId];
+                                        return newMapping;
+                                    })
+                                }}
+                            />
+                        }
                     </div>
                 )
             })
         }
+
+        { canEditPowerLevels && <>
+            <div className="settings__row settings__row__label">
+                <input placeholder="User ID" type="text"
+                    className={classList("textbox__input", "room-settings__members__input", {"textbox__input--error": !newUserIdValid})}
+                    value={newUserId} onChange={(e) => {setNewUserId(e.target.value.trim()); setNewUserIdValid(true)}} 
+                />
+                <DropDown value={newPowerLevel} options={powerLevelOptions} allowCustom number saveFunc={setNewPowerlevel} min={0} max={maxPowerLevel} />
+                <Button path={mdiCheck} subClass="settings__row__action" size="1em"
+                    clickFunc={() => {
+                        // Validate new user ID
+                        if (!userIdRegex.test(newUserId)) {
+                            setNewUserIdValid(false);
+                            return;
+                        }
+
+                        setPowerLevelUsers((current) => {
+                            const newMapping = {...current};
+                            newMapping[newUserId] = newPowerLevel;
+                            return newMapping;
+                        });
+                        setNewUserId("");
+                        setNewPowerlevel(0);
+                    }}
+                />
+            </div>
+            <button className="settings__button room-settings__members__save" onClick={save}>Save</button>
+        </>}
     </>)
 }
 

@@ -29,3 +29,19 @@
     vertical-align: text-bottom;
     margin-right: 0.2em;
 }
+
+.room-settings__members {
+    &__avatar {
+        height: 2em;
+        margin-right: 0.5em;
+    }
+
+    &__input {
+        margin: 0 0.25em;
+    }
+    
+    &__save {
+        float: right;
+        margin: 0.5em;
+    }
+}
