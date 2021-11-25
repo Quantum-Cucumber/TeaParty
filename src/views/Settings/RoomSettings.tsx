@@ -1,5 +1,5 @@
 import "./RoomSettings.scss";
-import { useCallback, useEffect, useState, useRef } from "react";
+import { useCallback, useEffect, useState, useRef, useMemo } from "react";
 import { useHistory } from "react-router-dom";
 
 import SettingsPage from "./Settings"
@@ -8,13 +8,14 @@ import { Button, RoomIcon } from "../../components/elements";
 import { Avatar } from "../../components/user";
 
 import { getMember, userIdRegex } from "../../utils/matrix-client";
-import { classList, stringSize } from "../../utils/utils";
+import { classList, debounce, stringSize } from "../../utils/utils";
 
 import { mdiChatQuestion, mdiCheck, mdiClose, mdiEarth, mdiEmail, mdiShield, mdiText } from "@mdi/js"
 
 import type { IContent, Room } from "matrix-js-sdk";
 import type {pagesType} from "./Settings";
 import type { Visibility } from "matrix-js-sdk/lib/@types/partials";
+import { useStableState } from "../../utils/hooks";
 
 
 export default function RoomSettings({ roomId }) {
@@ -199,18 +200,22 @@ const powerLevelContent = Object.freeze({
 const getPowerLevels = (room: Room) => room.currentState.getStateEvents("m.room.power_levels")[0]?.getContent();
 
 function PowerLevels({ room }: {room: Room}) {
-    const [powerLevelState, setPowerLevels] = useState(getPowerLevels(room));
+    const [powerLevelState, setPowerLevels] = useState(getPowerLevels(room));  // The local view of the power levels
+    const stablePowerLevels = useStableState(powerLevelState);  // Avoid updating savePowerLevels() and clearing the debounce timer
+    const oldPowerLevelState = useRef(powerLevelState);  // Remember what the old state was so it can be restored on error
     const canEditPowerLevels = room.currentState.maySendStateEvent("m.room.power_levels", global.matrix.getUserId());
 
 
-    const savePowerLevels = useCallback((key: string, value: number) => {
-        const newState = {...powerLevelState, [key]: value};
-        setPowerLevels(newState);
-        global.matrix.sendStateEvent(room.roomId, "m.room.power_levels", newState, "")
-        .catch(() => {
-            setPowerLevels(powerLevelState);
+    const savePowerLevels = useMemo(() => debounce(() => {
+        console.log("send")
+        global.matrix.sendStateEvent(room.roomId, "m.room.power_levels", stablePowerLevels.current, "")
+        .then(() => {
+            oldPowerLevelState.current = stablePowerLevels.current;
         })
-    }, [powerLevelState, room]);
+        .catch(() => {
+            setPowerLevels(oldPowerLevelState.current);
+        })
+    }, 2500), [stablePowerLevels, room]);
 
 
     const powerLevelOptions = {
@@ -234,7 +239,12 @@ function PowerLevels({ room }: {room: Room}) {
                     return (
                         <DropDownRow key={key} label={text} value={key in powerLevelState ? powerLevelState[key] : defaultValue}
                             options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels} min={0} max={maxPowerLevel}
-                            saveFunc={(value) => {savePowerLevels(key, value)}}
+                            saveFunc={(value) => {
+                                const newState = {...powerLevelState, [key]: value};
+                                setPowerLevels(newState);
+
+                                savePowerLevels()
+                            }}
                         />
                     )
                 })
@@ -260,6 +270,7 @@ type MemberPowerLevelsProps = {
 function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPowerLevelsProps) {
     const powerLevelEvent = useRef<IContent>();
     const [powerLevelUsers, setPowerLevelUsers] = useState<{[userId: string]: number}>({});
+    const stablePLUsers = useStableState(powerLevelUsers);  // Avoid updating save() and clearing the debounce
     // New power level entry field trackers
     const [newUserId, setNewUserId] = useState("");
     const [newUserIdValid, setNewUserIdValid] = useState(true);
@@ -273,15 +284,18 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
 
     const canEditPowerLevels = room.currentState.maySendStateEvent("m.room.power_levels", global.matrix.getUserId());
 
-    const save = useCallback(() => {
+    const save = useMemo(() => debounce(() => {
         const newState = {...powerLevelEvent.current};
-        newState.users = powerLevelUsers;
+        newState.users = stablePLUsers.current;
 
         global.matrix.sendStateEvent(room.roomId, "m.room.power_levels", newState, "")
+        .then(() => {
+            powerLevelEvent.current = newState;
+        })
         .catch(() => {
             setPowerLevelUsers(powerLevelEvent.current.users || {});
         })
-    }, [room, powerLevelUsers])
+    }, 2500), [room, stablePLUsers])
 
     return (<>
         {
@@ -307,6 +321,7 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
                                     newMapping[userId] = value;
                                     return newMapping;
                                 })
+                                save();
                             }}
                         />
 
@@ -318,6 +333,7 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
                                         delete newMapping[userId];
                                         return newMapping;
                                     })
+                                    save();
                                 }}
                             />
                         }
@@ -330,7 +346,7 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
             <div className="settings__row settings__row__label">
                 <input placeholder="User ID" type="text"
                     className={classList("textbox__input", "room-settings__members__input", {"textbox__input--error": !newUserIdValid})}
-                    value={newUserId} onChange={(e) => {setNewUserId(e.target.value.trim()); setNewUserIdValid(true)}} 
+                    value={newUserId} onChange={(e) => {setNewUserId(e.target.value); setNewUserIdValid(true)}} 
                 />
                 <DropDown value={newPowerLevel} options={powerLevelOptions} allowCustom number saveFunc={setNewPowerlevel} min={0} max={maxPowerLevel} />
                 <Button path={mdiCheck} subClass="settings__row__action" size="1em"
@@ -343,15 +359,15 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
 
                         setPowerLevelUsers((current) => {
                             const newMapping = {...current};
-                            newMapping[newUserId] = newPowerLevel;
+                            newMapping[newUserId.trim()] = newPowerLevel;
                             return newMapping;
                         });
+                        save();
                         setNewUserId("");
                         setNewPowerlevel(0);
                     }}
                 />
             </div>
-            <button className="settings__button room-settings__members__save" onClick={save}>Save</button>
         </>}
     </>)
 }

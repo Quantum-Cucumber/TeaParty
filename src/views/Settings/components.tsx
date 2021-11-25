@@ -314,7 +314,7 @@ export function DropDown({value, options, saveFunc, canEdit = true, allowCustom 
                 }
             </ContextMenu>
         )
-    }, [setPopup, options, value, allowCustom, number, save])
+    }, [setPopup, options, value, allowCustom, number, min, max, save])
 
 
     const {text, icon = null} = value in options ? options[value] : {text: allowCustom && value ? `Custom (${value})` : "Unknown value"};

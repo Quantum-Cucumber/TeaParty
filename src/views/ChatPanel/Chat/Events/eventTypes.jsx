@@ -61,7 +61,7 @@ export function IconEvent({ event, partial, userId, icon, text, iconClass }) {
                     <Icon path={icon} color="var(--text-greyed)" size="1em" className={classList("event--compact-event__icon", iconClass)} />
                 </Tooltip>
                 <span className="event--compact-event__user data__user-popup" onClick={userPopup}>
-                    {getMember(userId, event.getRoomId())?.name}
+                    {getMember(event.getRoomId(), userId)?.name}
                 </span>
                 {" "}{text}
             </div>
