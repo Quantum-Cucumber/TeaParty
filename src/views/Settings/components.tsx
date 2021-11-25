@@ -233,36 +233,33 @@ export function EditableText({ label, text, subClass = null, saveFunc = () => {}
 interface DropDownProps {
     value?: any,
     options: {
-        [key: number | string]: {
-            text: string,
-            icon?: string,
-        }
+        [key: number | string]: OptionType,
     },
     saveFunc: (value: any) => void,  // Not sure if "any" is the right way to do it
     canEdit?: boolean,
     allowCustom?: boolean,
+    placeholder?: string,
     number?: boolean,
     min?: number;
     max?: number;
 }
+type OptionType = {
+    text: string,
+    icon?: string,
+    hidden?: boolean,
+}
 interface DropDownStringProps extends DropDownProps {
     value?: string,
     options: {
-        [key: string]: {
-            text: string,
-            icon?: string,
-        }
+        [key: string]: OptionType,
     },
     saveFunc: (value: string) => void,
-    number: false,
+    number?: false,
 }
 interface DropDownNumberProps extends DropDownProps {
     value?: number,
     options: {
-        [key: number]: {
-            text: string,
-            icon?: string,
-        }
+        [key: number]: OptionType,
     },
     saveFunc: (value: number) => void,
     number: true,
@@ -272,7 +269,7 @@ interface DropDownNumberProps extends DropDownProps {
 
 export function DropDown(props: DropDownStringProps): JSX.Element;
 export function DropDown(props: DropDownNumberProps): JSX.Element;
-export function DropDown({value, options, saveFunc, canEdit = true, allowCustom = false, number = false, min = 0, max = Infinity}: DropDownProps) {
+export function DropDown({value, options, saveFunc, canEdit = true, allowCustom = false, placeholder = "Unknown value", number = false, min = 0, max = Infinity}: DropDownProps) {
     const [isCustom, setCustom] = useState(false);
     const setPopup: (popup: JSX.Element) => void = useContext(popupCtx);
 
@@ -284,9 +281,11 @@ export function DropDown({value, options, saveFunc, canEdit = true, allowCustom 
 
     const showOptions = useCallback((e) => {
         setPopup(
-            <ContextMenu parent={e.target.closest(".dropdown")} x="align-left" y="align-top">
+            <ContextMenu parent={e.target.closest(".dropdown")} x="align-right" y="align-top">
                 {
-                    Object.keys(options).map((key) => {
+                    Object.keys(options)
+                    .filter((key) => options[key].hidden !== false)  // This allows for values that should be displayed with text, but not show as an option
+                    .map((key) => {
                         if (number && (key < min || key > max)) {return null}  // Only show options in the specified range
 
                         const {text, icon = null} = key in options ? options[key] : {text: allowCustom ? `Custom (${key})` : "Unknown value"};
@@ -317,7 +316,7 @@ export function DropDown({value, options, saveFunc, canEdit = true, allowCustom 
     }, [setPopup, options, value, allowCustom, number, min, max, save])
 
 
-    const {text, icon = null} = value in options ? options[value] : {text: allowCustom && value ? `Custom (${value})` : "Unknown value"};
+    const {text, icon = null} = value in options ? options[value] : {text: allowCustom && value ? `Custom (${value})` : placeholder};
     return (
         isCustom ? 
             <div className="dropdown__custom">

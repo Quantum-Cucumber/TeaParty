@@ -3,7 +3,7 @@ import { Switch, Route } from "react-router-dom";
 
 import Client from "./Client";
 import ClientSettings from "../../views/Settings/ClientSettings";
-import RoomSettings from "../../views/Settings/RoomSettings";
+import RoomSettings from "../../views/Settings/RoomSettings/RoomSettings";
 import { popupCtx, modalCtx } from "../../components/popups";
 
 

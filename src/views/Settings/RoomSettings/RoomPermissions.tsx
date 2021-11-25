@@ -1,172 +1,17 @@
-import "./RoomSettings.scss";
-import { useCallback, useEffect, useState, useRef, useMemo } from "react";
-import { useHistory } from "react-router-dom";
+import { useEffect, useState, useRef, useMemo } from "react";
 
-import SettingsPage from "./Settings"
-import { EditableText, DropDown, Section, Toggle, DropDownRow } from "./components";
-import { Button, RoomIcon } from "../../components/elements";
-import { Avatar } from "../../components/user";
+import { DropDown, Section, DropDownRow } from "../components";
+import { Button } from "../../../components/elements";
+import { Avatar } from "../../../components/user";
 
-import { getMember, userIdRegex } from "../../utils/matrix-client";
-import { classList, debounce, stringSize } from "../../utils/utils";
 
-import { mdiChatQuestion, mdiCheck, mdiClose, mdiEarth, mdiEmail, mdiShield, mdiText } from "@mdi/js"
+import { getMember, userIdRegex } from "../../../utils/matrix-client";
+import { classList, debounce } from "../../../utils/utils";
+import { useStableState } from "../../../utils/hooks";
+
+import {mdiCheck, mdiClose} from "@mdi/js";
 
 import type { IContent, Room } from "matrix-js-sdk";
-import type {pagesType} from "./Settings";
-import type { Visibility } from "matrix-js-sdk/lib/@types/partials";
-import { useStableState } from "../../utils/hooks";
-
-
-export default function RoomSettings({ roomId }) {
-    const history = useHistory();
-    const room: Room = global.matrix?.getRoom(roomId);
-    if (!room) {
-        // TODO: Just show the loading screen if the client isn't initialised
-        history.push(`/room/${roomId}`)
-        return null;
-    }
-
-    return (
-        <SettingsPage pages={roomPages} room={room} />
-    )
-}
-
-const roomPages: pagesType = [
-    {
-        title: "Overview",
-        icon: mdiText,
-        render: ({ room }) => {
-            return (
-                <Overview room={room} />
-            )
-        },
-    },
-    {
-        title: "Permissions",
-        icon: mdiShield,
-        render: ({ room }) => {
-            return (
-                <PowerLevels room={room} />
-            )
-        },
-    },
-]
-
-const visibilityMap = Object.freeze({
-    "public": {
-        icon: mdiEarth,
-        text: "Anyone can join",
-    },
-    "knock": {
-        icon: mdiChatQuestion,
-        text: "Ask to join",
-    },
-    "invite": {
-        icon: mdiEmail,
-        text: "Invite Only",
-    },
-})
-
-const getTopic = (room: Room) => room.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic as string;
-const getJoinRule = (room: Room) => room.currentState.getStateEvents("m.room.join_rules")[0]?.getContent().join_rule as keyof typeof visibilityMap as string;
-const getAllAliases = (room: Room) => room.getCanonicalAlias() ? [...room.getAltAliases(), room.getCanonicalAlias()] : room.getAltAliases();
-
-function Overview({ room }: {room: Room}) {
-    const [roomName, setName] = useState(room.name);
-    const [roomTopic, setTopic] = useState(getTopic(room));
-    const [roomVisibility, setVisibility] = useState(getJoinRule(room));
-    const [roomAliases, setAliases] = useState(getAllAliases(room));
-    const [roomIsPublished, setIsPublished] = useState<boolean>(null);  // Start as null to indicate the true value hasn't loaded
-
-
-    // Determine what state events can be sent
-    const canEditName = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
-    const canEditTopic = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
-    const canEditJoinRules = room.currentState.maySendStateEvent("m.room.join_rules", global.matrix.getUserId());
-    const canEditAliases = room.currentState.maySendStateEvent("m.room.canonical_aliases", global.matrix.getUserId());
-
-
-    // Display the updated data -> send the event -> if an error occurs, use the previous state
-    const saveName = useCallback((name: string) => {
-        setName(name);
-        global.matrix.setRoomName(room.roomId, name)
-        .catch(() => {
-            setName(roomName);
-        });
-    }, [room, roomName]);
-
-    const saveTopic = useCallback((topic: string) => {
-        setTopic(topic);
-        global.matrix.setRoomTopic(room.roomId, topic)
-        .catch(() => {
-            setName(roomTopic);
-        });
-    }, [room, roomTopic]);
-
-    const saveVisibility = useCallback((join_rule: string) => {
-        setVisibility(join_rule);
-        const content = {
-            join_rule: join_rule,
-        }
-        global.matrix.sendStateEvent(room.roomId, "m.room.join_rules", content, "")
-        .catch(() => {
-            setName(roomVisibility);
-        });
-    }, [room, roomVisibility])
-
-    const saveIsPublished = useCallback((value: boolean) => {
-        setIsPublished(value);
-        global.matrix.setRoomDirectoryVisibility(room.roomId, value ? "public" : "private")
-        .catch(() => {
-            setIsPublished(roomIsPublished);
-        })
-    }, [room, roomIsPublished])
-
-
-    // Fetch whether the room is published to the HS's directory
-    useEffect(() => {
-        global.matrix.getRoomDirectoryVisibility(room.roomId)
-        .then((response: {visibility: Visibility}) => {
-            setIsPublished(response.visibility === "public");
-        });
-    }, [room])
-
-
-    return (<>
-        <div className="room-settings__basic">
-            <div className="room-settings__basic__body">
-                <EditableText label="Room name" text={roomName} subClass="room-settings__basic__name" canEdit={canEditName} saveFunc={saveName} validation={(value) => stringSize(value) <= 255} />
-                <EditableText multiline label="Room topic" text={roomTopic} subClass="settings__panel__group__options" canEdit={canEditTopic} saveFunc={saveTopic}/>
-            </div>
-            <div className="room__icon__crop">
-                <RoomIcon room={room} />
-            </div>
-        </div>
-        
-        <Section name="Visibility">
-            <DropDownRow label="Join rule" value={roomVisibility} options={visibilityMap} canEdit={canEditJoinRules} saveFunc={saveVisibility} />
-            <Toggle label="Publish this room to the public room directory" value={!!roomIsPublished} canEdit={canEditAliases && roomIsPublished !== null} saveFunc={saveIsPublished} />
-            <div className="settings__row settings__row__label">
-                <Section name="Room Aliases">
-                    {roomAliases.length > 0 ?
-                        roomAliases.map((alias) => {
-                            return (
-                                <div className="settings__row" key={alias}>
-                                    {alias}
-                                </div>
-                            )
-                        })
-                    :
-                        <div className="settings__row">
-                            <div style={{color: "var(--text-greyed)"}}>No aliases have been set</div>
-                        </div>
-                    }
-                </Section>
-            </div>
-        </Section>
-    </>)
-}
 
 
 const powerLevelContent = Object.freeze({
@@ -192,22 +37,48 @@ const powerLevelContent = Object.freeze({
         defaultValue: 50
     },
     "state_default": {
-        text: "Change room settings",
+        text: "Change all other room settings",
         defaultValue: 50
     },
 })
 
-const getPowerLevels = (room: Room) => room.currentState.getStateEvents("m.room.power_levels")[0]?.getContent();
+const stateEvents = Object.freeze({
+    "m.room.canonical_alias": "Set canonical room aliases",
+    "m.room.join_rules": "Change this room's join rules",
+    "m.room.power_levels": "Change room permissions",
+    "m.room.name": "Change the room name",
+    "m.room.topic": "Change this room's topic",
+    "m.room.avatar": "Change the room avatar",
+    "m.room.pinned_events": "Pin/unpin events",
+    "m.room.server_acl": "Modify the room ACL",
+    "m.room.guest_access": "Control whether guest users can join this room",
+    "m.room.history_visibility": "Modify event visibility",
+    "m.room.encryption": "Modify this room's encryption settings",
+    "m.room.tombstone": "Upgrade this room",
+});
+const stateEventOptions = Object.freeze(
+    Object.fromEntries(
+        Object.entries(stateEvents)
+        .map(([eventType, text]) => {
+            return [eventType, {text: text}]
+        })
+    )
+);
 
-function PowerLevels({ room }: {room: Room}) {
+export const getPowerLevels = (room: Room) => room.currentState.getStateEvents("m.room.power_levels")[0]?.getContent();
+
+export default function RoomPermissions({ room }: {room: Room}) {
     const [powerLevelState, setPowerLevels] = useState(getPowerLevels(room));  // The local view of the power levels
     const stablePowerLevels = useStableState(powerLevelState);  // Avoid updating savePowerLevels() and clearing the debounce timer
     const oldPowerLevelState = useRef(powerLevelState);  // Remember what the old state was so it can be restored on error
+    
+    const [newStateOverride, setNewStateOverride] = useState(null);
+    const [newStateOverridePL, setNewStateOverridePL] = useState(0);
+
     const canEditPowerLevels = room.currentState.maySendStateEvent("m.room.power_levels", global.matrix.getUserId());
 
 
     const savePowerLevels = useMemo(() => debounce(() => {
-        console.log("send")
         global.matrix.sendStateEvent(room.roomId, "m.room.power_levels", stablePowerLevels.current, "")
         .then(() => {
             oldPowerLevelState.current = stablePowerLevels.current;
@@ -232,6 +103,8 @@ function PowerLevels({ room }: {room: Room}) {
     const member = getMember(room.roomId, global.matrix.getUserId());
     const maxPowerLevel = member ? member.powerLevel : defaultPowerLevel;
 
+    const stateEventDefault = powerLevelState.state_default || 50;
+
     return (<>
         <Section name="Permissions">
             {
@@ -248,6 +121,53 @@ function PowerLevels({ room }: {room: Room}) {
                         />
                     )
                 })
+            }
+        </Section>
+        <Section name="Room Event Overrides">
+            {
+                Object.entries(powerLevelState.events as {[key: string]: number} || {})
+                .filter(([eventType]) => eventType in stateEvents)  // Only list known events
+                .filter(([_, powerLevel]) => powerLevel !== stateEventDefault)  // Only show overrides, i.e. those with different PL to the state default
+                .map(([eventType, powerLevel]) => {
+                    const text = stateEvents[eventType]
+                    return (
+                        <DropDownRow key={eventType} label={text} value={powerLevel}
+                            options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels} min={0} max={maxPowerLevel}
+                            saveFunc={(value) => {
+                                const newState = {...powerLevelState};
+                                newState.events[eventType] = value;
+                                setPowerLevels(newState);
+
+                                savePowerLevels()
+                            }}
+                        />
+                    )
+                })
+            }
+            { canEditPowerLevels &&
+                <div className="settings__row settings__label">
+                    <div style={{flex: "1 1 auto"}}>
+                        <DropDown placeholder="Add override" value={newStateOverride} options={stateEventOptions} allowCustom saveFunc={setNewStateOverride} />
+                    </div>
+                    <DropDown value={newStateOverridePL} options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels} min={0} max={maxPowerLevel}saveFunc={setNewStateOverridePL}/>
+                    
+                    <Button path={mdiCheck} subClass="settings__row__action" size="1em"
+                        clickFunc={() => {
+                            // Validate new user ID
+                            if (!newStateOverride) {
+                                return;
+                            }
+
+                            const newState = {...powerLevelState};
+                            newState.events[newStateOverride] = newStateOverridePL;
+                            setPowerLevels(newState);
+
+                            savePowerLevels()
+                            setNewStateOverride(null);
+                            setNewStateOverridePL(0);
+                        }}
+                    />
+                </div>
             }
         </Section>
         <Section name="Members">
@@ -371,5 +291,3 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
         </>}
     </>)
 }
-
-
