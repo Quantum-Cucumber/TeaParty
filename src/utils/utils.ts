@@ -61,6 +61,22 @@ export function debounce(func: Function, timeout: number) {
     };
 }
 
+export function asyncDebounce<F extends Function>(func: F, timeout: number): F {
+    /* debounce, but returns a promise */
+    let timer: NodeJS.Timer;
+    function asyncTimeout() {
+        return new Promise(resolve => {
+            timer = setTimeout(resolve, timeout);
+        });
+    }
+
+    return async function(this: any, ...args: any[]) {
+        clearTimeout(timer);
+        await asyncTimeout();
+        await func(...args);
+    } as any;
+}
+
 export function friendlyList(list: string[], max=null, plural: string, singular: string) {
     if (!singular) {singular = plural}
     if (list.length === 0) {return ""}

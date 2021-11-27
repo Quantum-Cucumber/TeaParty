@@ -1,22 +1,23 @@
 import "./RoomSettings.scss";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import SettingsPage from "../Settings"
 import RoomPermissions, { getPowerLevels } from "./RoomPermissions";
 import { EditableText, Section, Toggle, DropDownRow } from "../components";
-import { RoomIcon } from "../../../components/elements";
+import { Button, RoomIcon } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
 
-import { stringSize } from "../../../utils/utils";
-import { useScrollPaginate } from "../../../utils/hooks";
-import { getMember } from "../../../utils/matrix-client";
+import { classList, stringSize } from "../../../utils/utils";
+import { useCatchState, useScrollPaginate } from "../../../utils/hooks";
+import { aliasRegex, getMember } from "../../../utils/matrix-client";
 
-import { mdiChatQuestion, mdiEarth, mdiEmail, mdiGavel, mdiShield, mdiText } from "@mdi/js"
+import { mdiChatQuestion, mdiCheck, mdiEarth, mdiEmail, mdiGavel, mdiShield, mdiText } from "@mdi/js"
 
-import type { Room } from "matrix-js-sdk";
-import type {pagesType} from "../Settings";
+import type { FormEvent } from "react";
+import type { Room, RoomMember } from "matrix-js-sdk";
 import type { Visibility } from "matrix-js-sdk/lib/@types/partials";
+import type {pagesType} from "../Settings";
 
 
 export default function RoomSettings({ roomId }) {
@@ -80,14 +81,17 @@ const visibilityMap = Object.freeze({
 
 const getTopic = (room: Room) => room.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic as string;
 const getJoinRule = (room: Room) => room.currentState.getStateEvents("m.room.join_rules")[0]?.getContent().join_rule as keyof typeof visibilityMap as string;
-const getAllAliases = (room: Room) => room.getCanonicalAlias() ? [...room.getAltAliases(), room.getCanonicalAlias()] : room.getAltAliases();
 
 function Overview({ room }: {room: Room}) {
     const [roomName, setName] = useState(room.name);
     const [roomTopic, setTopic] = useState(getTopic(room));
     const [roomVisibility, setVisibility] = useState(getJoinRule(room));
-    const [roomAliases, setAliases] = useState(getAllAliases(room));
+    const [canonicalAlias, setCanonicalAlias] = useState(room.getCanonicalAlias());
+    const [roomAliases, setAliases] = useCatchState<string[]>(null, saveAliases);
     const [roomIsPublished, setIsPublished] = useState<boolean>(null);  // Start as null to indicate the true value hasn't loaded
+
+    const [newAlias, setNewAlias] = useState("");
+    const [newAliasValid, setNewAliasValid] = useState(true);
 
 
     // Determine what state events can be sent
@@ -133,6 +137,10 @@ function Overview({ room }: {room: Room}) {
         })
     }, [room, roomIsPublished])
 
+    async function saveAliases(newAliases: string[], newAlias: string) {
+        await global.matrix.createAlias(newAlias, room.roomId);
+    }
+
 
     // Fetch whether the room is published to the HS's directory
     useEffect(() => {
@@ -142,12 +150,42 @@ function Overview({ room }: {room: Room}) {
         });
     }, [room])
 
+    function loadAliases() {
+        global.matrix.unstableGetLocalAliases(room.roomId)
+        .then((response: {aliases: string[]}) => {
+            setAliases(response.aliases);
+        })
+    }
+
+
+    const options = {};
+    if (canonicalAlias) {
+        options[canonicalAlias] = {text: canonicalAlias};
+    }
+    roomAliases?.forEach((alias) => {
+        options[alias] = {text: alias}
+    })
+
+    function submitAlias(e: MouseEvent | FormEvent) {
+        e.preventDefault();
+        // Validate new user ID
+        if (!aliasRegex.test(newAlias)) {
+            setNewAliasValid(false);
+            return;
+        }
+
+        const newAliases = [...roomAliases, newAlias];
+        setAliases(newAliases, newAlias)
+
+        setNewAlias("");
+    }
+
 
     return (<>
         <div className="room-settings__basic">
             <div className="room-settings__basic__body">
                 <EditableText label="Room name" text={roomName} subClass="room-settings__basic__name" canEdit={canEditName} saveFunc={saveName} validation={(value) => stringSize(value) <= 255} />
-                <EditableText multiline label="Room topic" text={roomTopic} subClass="settings__panel__group__options" canEdit={canEditTopic} saveFunc={saveTopic}/>
+                <EditableText multiline label="Room topic" text={roomTopic} subClass="settings__panel__group__body" canEdit={canEditTopic} saveFunc={saveTopic}/>
             </div>
             <div className="room__icon__crop">
                 <RoomIcon room={room} />
@@ -159,19 +197,37 @@ function Overview({ room }: {room: Room}) {
             <Toggle label="Publish this room to the public room directory" value={!!roomIsPublished} canEdit={canEditAliases && roomIsPublished !== null} saveFunc={saveIsPublished} />
             <div className="settings__row settings__row__label">
                 <Section name="Room Aliases">
-                    {roomAliases.length > 0 ?
-                        roomAliases.map((alias) => {
-                            return (
-                                <div className="settings__row" key={alias}>
-                                    {alias}
-                                </div>
-                            )
-                        })
-                    :
-                        <div className="settings__row">
-                            <div style={{color: "var(--text-greyed)"}}>No aliases have been set</div>
+                    <DropDownRow label="Canonical Alias" value={canonicalAlias} options={options} placeholder="None" saveFunc={setCanonicalAlias} canEdit={canEditAliases && !!roomAliases} />
+                    <div className="settings__row">
+                        <div className="settings__row__label">
+                            { roomAliases ?
+                                <Section name="Local aliases" description={`Local aliases can be used by anyone to find this room via ${global.matrix.getDomain()}`}>
+                                    {
+                                        roomAliases.map((alias) => {
+                                            return (
+                                                <div className="settings__row settings__row__label">
+                                                    {alias}
+                                                </div>
+                                            )
+                                        })
+                                    }
+                                    { (canEditAliases || true) &&
+                                        <div className="settings__row settings__row__label">
+                                            <form className="room-settings__new-alias" onSubmit={submitAlias}>
+                                                <input placeholder="Add alias" type="text"
+                                                    className={classList("textbox__input", {"textbox__input--error": !newAliasValid})}
+                                                    value={newAlias} onChange={(e) => {setNewAlias(e.target.value); setNewAliasValid(true)}} 
+                                                />
+                                            </form>
+                                            <Button path={mdiCheck} subClass="settings__row__action" size="1em" clickFunc={submitAlias}/>
+                                        </div>
+                                    }
+                                </Section>
+                            :
+                                <a href="" onClick={(e) => {e.preventDefault(); loadAliases()}}>Load aliases</a>
+                            }
                         </div>
-                    }
+                    </div>
                 </Section>
             </div>
         </Section>
@@ -182,25 +238,14 @@ function Overview({ room }: {room: Room}) {
 const getBans = (room: Room) => room.getMembersWithMembership("ban");
 
 function Bans({room}: {room: Room}) {
-    const [bannedMembers, setBannedMembers] = useState(getBans(room));
-    const bannedMembersFallback = useRef(bannedMembers);
+    const [bannedMembers, setBannedMembers] = useCatchState<RoomMember[]>(() => getBans(room), unban);
 
     const [loadingRef, setLoadingRef] = useState<HTMLDivElement>();
     const loaded = useScrollPaginate(loadingRef, 30)
 
-    const unban = useCallback((userId) => {
-        const newValue = [...bannedMembers.filter((member) => member.userId !== userId)]
-        setBannedMembers(newValue);
-
-        global.matrix.unban(room.roomId, userId)
-        .then(() => {
-            bannedMembersFallback.current = newValue;
-        })
-        .catch(() => {
-            setBannedMembers(bannedMembersFallback.current)
-        })
-
-    }, [room, bannedMembers, bannedMembersFallback]);
+    async function unban(_newBanList: RoomMember[], userId: string) {
+        await global.matrix.unban(room.roomId, userId)
+    }
 
     // Calculate whether the user has the power level needed to ban users
     const powerLevelEvent = getPowerLevels(room);
@@ -232,7 +277,12 @@ function Bans({room}: {room: Room}) {
                                 </div>
                             </div>
                             { canEditBans &&
-                                <button className="settings__button--danger" onClick={() => {unban(member.userId)}}>Unban</button>
+                                <button className="settings__button--danger"
+                                    onClick={() => {
+                                        const newBanList = bannedMembers.filter((m) => m.userId !== member.userId);
+                                        setBannedMembers(newBanList, member.userId);
+                                    }}
+                                >Unban</button>
                             }
                         </div>
                     )

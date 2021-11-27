@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { mediaToBlob } from "./utils";
 
-export function useOnKeypress(key, setState, value, bind=true) {
-    const keyPress = useCallback((e) => {
+export function useOnKeypress<T>(key: string, setState: (value: T) => void, value: T, bind=true) {
+    const keyPress = useCallback((e: KeyboardEvent) => {
         if (e.key === key) {
             setState(value);
         }
@@ -23,19 +23,19 @@ export function useOnKeypress(key, setState, value, bind=true) {
     }, [keyPress])
 }
 
-export function useDebouncedState(initial, delay) {
+export function useDebouncedState(initial: any, delay: number) {
     // The pending state to return
     const [queuedState, queueState] = useState(initial);
     // The final state (when the timeout ends)
     const [debouncedState, saveState] = useState(queuedState);
     // Save the timer ID so we can unmount it on unload
-    const timerId = useRef();
+    const timerId = useRef<number>();
 
     useEffect(() => {
         // When the timer ends, save the queued state and return it, otherwise when a new state is queued, cancel the timeout
         timerId.current = setTimeout(() => {
             saveState(queuedState);
-        }, delay);
+        }, delay) as unknown as number;
 
         return () => {
             clearTimeout(timerId.current);
@@ -50,7 +50,7 @@ export function useDebouncedState(initial, delay) {
     return [debouncedState, queueState];
 }
 
-export function useStableState(prop) {
+export function useStableState(prop: any) {
     /* Creates a ref that is updated when the prop changes */
     const stableProp = useRef(prop);
 
@@ -61,9 +61,10 @@ export function useStableState(prop) {
     return stableProp
 }
 
-export function useDownloadUrl(url) {
-    const [blobUrl, setBlobUrl] = useState();
-    function download(e) {
+
+export function useDownloadUrl(url: string) {
+    const [blobUrl, setBlobUrl] = useState<string>();
+    function download(e: any) {
         if (!url || blobUrl) {return}
         e.preventDefault();
 
@@ -88,7 +89,7 @@ export function useDownloadUrl(url) {
 }
 
 
-export function useScrollPaginate(element, loadSize) {
+export function useScrollPaginate(element: HTMLElement, loadSize: number) {
     const [loaded, setLoaded] = useState(loadSize);
     const stableLoadSize = useStableState(loadSize);
     
@@ -115,12 +116,12 @@ export function useScrollPaginate(element, loadSize) {
     return loaded;
 }
 
-export function useDrag(mouseMoveFunc) {
+export function useDrag(mouseMoveFunc: (event: MouseEvent) => void) {
     /* Fires mouseMoveFunc while the mouse being dragged */
     
     const [dragging, setDragging] = useState(false);
 
-    const mouseDown = useCallback((e) => {
+    const mouseDown = useCallback((e: MouseEvent) => {
         e.preventDefault();  // Prevent text selection
         setDragging(true);
         mouseMoveFunc(e);  // Fire once in case clicked and no mouse movement
@@ -150,4 +151,23 @@ export function useDrag(mouseMoveFunc) {
     }, [mouseMoveFunc, mouseUp])
 
     return mouseDown
+}
+
+export function useCatchState<T>(value: () => T, tryFunc: (newState: T, tryValue?: any) => Promise<void>, catchFunc?: () => void): 
+                                [T, (newState: T, tryValue?: any) => void] {
+    /* A modified useState that tries tryFunc and reverts the value on error */
+    const [state, setState] = useState(value);
+
+    async function dispatch(newState: T, tryValue?: any) {
+        setState(newState);
+        try {
+            await tryFunc(newState, tryValue)
+        }
+        catch {
+            setState(value);
+            catchFunc?.();
+        }
+    };
+
+    return [state, dispatch];
 }

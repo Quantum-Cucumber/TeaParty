@@ -20,8 +20,13 @@
         border-bottom: none;
     }
 
-    &__options {
-        padding: 15px 10px;
+    &__description {
+        color: var(--text-greyed);
+        padding: 10px 10px 0px;
+    }
+
+    &__body {
+        padding: 10px;
         overflow-x: auto;
         @include common.scroll-style();
     }

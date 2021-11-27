@@ -15,13 +15,18 @@ import { mdiCheck, mdiChevronDown, mdiPencil } from "@mdi/js";
 import type { ChangeEvent, ComponentProps } from "react";
 
 
-export function Section({ name, children }: {name?: string, children: React.ReactNode}) {
+export function Section({ name, description, children }: {name?: string, description?: string, children: React.ReactNode}) {
     return (
         <div className="settings__panel__group">
             { name &&
                 <div className="settings__panel__group__label">{name}:</div>
             }
-            <div className="settings__panel__group__options">
+            { description &&
+                <div className="settings__panel__group__description">
+                    {description}
+                </div>
+            }
+            <div className="settings__panel__group__body">
                 {children}
             </div>
         </div>
@@ -286,7 +291,7 @@ export function DropDown({value, options, saveFunc, canEdit = true, allowCustom 
                     Object.keys(options)
                     .filter((key) => options[key].hidden !== false)  // This allows for values that should be displayed with text, but not show as an option
                     .map((key) => {
-                        if (number && (key < min || key > max)) {return null}  // Only show options in the specified range
+                        if (number && (parseInt(key) < min || parseInt(key) > max)) {return null}  // Only show options in the specified range
 
                         const {text, icon = null} = key in options ? options[key] : {text: allowCustom ? `Custom (${key})` : "Unknown value"};
                         return (
