@@ -243,6 +243,7 @@ interface DropDownProps {
     saveFunc: (value: any) => void,  // Not sure if "any" is the right way to do it
     canEdit?: boolean,
     allowCustom?: boolean,
+    allowNull?: boolean,
     placeholder?: string,
     number?: boolean,
     min?: number;
@@ -274,7 +275,7 @@ interface DropDownNumberProps extends DropDownProps {
 
 export function DropDown(props: DropDownStringProps): JSX.Element;
 export function DropDown(props: DropDownNumberProps): JSX.Element;
-export function DropDown({value, options, saveFunc, canEdit = true, allowCustom = false, placeholder = "Unknown value", number = false, min = 0, max = Infinity}: DropDownProps) {
+export function DropDown({value, options, saveFunc, canEdit = true, allowCustom = false, allowNull = false, placeholder = "Unknown value", number = false, min = 0, max = Infinity}: DropDownProps) {
     const [isCustom, setCustom] = useState(false);
     const setPopup: (popup: JSX.Element) => void = useContext(popupCtx);
 
@@ -308,7 +309,15 @@ export function DropDown({value, options, saveFunc, canEdit = true, allowCustom 
                         )
                     })
                 }
-                {   allowCustom &&
+                { allowNull &&
+                    <Option compact text="None"
+                        select={() => {
+                            setPopup(null);
+                            save(null);
+                        }}
+                    />
+                }
+                { allowCustom &&
                     <Option compact text="Custom"
                         select={() => {
                             setPopup(null);
@@ -318,7 +327,7 @@ export function DropDown({value, options, saveFunc, canEdit = true, allowCustom 
                 }
             </ContextMenu>
         )
-    }, [setPopup, options, value, allowCustom, number, min, max, save])
+    }, [setPopup, options, value, allowNull, allowCustom, number, min, max, save])
 
 
     const {text, icon = null} = value in options ? options[value] : {text: allowCustom && value ? `Custom (${value})` : placeholder};

@@ -12,7 +12,7 @@ import { classList, stringSize } from "../../../utils/utils";
 import { useCatchState, useScrollPaginate } from "../../../utils/hooks";
 import { aliasRegex, getMember } from "../../../utils/matrix-client";
 
-import { mdiChatQuestion, mdiCheck, mdiEarth, mdiEmail, mdiGavel, mdiShield, mdiText } from "@mdi/js"
+import { mdiChatQuestion, mdiCheck, mdiClose, mdiEarth, mdiEmail, mdiGavel, mdiShield, mdiText } from "@mdi/js"
 
 import type { FormEvent } from "react";
 import type { Room, RoomMember } from "matrix-js-sdk";
@@ -86,7 +86,7 @@ function Overview({ room }: {room: Room}) {
     const [roomName, setName] = useState(room.name);
     const [roomTopic, setTopic] = useState(getTopic(room));
     const [roomVisibility, setVisibility] = useState(getJoinRule(room));
-    const [canonicalAlias, setCanonicalAlias] = useState(room.getCanonicalAlias());
+    const [canonicalAlias, setCanonicalAlias] = useCatchState(() => room.getCanonicalAlias(), saveCanonicalAlias);
     const [roomAliases, setAliases] = useCatchState<string[]>(null, saveAliases);
     const [roomIsPublished, setIsPublished] = useState<boolean>(null);  // Start as null to indicate the true value hasn't loaded
 
@@ -137,8 +137,26 @@ function Overview({ room }: {room: Room}) {
         })
     }, [room, roomIsPublished])
 
-    async function saveAliases(newAliases: string[], newAlias: string) {
-        await global.matrix.createAlias(newAlias, room.roomId);
+    async function saveCanonicalAlias(newAlias: string) {
+        // Get current state event
+        const oldEvent = room.currentState.getStateEvents("m.room.canonical_alias", "")?.getContent() || {};
+        // Create new event
+        const newEvent = {alias: newAlias, alt_aliases: "alt_aliases" in oldEvent ? oldEvent.alt_aliases : []};
+        // Send event
+        await global.matrix.sendStateEvent(room.roomId, "m.room.canonical_alias", newEvent, "");
+    }
+
+    async function saveAliases(_newAliases: string[], alias: {action: "add" | "remove", alias: string}) {
+        switch (alias.action) {
+            case "add":
+                await global.matrix.createAlias(alias.alias, room.roomId);
+                break;
+            case "remove":
+                await global.matrix.deleteAlias(alias.alias)
+                break;
+            default:
+                break;
+        }
     }
 
 
@@ -153,7 +171,7 @@ function Overview({ room }: {room: Room}) {
     function loadAliases() {
         global.matrix.unstableGetLocalAliases(room.roomId)
         .then((response: {aliases: string[]}) => {
-            setAliases(response.aliases);
+            setAliases(response.aliases, null, true);
         })
     }
 
@@ -175,7 +193,7 @@ function Overview({ room }: {room: Room}) {
         }
 
         const newAliases = [...roomAliases, newAlias];
-        setAliases(newAliases, newAlias)
+        setAliases(newAliases, {action: "add", alias: newAlias})
 
         setNewAlias("");
     }
@@ -197,7 +215,7 @@ function Overview({ room }: {room: Room}) {
             <Toggle label="Publish this room to the public room directory" value={!!roomIsPublished} canEdit={canEditAliases && roomIsPublished !== null} saveFunc={saveIsPublished} />
             <div className="settings__row settings__row__label">
                 <Section name="Room Aliases">
-                    <DropDownRow label="Canonical Alias" value={canonicalAlias} options={options} placeholder="None" saveFunc={setCanonicalAlias} canEdit={canEditAliases && !!roomAliases} />
+                    <DropDownRow label="Canonical Alias" value={canonicalAlias} options={options} placeholder="None" saveFunc={setCanonicalAlias} canEdit={canEditAliases && !!roomAliases} allowNull />
                     <div className="settings__row">
                         <div className="settings__row__label">
                             { roomAliases ?
@@ -205,13 +223,23 @@ function Overview({ room }: {room: Room}) {
                                     {
                                         roomAliases.map((alias) => {
                                             return (
-                                                <div className="settings__row settings__row__label">
-                                                    {alias}
+                                                <div className="settings__row" key={alias}>
+                                                    <div className="settings__row__label">
+                                                        {alias}
+                                                    </div>
+                                                    { canEditAliases &&
+                                                        <Button path={mdiClose} size="1em" 
+                                                            clickFunc={() => {
+                                                                const newAliases = [...roomAliases.filter((a) => a !== alias)]
+                                                                setAliases(newAliases, {action: "remove", alias: alias});
+                                                            }}
+                                                        />
+                                                    }
                                                 </div>
                                             )
                                         })
                                     }
-                                    { (canEditAliases || true) &&
+                                    { canEditAliases &&
                                         <div className="settings__row settings__row__label">
                                             <form className="room-settings__new-alias" onSubmit={submitAlias}>
                                                 <input placeholder="Add alias" type="text"

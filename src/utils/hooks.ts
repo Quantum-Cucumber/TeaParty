@@ -154,18 +154,20 @@ export function useDrag(mouseMoveFunc: (event: MouseEvent) => void) {
 }
 
 export function useCatchState<T>(value: () => T, tryFunc: (newState: T, tryValue?: any) => Promise<void>, catchFunc?: () => void): 
-                                [T, (newState: T, tryValue?: any) => void] {
+                                [T, (newState: T, tryValue?: any, setRaw?: boolean) => void] {
     /* A modified useState that tries tryFunc and reverts the value on error */
     const [state, setState] = useState(value);
 
-    async function dispatch(newState: T, tryValue?: any) {
+    async function dispatch(newState: T, tryValue?: any, setRaw = false) {
         setState(newState);
-        try {
-            await tryFunc(newState, tryValue)
-        }
-        catch {
-            setState(value);
-            catchFunc?.();
+        if (!setRaw) {
+            try {
+                await tryFunc(newState, tryValue)
+            }
+            catch {
+                setState(value);
+                catchFunc?.();
+            }
         }
     };
 

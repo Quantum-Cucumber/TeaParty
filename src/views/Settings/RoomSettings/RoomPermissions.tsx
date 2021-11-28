@@ -222,7 +222,7 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
                             }}
                         />
 
-                        { canEditPowerLevels &&
+                        { (canEditPowerLevels && powerLevel <= maxPowerLevel) &&
                             <Button path={mdiClose} subClass="settings__row__action" size="1em" 
                                 clickFunc={() => {
                                     const newEvent = {...powerLevelEvent};
