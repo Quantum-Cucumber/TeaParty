@@ -11,7 +11,6 @@ import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { useOnKeypress } from "../../utils/hooks";
 import { classList } from "../../utils/utils";
-import { getHomeserver } from "../../utils/matrix-client";
 import Settings from "../../utils/settings";
 
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy, mdiEye } from "@mdi/js";
@@ -258,7 +257,6 @@ function MyUser() {
         setTooltipText(clickedText);
         setTimeout(() => setTooltipText(defaultText), 1000);
     }
-
     return (<>
             <Avatar subClass="user__avatar" user={user}></Avatar>
             <Tooltip text={tooltipText} dir="top" x="mouse" delay={0.5}>

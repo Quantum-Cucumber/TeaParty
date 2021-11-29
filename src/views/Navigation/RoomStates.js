@@ -2,7 +2,7 @@ import { useEffect, useRef, useCallback, useReducer } from "react";
 import Settings, { isEventVisibility } from "../../utils/settings";
 import { debounce } from "../../utils/utils";
 import { useStableState } from "../../utils/hooks";
-import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpaces, flatSubrooms, getRootSpaces } from "../../utils/roomFilters";
+import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpaces, flatSubrooms } from "../../utils/roomFilters";
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
 import { sortRooms } from "../../utils/roomFilters";
 
@@ -150,30 +150,21 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
     const _membershipChange = useCallback((room, state, oldState) => {
         console.log("Membership change", oldState, state, room);
 
-        function isVisible(room) {
-            if (getRootSpaces().includes(room)) {return true};
-            return roomInGroup(stableCurrentGroup.current.key, room);
+        switch (state) {
+            case "invite":
+                refreshInvites();
+                break;
+            case "join":
+                refreshRooms();
+                break;
+            case "leave":
+            case "ban":
+                refreshRooms();
+                break;
+            default:
+                break;
         }
-
-        // Left room
-        if (state === "leave" || state === "ban") {
-            if (isVisible) {
-                refreshRooms()
-            }
-        }
-
-        // New invite to a room, or invite has changed (joined room etc)
-        if (state === "invite" || oldState === "invite") {
-            refreshInvites();
-        }
-
-        // Joined room 
-        if (state === "join") {
-            if (isVisible) {
-                refreshRooms()
-            }
-        }
-    }, [stableCurrentGroup, refreshRooms, refreshInvites])
+    }, [refreshRooms, refreshInvites])
 
     // Direct room added
     const _accountData = useCallback((event) => {
