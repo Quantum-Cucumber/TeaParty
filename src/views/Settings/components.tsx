@@ -1,16 +1,16 @@
 import "./components.scss";
 import { useCallback, useState, useRef, useEffect, useContext } from "react";
 
-import { Button, Option } from "../../components/elements";
+import { Button, Loading, Option } from "../../components/elements";
 import { FancyText } from "../../components/wrappers";
 import { ContextMenu, popupCtx } from "../../components/popups";
 
 import Settings from "../../utils/settings";
 import { classList } from "../../utils/utils";
-import { useDrag } from "../../utils/hooks";
+import { useCatchState, useDrag } from "../../utils/hooks";
 
 import Icon from "@mdi/react";
-import { mdiCheck, mdiChevronDown, mdiPencil } from "@mdi/js";
+import { mdiCheck, mdiChevronDown, mdiImageFilterHdr, mdiPencil } from "@mdi/js";
 
 import type { ChangeEvent, ComponentProps } from "react";
 
@@ -373,6 +373,108 @@ export function DropDownRow({ label, ...dropdownProps }: DropDownRowProps) {
                 {label}
             </div>
             <DropDown {...dropdownProps} />
+        </div>
+    )
+}
+
+
+// export function ImageUpload({ onSelect, canEdit = true, children }: ImageUploadProps) {
+//     const inputRef = useRef<HTMLInputElement>();
+
+//     function onChange(e: ChangeEvent<HTMLInputElement>) {
+//         onSelect(e.target.files[0]);
+//     }
+
+//     const child = cloneElement(children, {
+//         onClick: () => {inputRef.current?.click()},
+//     });
+
+//     return (
+//         canEdit ?
+//             <div className="image-upload">
+//                 <Tooltip text="Change" dir="bottom">
+//                     {child}
+//                 </Tooltip>
+//                 <input type="file" accept="image/*" className="image-upload__input" onChange={onChange} ref={inputRef} />
+//             </div>
+//         :
+//             children
+//     )
+// }
+
+const mxcToHttp = (mxcUrl: string) => global.matrix.mxcUrlToHttp(mxcUrl, 96, 96, "crop") as string
+
+type ImageUploadProps = {
+    mxcUrl: string,
+    onSelect: (mxcUrl: string) => Promise<void>,
+    canEdit?: boolean,
+}
+
+export function ImageUpload({ mxcUrl, onSelect, canEdit = true }: ImageUploadProps) {
+    const [currentMxcUrl, setMxcUrl] = useCatchState(mxcToHttp(mxcUrl), onSelect);
+    const [state, setState] = useState<"loading" | "edit" | "static">(canEdit ? "edit" : "static");
+    const inputRef = useRef<HTMLInputElement>();
+
+    useEffect(() => {
+        setMxcUrl(mxcUrl, null, true);
+    }, [mxcUrl, setMxcUrl])
+
+    async function onChange(e: ChangeEvent<HTMLInputElement>) {
+        const file = e.target.files[0];
+
+        setState("loading");
+        try {
+            const newMxcUrl: string = await global.matrix.uploadContent(file, {onlyContentUri: true});
+            await setMxcUrl(newMxcUrl);
+        }
+
+        finally {
+            setState(canEdit ? "edit" : "static");
+        }
+
+    }
+
+
+    let statusElement: JSX.Element;
+    switch (state) {
+        case "edit":
+            statusElement = (
+                <div className="image-upload__banner">Edit</div>
+            );
+            break;
+        case "loading":
+            statusElement = (
+                <div className="image-upload__loading">
+                    <Loading size="2em" />
+                </div>
+            );
+            break;
+        case "static":
+        default:
+            statusElement = null;
+            break;
+    }
+
+    return (
+        <div className={classList("image-upload", {"image-upload--disabled": !canEdit})}>
+            <div className="room-icon__crop">
+                <div className="image-upload__body" onClick={state === "edit" ? () => inputRef.current?.click() : null}>
+                    { currentMxcUrl ?
+                        <>
+                            <img className="room-icon" src={mxcToHttp(currentMxcUrl)} alt="Room Avatar" />
+                        </>
+                    :
+                    <div className="room-icon">
+                            <Icon path={mdiImageFilterHdr} size="2em" color="var(--toggle-indicator)" />
+                        </div>
+                    }
+                    {statusElement}
+                </div>
+            </div>
+            { (state === "edit" && currentMxcUrl) &&
+                <button className="settings__button--link" onClick={() => setMxcUrl(null)}>Remove</button>
+            }
+            <input type="file" accept="image/*" className="image-upload__input" onChange={onChange} ref={inputRef} />
         </div>
     )
 }

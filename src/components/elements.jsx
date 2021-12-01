@@ -1,5 +1,5 @@
 import "./elements.scss";
-import { useState, useReducer, useRef } from "react";
+import { useState, useReducer, useRef, useEffect } from "react";
 
 import { ContextMenu, Tooltip } from "./popups";
 import { Avatar } from "./user";
@@ -32,17 +32,38 @@ export function Loading({ size }) {
 }
 
 
+const getRoomUrl = (room) => room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+
 export function RoomIcon({ room }) {
-    const iconUrl = room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+    const [iconUrl, setIconUrl] = useState(getRoomUrl(room));
     const directRoom = isDirect(room);
+
+    // Bind listener for room avatar updates
+    useEffect(() => {
+        // When the room changes, update the icon
+        setIconUrl(getRoomUrl(room));
+
+        function stateUpdate(event) {
+            if (event.getRoomId() === room.roomId && event.getType() === "m.room.avatar") {
+                const httpUrl = global.matrix.mxcUrlToHttp(event.getContent().url, 96, 96, "crop");
+                setIconUrl(httpUrl);
+            }
+        }
+
+        global.matrix.addListener("RoomState.events", stateUpdate);
+        return () => {
+            global.matrix.removeListener("RoomState.events", stateUpdate);   
+        }
+        
+    }, [room])
 
     if (!iconUrl && directRoom) {
         const user = global.matrix.getUser(room.guessDMUserId());
-        return <Avatar subClass="room__icon" user={user} />
+        return <Avatar subClass="room-icon" user={user} />
     } else {
         return iconUrl ?
-               <img className="room__icon" src={iconUrl} alt={acronym(room.name)} /> :
-               <div className="room__icon">{acronym(room.name)}</div>;
+               <img className="room-icon" src={iconUrl} alt={acronym(room.name)} /> :
+               <div className="room-icon">{acronym(room.name)}</div>;
     }
 }
 

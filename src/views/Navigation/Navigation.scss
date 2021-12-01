@@ -50,35 +50,9 @@ $border: 2px solid var(--bg-dark);
     }
 }
 
-.room__icon__crop {
-    width: 1.5rem;
-    aspect-ratio: 1;
-    overflow: hidden;
-    border-radius: var(--avatar-radius);
-    flex: none;
 
-    & > .room__icon {
-        font-size: 0.6rem;
-    }
-}
-
-
-.room {
-    &__icon {
-        height: 100%;
-        width: 100%;
-        background-color: var(--bg);
-        /* To center text */
-        user-select: none;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        font-weight: bold;
-    }
-
-    &__label {
-        display: inline-block;
-    }
+.room__label {
+    display: inline-block;
 }
 
 .room__placeholder {

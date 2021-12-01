@@ -9,6 +9,31 @@
 }
 
 
+.room-icon__crop {
+    width: 1.5rem;
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: var(--avatar-radius);
+    flex: none;
+
+    & > .room-icon {
+        font-size: 0.6rem;
+    }
+}
+
+.room-icon {
+    height: 100%;
+    width: 100%;
+    background-color: var(--bg);
+    /* To center text */
+    user-select: none;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-weight: bold;
+}
+
+
 @mixin option {
     width: 100%;
     padding: 8px;

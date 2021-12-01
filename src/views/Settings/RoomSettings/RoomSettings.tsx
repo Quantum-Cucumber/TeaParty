@@ -4,8 +4,8 @@ import { useHistory } from "react-router-dom";
 
 import SettingsPage from "../Settings"
 import RoomPermissions, { getPowerLevels } from "./RoomPermissions";
-import { EditableText, Section, Toggle, DropDownRow } from "../components";
-import { Button, RoomIcon } from "../../../components/elements";
+import { EditableText, Section, Toggle, DropDownRow, ImageUpload } from "../components";
+import { Button } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
 
 import { classList, stringSize } from "../../../utils/utils";
@@ -97,6 +97,7 @@ function Overview({ room }: {room: Room}) {
     // Determine what state events can be sent
     const canEditName = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
     const canEditTopic = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
+    const canEditAvatar = room.currentState.maySendStateEvent("m.room.avatar", global.matrix.getUserId());
     const canEditJoinRules = room.currentState.maySendStateEvent("m.room.join_rules", global.matrix.getUserId());
     const canEditAliases = room.currentState.maySendStateEvent("m.room.canonical_aliases", global.matrix.getUserId());
 
@@ -159,6 +160,10 @@ function Overview({ room }: {room: Room}) {
         }
     }
 
+    async function changeAvatar(newMxcUrl: string) {
+        await global.matrix.sendStateEvent(room.roomId, "m.room.avatar", newMxcUrl ? {url: newMxcUrl} : {}, "");
+    }
+
 
     // Fetch whether the room is published to the HS's directory
     useEffect(() => {
@@ -205,9 +210,7 @@ function Overview({ room }: {room: Room}) {
                 <EditableText label="Room name" text={roomName} subClass="room-settings__basic__name" canEdit={canEditName} saveFunc={saveName} validation={(value) => stringSize(value) <= 255} />
                 <EditableText multiline label="Room topic" text={roomTopic} subClass="settings__panel__group__body" canEdit={canEditTopic} saveFunc={saveTopic}/>
             </div>
-            <div className="room__icon__crop">
-                <RoomIcon room={room} />
-            </div>
+            <ImageUpload mxcUrl={room.getMxcAvatarUrl()} canEdit={canEditAvatar} onSelect={changeAvatar} />
         </div>
         
         <Section name="Visibility">
@@ -252,7 +255,7 @@ function Overview({ room }: {room: Room}) {
                                     }
                                 </Section>
                             :
-                                <a href="" onClick={(e) => {e.preventDefault(); loadAliases()}}>Load aliases</a>
+                                <button className="settings__button--link" onClick={loadAliases}>Load aliases</button>
                             }
                         </div>
                     </div>

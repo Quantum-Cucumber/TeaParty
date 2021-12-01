@@ -60,7 +60,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
             <Button path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
 
             {room.current && <>
-                <div className="chat-header__icon room__icon__crop">
+                <div className="chat-header__icon room-icon__crop">
                     <RoomIcon room={room.current} />
                 </div>
                 <div className="chat-header__name">

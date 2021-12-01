@@ -138,4 +138,15 @@ $settings-padding: 50px;
             box-shadow: none;
         }
     }
+    &--link {
+        border: none;
+        background-color: transparent;
+        font-size: 1em;
+        margin: 0;
+        padding: 0;
+
+        cursor: pointer;
+        color: var(--primary);
+        text-decoration: underline;
+    }
 }

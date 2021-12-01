@@ -153,12 +153,12 @@ export function useDrag(mouseMoveFunc: (event: MouseEvent) => void) {
     return mouseDown
 }
 
-export function useCatchState<T>(value: () => T, tryFunc: (newState: T, tryValue?: any) => Promise<void>, catchFunc?: () => void): 
-                                [T, (newState: T, tryValue?: any, setRaw?: boolean) => void] {
+export function useCatchState<T>(value: (() => T) | T, tryFunc: (newState: T, tryValue?: any) => Promise<void>, catchFunc?: () => void): 
+                                [T, (newState: T, tryValue?: any, setRaw?: boolean) => Promise<void>] {
     /* A modified useState that tries tryFunc and reverts the value on error */
     const [state, setState] = useState(value);
 
-    async function dispatch(newState: T, tryValue?: any, setRaw = false) {
+    const dispatch = useCallback(async (newState: T, tryValue?: any, setRaw = false) => {
         setState(newState);
         if (!setRaw) {
             try {
@@ -169,7 +169,7 @@ export function useCatchState<T>(value: () => T, tryFunc: (newState: T, tryValue
                 catchFunc?.();
             }
         }
-    };
+    }, [tryFunc, value, catchFunc]);
 
     return [state, dispatch];
 }
