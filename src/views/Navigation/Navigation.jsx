@@ -157,12 +157,7 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
 
     const elements = rooms.map((room) => {
         const key = room.roomId;
-        const icon = showRoomIcons ? (
-                                        <div className="room-icon__crop">
-                                            <RoomIcon room={room} />
-                                        </div>
-                                     ) 
-                                   : null;
+        const icon = showRoomIcons ? <RoomIcon room={room} /> : null;
 
         const roomState = roomStates[room.roomId];
         const unreadDot = roomState ? !roomState.read : false;

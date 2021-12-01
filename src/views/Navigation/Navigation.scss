@@ -32,6 +32,15 @@ $border: 2px solid var(--bg-dark);
         overflow: hidden auto;
         @include common.scroll-style();
 
+        .option, .option--dropdown {
+            & > .avatar {
+                height: 1.5rem;
+                font-size: 0.6em;
+                color: var(--text);
+                background-color: var(--bg);
+            }
+        }
+
         &__loading {
             display: flex;
             width: 100%;
@@ -110,6 +119,11 @@ $group-padding: 11px;
     &--collapsed {
         width: 0;
     }
+
+    .group > .avatar {
+        background-color: var(--bg);
+        color: var(--text)
+    }
 }
 
 .group__holder {
@@ -130,15 +144,15 @@ $group-padding: 11px;
     overflow: hidden;
     cursor: pointer;
     transition: 0.2s;
-    border-radius: var(--avatar-radius);
-
+    
     &--default {
         background: var(--bg);
         padding: 5px;
         box-sizing: border-box;
+        border-radius: var(--avatar-radius);
     }
 
-    &--selected, &:hover {
+    &--selected, &:hover > .avatar, &--default:hover {
         border-radius: calc(var(--avatar-radius) - 15%);
     }
 

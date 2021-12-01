@@ -32,7 +32,7 @@ export function Avatar({ user, subClass = null, ...props }) {
     }
 
     return (
-        <div className={classList("avatar__crop", subClass)} {...props}>
+        <div className={subClass} {...props}>
             {icon}
         </div>
     );

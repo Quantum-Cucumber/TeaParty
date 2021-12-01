@@ -19,11 +19,9 @@
         margin-right: 10px;
         position: relative;
 
-        .room-icon__crop {
-            width: unset !important;
-            height: 100%;
-        }
-        .room-icon {
+        .avatar {
+            font-size: 0.6em;
+            color: var(--text);
             background-color: var(--bg-focus);
         }
     }

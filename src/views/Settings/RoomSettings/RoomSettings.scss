@@ -7,14 +7,13 @@
         flex: 1 1 auto;
         overflow-x: hidden;
     }
-    .room-icon__crop {
-        flex: none;
-        height: 5em;
-        width: 5em;
-        margin: 0.5em 2em;
 
-        .room-icon {
-            font-size: 1.2em;
+    .image-upload {
+        margin: 0.5em 2em;
+        
+        .avatar {
+            height: 5em;
+            width: 5em;
         }
     }
     

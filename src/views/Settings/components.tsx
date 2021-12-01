@@ -457,19 +457,15 @@ export function ImageUpload({ mxcUrl, onSelect, canEdit = true }: ImageUploadPro
 
     return (
         <div className={classList("image-upload", {"image-upload--disabled": !canEdit})}>
-            <div className="room-icon__crop">
-                <div className="image-upload__body" onClick={state === "edit" ? () => inputRef.current?.click() : null}>
-                    { currentMxcUrl ?
-                        <>
-                            <img className="room-icon" src={mxcToHttp(currentMxcUrl)} alt="Room Avatar" />
-                        </>
-                    :
-                    <div className="room-icon">
-                            <Icon path={mdiImageFilterHdr} size="2em" color="var(--toggle-indicator)" />
-                        </div>
-                    }
-                    {statusElement}
-                </div>
+            <div className="image-upload__body" onClick={state === "edit" ? () => inputRef.current?.click() : null}>
+                { currentMxcUrl ?
+                    <img className="avatar" src={mxcToHttp(currentMxcUrl)} alt="Room Avatar" />
+                :
+                <div className="avatar">
+                        <Icon path={mdiImageFilterHdr} size="2em" color="var(--toggle-indicator)" />
+                    </div>
+                }
+                {statusElement}
             </div>
             { (state === "edit" && currentMxcUrl) &&
                 <button className="settings__button--link" onClick={() => setMxcUrl(null)}>Remove</button>

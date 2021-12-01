@@ -59,11 +59,11 @@ export function RoomIcon({ room }) {
 
     if (!iconUrl && directRoom) {
         const user = global.matrix.getUser(room.guessDMUserId());
-        return <Avatar subClass="room-icon" user={user} />
+        return <Avatar subClass="avatar" user={user} />
     } else {
         return iconUrl ?
-               <img className="room-icon" src={iconUrl} alt={acronym(room.name)} /> :
-               <div className="room-icon">{acronym(room.name)}</div>;
+               <img className="avatar" src={iconUrl} alt={acronym(room.name)} /> :
+               <div className="avatar">{acronym(room.name)}</div>;
     }
 }
 

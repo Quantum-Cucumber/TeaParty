@@ -1,74 +1,4 @@
 @use "../utils/common";
-@use "sass:meta";
-
-/* Colour themes */
-.dark {
-    --primary: #5e72d1;
-    --primary-hover: #5e71d1c7;
-    --bg: #494a51;
-    --bg-hover: #3a3b4394;
-    --bg-focus: #3a3b43;
-    --bg-dark: #2a2b31;
-    --text: #e6e6e6;
-    --text-greyed: #8d8d8d;
-    --success: #52c550;
-    --error: #ed3f3e;
-    --border: #1c1c1c;
-    --matrix-logo: #fff;
-
-    /* User colours */
-    --blue: #4a93e1;
-    --magenta: #e248f8;
-    --aqua: #93e1d8;
-    --pink: #ffafec;
-    --orange: #ff721e;
-    --light-blue: #7cbad5;
-    --purple: #9a5df4;
-    --green: #53dd6c;
-
-    @include meta.load-css("~highlight.js/styles/github-dark");
-}
-
-.light {
-    --primary: #df79d4;
-    --primary-hover: #df79d499;
-    --bg: #efefef;
-    --bg-hover: #efefef94;
-    --bg-focus: #e1e1e1;
-    --bg-dark: #d3d3d3;
-    --text: #404040;
-    --text-greyed: #6c6c6c;
-    --success: #67c671;
-    --error: #e55757;
-    --border: #bebebe;
-    --matrix-logo: #000;
-
-    /* User colours */
-    --blue: #2e79ed;
-    --magenta: #c628ff;
-    --aqua: #05c7b0;
-    --pink: #ff3fb5;
-    --orange: #f55c00;
-    --light-blue: #2cbdfc;
-    --purple: #864af1;
-    --green: #0ade35;
-
-    @include meta.load-css("~highlight.js/styles/github");
-}
-
-
-/* Universal styles */
-:root {
-    --font-standard: Arial, Helvetica, sans-serif;
-    --font-monospace: monospace;
-    --font-size: 16px;
-
-    --avatar-rounded: 30%;
-    --avatar-radius: var(--avatar-rounded);
-
-    --toggle-indicator: #e6e6e6;
-    --toggle-bg-off: #8d8d8d;
-}
 
 body, html, #root {
     font-family: var(--font-standard);
@@ -80,9 +10,11 @@ body, html, #root {
     background-color: var(--bg);
 }
 
+
 a {
     color: var(--primary);
 }
+
 
 .mention {
     background-color: var(--primary-hover);
@@ -94,11 +26,13 @@ a {
     /*cursor: pointer;*/
 }
 
+
 .codeblock {
     @include common.codeblock;
     background-color: var(--bg-dark);
     white-space: pre-wrap;
 }
+
 
 .header {
     height: 2.5rem;
@@ -114,6 +48,7 @@ a {
     }
 }
 
+
 /* Twemoji inline */
 img.emoji {
     height: 1em;
@@ -121,6 +56,7 @@ img.emoji {
     margin: 0 .05em 0 .1em;
     vertical-align: -0.1em;
  }
+
 
 /* Scrollbars :] */
 @mixin hide-scroll {
@@ -141,4 +77,24 @@ img.emoji {
         @include hide-scroll;
     }
     scrollbar-width: thin;
+}
+
+
+.avatar {
+    flex: none;  // In general, we like to keep the avatar
+
+    height: 100%;
+    aspect-ratio: 1;
+    user-select: none;
+    font-weight: bold;
+    color: var(--bg);
+    
+    /* Center text if included */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* Round crop */
+    border-radius: var(--avatar-radius);
+    overflow: hidden;  // Just in case
 }

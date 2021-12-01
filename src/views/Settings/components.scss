@@ -239,20 +239,22 @@
     flex-direction: column;
     align-items: center;
 
-    &:not(&--disabled) .room-icon {
+    &:not(&--disabled) .avatar {
         cursor: pointer;
     }
-    .room-icon:hover ~ &__banner {
+    .avatar:hover ~ &__banner {
         opacity: 0.7;
     }
-    &:not(&--disabled) .room-icon__crop:hover {
+    &:not(&--disabled) .avatar:hover {
         filter: drop-shadow(0 0 3px var(--border));
     }
 
     &__body {
-        height: 100%;
-        width: 100%;
         position: relative;
+
+        border-radius: var(--avatar-radius);
+        overflow: hidden;
+        font-size: 0.9em;
     }
 
     &__banner {
@@ -261,7 +263,6 @@
         width: 100%;
         padding: 0.2em 0;
 
-        font-size: 0.9em;
         opacity: 0.5;
         background-color: var(--border);
         user-select: none;
@@ -287,8 +288,12 @@
         align-items: center;
     }
 
-    .room-icon {
+    .avatar {
         background-color: var(--toggle-bg-off);
+    }
+
+    .settings__button--link {
+        font-size: 0.9em;
     }
 
     &__input {

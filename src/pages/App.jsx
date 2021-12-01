@@ -1,5 +1,6 @@
-import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
+import './themes.scss';
 import './root.scss';
+import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
 import Login from "./Login/Login";
 import ClientRouter from "./Client/ClientRouter";
 import { logged_in } from "../utils/matrix-client";
