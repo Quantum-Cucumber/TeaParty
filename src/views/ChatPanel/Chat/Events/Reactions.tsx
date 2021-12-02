@@ -1,45 +1,61 @@
 import "./Reactions.scss";
-import { useReducer, useEffect, useState, useContext } from "react";
+import { useReducer, useEffect, useState, useContext, useCallback } from "react";
+import { EventType, RelationType } from "matrix-js-sdk/lib/@types/event";
 
 import { Option } from "../../../../components/elements";
 import { popupCtx, Tooltip } from "../../../../components/popups"
 import { Member, UserPopup } from "../../../../components/user";
+import { FancyText } from "../../../../components/wrappers";
 
 import { getMember } from "../../../../utils/matrix-client";
 import { classList, friendlyList } from "../../../../utils/utils";
-import { FancyText } from "../../../../components/wrappers";
+import { useCatchState } from "../../../../utils/hooks";
+import { addReaction } from "../../../../utils/eventSending";
 
-function getEventRelations(event, relationType, eventType) {
+import type { MatrixEvent, Room, RoomMember } from "matrix-js-sdk";
+import type { Relations } from "matrix-js-sdk/lib/models/relations";
+
+
+function getEventRelations(event: MatrixEvent, relationType:  RelationType, eventType: string) {
     /* A simple wrapper for EventTimelineSet.getRelationsForEvent, taking the event object as an arg */
-    const room = global.matrix.getRoom(event.getRoomId());
+    const room: Room = global.matrix.getRoom(event.getRoomId());
     const timelineSet = room.getLiveTimeline().getTimelineSet();
     return timelineSet.getRelationsForEvent(event.getId(), relationType, eventType);
 }
-export function getEventReactions(event) {
+export function getEventReactions(event: MatrixEvent) {
     // MSC2677: https://github.com/matrix-org/matrix-doc/pull/2677
-    const relations = getEventRelations(event, "m.annotation", "m.reaction");
+    const relations = getEventRelations(event, RelationType.Annotation, "m.reaction");
     return relations;
 }
 
-function getReacted(relation) {
-    let output = {};
+function getReacted(relation: Relations) {
+    let output: {[key: string]: {count: number, myReact: MatrixEvent, members: RoomMember[]}} = {};
 
-    relation.getSortedAnnotationsByKey().forEach(([emote, eventSet]) => {
+    relation.getSortedAnnotationsByKey()
+    // Sort by count, then by age
+    .sort((a, b) => {
+        const aEvents = a[1];
+        const aDates = [...aEvents].map((ev) => ev.getAge());
+        const bEvents = b[1];
+        const bDates = [...bEvents].map((ev) => ev.getAge());
+        return Math.max(...bDates) - Math.max(...aDates);
+    })
+    .forEach(([emote, eventSet]) => {
         const count = eventSet.size;  // Number of reactions to be displayed
         if (!count) {return} // Ignore if no reactions for that emote
-        let me = false;  // Whether the user has selected this reaction
+        let myReact = null;  // Whether the user has selected this reaction
 
         // Produce the list of people who have reacted 
         const members = [...eventSet].filter((event) => {
             if (event.getSender() === global.matrix.getUserId() && !event.isRedacted())  {
-                me = true;
+                myReact = event;
             }
             return !event.isRedacted();  // Don't show redacted reactions
         }).map((event) => {
             return getMember(event.getRoomId(), event.getSender());
         }).filter(member => Boolean(member))
 
-        output[emote] = {count: count, me: me, members: members};
+        output[emote] = {count: count, myReact: myReact, members: members};
     });
 
     return output;
@@ -47,9 +63,9 @@ function getReacted(relation) {
 
 
 /* Reaction detection/processing heavily inspired by matrix-org/matrix-react-sdk */
-export default function Reactions({ reactionsRelation }) {
-    // eslint-disable-next-line no-unused-vars
-    const [ignored, forceUpdate] = useReducer((current) => !current, false);
+export default function Reactions({ event, reactionsRelation }: {event: MatrixEvent, reactionsRelation: Relations}) {
+    // eslint-disable-next-line
+    const [_, forceUpdate] = useReducer((current) => !current, false);
     
     // Listen for changes to the relations object
     useEffect(() => {
@@ -63,6 +79,10 @@ export default function Reactions({ reactionsRelation }) {
             reactionsRelation.removeListener("Relations.redaction", forceUpdate);
         }
     }, [reactionsRelation])
+
+
+    const room: Room = global.matrix.getRoom(event.getRoomId());
+    const canReact = room.currentState.maySendEvent(EventType.Reaction, global.matrix.getUserId());
     
     // Calculate the <Reaction> components 
     if (!reactionsRelation) {return null};
@@ -73,26 +93,51 @@ export default function Reactions({ reactionsRelation }) {
             {
                 Object.keys(reactions).map((emote) => {
                     return (
-                        <Reaction emote={emote} {...reactions[emote]} key={emote} />
+                        <Reaction event={event} emote={emote} canEdit={canReact} {...reactions[emote]} key={emote} />
                     )
                 })
             }
         </div>
     );
 }
-function Reaction({ emote, me, count, members }) {
-    const [selected, setSelected] = useState(me);
+
+type ReactionProps = {
+    event: MatrixEvent,
+    emote: string,
+    myReact: MatrixEvent,
+    count: number,
+    members: RoomMember[],
+    canEdit?: boolean,
+}
+function Reaction({ event, emote, myReact, count, members, canEdit = true }: ReactionProps) {
+    const react = useCallback(async (react: boolean) => {
+        // Wants to add reaction, and no reaction event
+        if (react && !myReact) {
+            await addReaction(event, emote);
+        }
+        // Wants to remove reaction and there is a reaction event
+        else if (!react && myReact) {
+            await global.matrix.redactEvent(myReact.getRoomId(), myReact.getId());
+        }
+        else {
+            throw new Error();
+        }
+    }, [myReact, event, emote])
+    
+    const [selected, setSelected] = useCatchState(!!myReact, react);
     useEffect(() => {
-        setSelected(me);
-    }, [me])
+        setSelected(!!myReact, null, true);
+    }, [myReact, setSelected])
+
 
     const userNames = members.map((member) => {return member?.name});
     const hover = friendlyList(userNames, 3) + " reacted with " + emote;
 
     return (
         <Tooltip dir="top" text={hover} delay={0.3}>
-            <div className={classList("event__reactions__reaction", {"event__reactions__reaction--selected": selected})}
-                /*onClick={toggleSelected}*/>
+            <div className={classList("event__reactions__reaction", {"event__reactions__reaction--selected": selected}, {"event__reactions__reaction--disabled": !canEdit})}
+                onClick={canEdit ? () => setSelected(!selected) : null}
+            >
                 <FancyText className="event__reactions__reaction__twemoji" links={false}>
                     {emote}
                 </FancyText>
@@ -102,8 +147,9 @@ function Reaction({ emote, me, count, members }) {
     )
 }
 
-export function ReactionViewer({ event, reactions }) {
-    const setPopup = useContext(popupCtx);
+
+export function ReactionViewer({ event, reactions }: {event: MatrixEvent, reactions: Relations}) {
+    const setPopup: (popup: JSX.Element) => void = useContext(popupCtx);
     const reacted = getReacted(reactions);
     const [selected, select] = useState(Object.keys(reacted)[0]);
 

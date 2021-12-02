@@ -138,7 +138,7 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
                 </div>
                 <div className="event__body">
                     {children}
-                    {reactionsRelation && <Reactions reactionsRelation={reactionsRelation} />}
+                    {reactionsRelation && <Reactions event={event} reactionsRelation={reactionsRelation} />}
                 </div>
             </div>
             <EventButtons event={event} setHover={setHover} reactions={reactionsRelation} />

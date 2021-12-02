@@ -77,7 +77,7 @@ export function asyncDebounce<F extends Function>(func: F, timeout: number): F {
     } as any;
 }
 
-export function friendlyList(list: string[], max=null, plural: string, singular: string) {
+export function friendlyList(list: string[], max=null, plural?: string, singular?: string) {
     if (!singular) {singular = plural}
     if (list.length === 0) {return ""}
 

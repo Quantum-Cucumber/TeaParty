@@ -9,18 +9,21 @@
     &__reaction {
         flex: none;
         user-select: none;
-        /*cursor: pointer;*/
-
+        
         display: flex;
         justify-content: center;
         align-items: center;
-
+        
         background-color: var(--bg-focus);
+        transition: 0.05s;
         padding: 0.2em 0.4em;
         margin-right: 0.4em;
         border-radius: 0.5em;
         &:hover {
             background-color: var(--bg);
+        }
+        &:not(&--disabled) {
+            cursor: pointer;
         }
         &--selected {
             background-color: var(--primary) !important;
