@@ -1,10 +1,13 @@
-.button__icon {
-    cursor: pointer;
-    color: var(--text);
-    display: block;
-    
-    &:hover {
-        opacity: 0.7;
+.button {
+    display: inline-block;
+    &__icon {
+        cursor: pointer;
+        color: var(--text);
+        display: block;
+        
+        &:hover {
+            opacity: 0.7;
+        }
     }
 }
 

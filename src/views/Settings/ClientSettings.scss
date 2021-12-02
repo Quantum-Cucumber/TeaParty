@@ -47,45 +47,56 @@
 
 
 /* Security section */
-
-.device-table {
-    border-collapse: collapse;
-    width: 100%;
-
-    th, td {
-        border: none;
-    }
-
-    th {
-        border-bottom: 2px solid var(--text-greyed);
-        text-align: left;
-        padding: 10px 10px 5px;
-    }
-
+.devices {
     &__loading {
+        width: 100%;
         display: flex;
-        justify-content: center;
-        padding: 20px 0;
+        flex-direction: column;
+        align-items: center;
     }
 
-    tr{
-        td {
-            padding: 10px;
-        }
+    &__buttons {
+        width: 100%;
+        padding: 0.25em;
+        box-sizing: border-box;
 
-        &:nth-child(even) {
-            background-color: var(--bg);
-        }
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
     }
 
-    &--current {
-        box-shadow: inset 3px 0px 0px 0px var(--primary);
+    &__device {
+        padding: 10px 15px;
+        margin-bottom: 10px;
+        border-radius: 10px;
+        background-color: var(--bg);
 
-        td:first-child::after {
-            content: "(Current)";
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        &__body {
+            flex: 1 1 auto;
+            overflow: hidden;
+
+            .text-edit {
+                display: inline-block;
+
+                .textbox__input {
+                    border-bottom-color: var(--text-greyed);
+                }
+            }
+        }
+        &__id {
+            font-size: 0.9em;
+
+            &::before {
+                content: " - ";
+            }
+        }
+        &__timestamp {
+            font-size: 0.9em;
             color: var(--text-greyed);
-            font-size: 0.8rem;
-            margin-left: 0.25rem;
         }
     }
 }

@@ -202,11 +202,12 @@ type EditTextProps = {
     subClass?: string,
     saveFunc?: (value: string) => void;
     multiline?: boolean,
+    links?: boolean;
     canEdit?: boolean,
     validation?: (value: string) => boolean,
 }
 
-export function EditableText({ label, text, subClass = null, saveFunc = () => {}, multiline = false, canEdit = true, validation }: EditTextProps) {
+export function EditableText({ label, text, subClass = null, saveFunc = () => {}, multiline = false, links = false, canEdit = true, validation }: EditTextProps) {
     const [editing, setEditing] = useState(false);
 
     function save(value: string) {
@@ -222,7 +223,7 @@ export function EditableText({ label, text, subClass = null, saveFunc = () => {}
                 <TextBox placeholder={label} initialValue={text} multiline={multiline} saveFunc={save} validation={validation} focus />
             :
                 <>
-                    <FancyText className={classList("text-edit__current", {"text-edit__current--multiline": multiline}, {"text-edit__current--placeholder": !text})}>
+                    <FancyText className={classList("text-edit__current", {"text-edit__current--multiline": multiline}, {"text-edit__current--placeholder": !text})} links={links}>
                         {text || label}
                     </FancyText>
                     { canEdit &&

@@ -2,8 +2,8 @@ import "./ClientSettings.scss";
 import { useEffect, useState } from "react";
 
 import SettingsPage from "./Settings";
-import { A, Loading, Option } from "../../components/elements";
-import { Section, Slider, ToggleSetting } from "./components";
+import { A, Button, Loading, Option } from "../../components/elements";
+import { EditableText, Section, Slider, ToggleSetting } from "./components";
 
 import Settings from "../../utils/settings";
 import { msToDate } from "../../utils/datetime";
@@ -11,9 +11,10 @@ import { classList } from "../../utils/utils";
 import { logoutMatrix } from "../../utils/matrix-client";
 
 import { Icon } from "@mdi/react" ;
-import { mdiBrush, mdiLock, mdiHammerWrench, mdiTune, mdiGithub } from "@mdi/js";
+import { mdiBrush, mdiLock, mdiHammerWrench, mdiTune, mdiGithub, mdiEye, mdiEyeOff } from "@mdi/js";
 import {ReactComponent as MatrixLogo} from "./matrix-logo.svg";
 import { IMyDevice } from "matrix-js-sdk";
+import { useCatchState } from "../../utils/hooks";
 
 
 export default function ClientSettings() {
@@ -75,7 +76,7 @@ const clientPages = [
         render: () => {
             return (
                 <Section name="Devices">
-                    <DeviceTable />
+                    <Devices />
                 </Section>
             );
         },
@@ -128,8 +129,11 @@ function ThemeSelect({ initial, themeList }: ThemeSelectProps) {
     </>)
 }
 
-function DeviceTable() {
-    const [deviceList, setDeviceList] = useState(null as IMyDevice[]);
+
+// TODO - Deleting devices needs the interactive auth which is scary so left out atm
+function Devices() {
+    const [detailed, showDetails] = useState(false);
+    const [deviceList, setDeviceList] = useState<IMyDevice[]>(null);
 
     useEffect(() => {
         global.matrix.getDevices()
@@ -138,57 +142,64 @@ function DeviceTable() {
         });
     }, [setDeviceList]);
 
-
-    function Table({ children }) {
-        return (
-            <table className="device-table">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>Device ID</th>
-                        <th>Last Seen</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {children}
-                </tbody>
-            </table>
-        );
-    }
     
     if (!deviceList) {
         return (
-            <Table>
-                <tr><td colSpan={4}>
-                        <div className="device-table__loading">
-                            <Loading size="60px"></Loading>
-                        </div>
-                </td></tr>
-            </Table>
-        );
+            <div className="devices__loading">
+                <Loading size="60px"></Loading>
+            </div>
+        )
     }
 
-    // Sort most recent session to the top
-    deviceList.sort((a, b) => {return b.last_seen_ts - a.last_seen_ts});
-    const devices = deviceList.map((device) => {
-        const { display_name, device_id, last_seen_ts, last_seen_ip } = device;
-        const current = device_id === global.matrix.getDeviceId();
+    return (<>
+        <div className="devices__buttons">
+            <Button path={detailed ? mdiEyeOff : mdiEye} size="1.25em" tipText={`${detailed ? "Hide" : "Show"} details`} clickFunc={() => showDetails((current) => !current)} />
+        </div>
+        {
+            deviceList.sort((a, b) => {return b.last_seen_ts - a.last_seen_ts})
+            .map((device) => {
+                return (
+                    <Device {...device} detailed={detailed} key={device.device_id} />
+                )
+            })
+        }
+    </>);
+}
 
-        return (
-            <tr key={device_id} className={classList({"device-table--current": current})}>
-                <td>{display_name}</td>
-                <td>{device_id}</td>
-                <td>{msToDate(last_seen_ts)}<br />{last_seen_ip}</td>
-            </tr>
-        );
-    });
+interface DeviceProps extends IMyDevice {
+    detailed: boolean,
+}
+
+function Device({ display_name = null, device_id, last_seen_ts = null, last_seen_ip = null, detailed }: DeviceProps) {
+    const [name, setName] = useCatchState(display_name || "Unnamed device", saveName);
+
+    async function saveName(newName: string) {
+        await global.matrix.setDeviceDetails(device_id, {display_name: newName});
+    }
 
     return (
-        <Table>
-            {devices}
-        </Table>
-    );
+        <div className="devices__device">
+            <div className="devices__device__body">
+                <EditableText label="Device name" text={name} saveFunc={setName} links={false}/>
+                { detailed &&
+                    <span className="devices__device__id">{device_id}</span>
+                }
+
+                <div className="devices__device__timestamp">
+                { global.matrix.getDeviceId() === device_id ?
+                    "This device"
+                :
+                    last_seen_ts && `Last seen: ${msToDate(last_seen_ts)}`
+                }
+                { (detailed && last_seen_ip) &&
+                    <span> @ {last_seen_ip}</span>
+                }
+                </div>
+            </div>
+        </div>
+    )
 }
+
 
 function About() {
     return (

@@ -11,7 +11,7 @@ import Icon from '@mdi/react';
 import { mdiChevronDown, mdiChevronRight, mdiLoading } from "@mdi/js";
 
 
-export function Button({ path, clickFunc, subClass=null, size="1em", tipDir=null, tipText=null }) {
+export function Button({ path, clickFunc, subClass=null, size="1em", tipDir="top", tipText=null }) {
     return (
         <div className={classList("button", subClass)} onClick={clickFunc}>
             {tipText ?

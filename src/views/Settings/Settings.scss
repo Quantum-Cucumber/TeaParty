@@ -117,6 +117,18 @@ $settings-padding: 50px;
     margin: 0.25em;
     user-select: none;
 
+    &--plain {
+        @extend .settings__button;
+        color: var(--text-greyed);
+        background-color: transparent;
+        box-shadow: 0 0 0 1px var(--text-greyed) inset;
+
+        &:active {
+            color: var(--text);
+            background-color: var(--text-greyed);
+            box-shadow: none;
+        }
+    }
     &--save {
         @extend .settings__button;
         color: var(--text);
@@ -130,7 +142,7 @@ $settings-padding: 50px;
         @extend .settings__button;
         color: var(--error);
         background-color: transparent;
-        box-shadow: 0 0 0 2px var(--error) inset;
+        box-shadow: 0 0 0 1px var(--error) inset;
 
         &:active {
             color: var(--text);
