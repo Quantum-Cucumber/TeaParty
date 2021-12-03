@@ -2,7 +2,7 @@ import "./ClientSettings.scss";
 import { useEffect, useState } from "react";
 
 import SettingsPage from "./Settings";
-import { A, Button, Loading, Option } from "../../components/elements";
+import { A, IconButton, Loading, Option } from "../../components/elements";
 import { EditableText, Section, Slider, ToggleSetting } from "./components";
 
 import Settings from "../../utils/settings";
@@ -153,7 +153,7 @@ function Devices() {
 
     return (<>
         <div className="devices__buttons">
-            <Button path={detailed ? mdiEyeOff : mdiEye} size="1.25em" tipText={`${detailed ? "Hide" : "Show"} details`} clickFunc={() => showDetails((current) => !current)} />
+            <IconButton path={detailed ? mdiEyeOff : mdiEye} size="1.25em" tipText={`${detailed ? "Hide" : "Show"} details`} clickFunc={() => showDetails((current) => !current)} />
         </div>
         {
             deviceList.sort((a, b) => {return b.last_seen_ts - a.last_seen_ts})

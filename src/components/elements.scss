@@ -1,4 +1,4 @@
-.button {
+.icon-button {
     display: inline-block;
     &__icon {
         cursor: pointer;
@@ -122,5 +122,61 @@
         &:not(:last-child) {
             margin-bottom: 3px;
         }
+    }
+}
+
+
+.button {
+    font-size: 1em;
+    padding: 5px 12px;
+    border: none;
+    border-radius: 0.3em;
+    cursor: pointer;
+    margin: 0.25em;
+    user-select: none;
+
+    &--plain {
+        @extend .button;
+        color: var(--text-greyed);
+        background-color: transparent;
+        box-shadow: 0 0 0 1px var(--text-greyed) inset;
+
+        &:active {
+            color: var(--text);
+            background-color: var(--text-greyed);
+            box-shadow: none;
+        }
+    }
+    &--save {
+        @extend .button;
+        color: var(--text);
+        background-color: var(--primary);
+
+        &:active {
+            background-color: var(--primary-hover);
+        }
+    }
+    &--danger {
+        @extend .button;
+        color: var(--error);
+        background-color: transparent;
+        box-shadow: 0 0 0 1px var(--error) inset;
+
+        &:active {
+            color: var(--text);
+            background-color: var(--error);
+            box-shadow: none;
+        }
+    }
+    &--link {
+        border: none;
+        background-color: transparent;
+        font-size: 1em;
+        margin: 0;
+        padding: 0;
+
+        cursor: pointer;
+        color: var(--primary);
+        text-decoration: underline;
     }
 }

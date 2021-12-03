@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { mediaToBlob } from "./utils";
 
-export function useOnKeypress<T>(key: string, setState: (value: T) => void, value: T, bind=true) {
+export function useOnKeypress<T>(key: string, setState: (value?: T) => void, value?: T, bind=true) {
     const keyPress = useCallback((e: KeyboardEvent) => {
         if (e.key === key) {
             setState(value);

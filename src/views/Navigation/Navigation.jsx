@@ -2,8 +2,8 @@ import "./Navigation.scss";
 import { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Button, Option, OptionDropDown, Loading, RoomIcon } from "../../components/elements";
-import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx } from "../../components/popups";
+import { IconButton, Option, OptionDropDown, Loading, RoomIcon } from "../../components/elements";
+import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx, Confirm } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
 import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup } from "./RoomStates";
@@ -13,7 +13,7 @@ import { useOnKeypress } from "../../utils/hooks";
 import { classList } from "../../utils/utils";
 import Settings from "../../utils/settings";
 
-import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy, mdiEye } from "@mdi/js";
+import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy, mdiEye, mdiExitToApp } from "@mdi/js";
 import { Icon } from "@mdi/react";
 
 
@@ -83,7 +83,7 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }) {
                     <div className="client__user-bar">
                         <MyUser />
                         <div className="client__user-bar__options-box">
-                            <Button path={mdiCog} clickFunc={() => {history.push("/settings/client")}} subClass="client__user-bar__options" size="24px" tipDir="top" tipText="Settings" />
+                            <IconButton path={mdiCog} clickFunc={() => {history.push("/settings/client")}} subClass="client__user-bar__options" size="24px" tipDir="top" tipText="Settings" />
                         </div>
                     </div>
                 </div>
@@ -210,14 +210,6 @@ function RoomOptions({ roomId, ...props }) {
 
     return (
         <ContextMenu {...props} x="align-mouse-left" y="align-mouse-top">
-            <Option compact text="Copy Room ID" select={() => {
-                    navigator.clipboard.writeText(roomId);
-                    setPopup();
-                }}
-            >
-                <Icon path={mdiContentCopy} size="1em" color="var(--text)" />
-            </Option>
-
             {   room.isSpaceRoom() && Settings.get("devMode") &&
                 <Option compact text="View Timeline"
                     select={() => {
@@ -234,6 +226,24 @@ function RoomOptions({ roomId, ...props }) {
                 }}
             >
                 <Icon path={mdiCog} size="1em" color="var(--text)" />
+            </Option>
+
+            <Option compact danger text="Leave"
+                select={() => {
+                    setPopup(
+                        <Confirm title={`Leave ${room.name}?`} onConfirm={async () => await global.matrix.leave(roomId)} />
+                    );
+                }}
+            >
+                <Icon path={mdiExitToApp} size="1em" color="var(--error)" />
+            </Option>
+
+            <Option compact text="Copy Room ID" select={() => {
+                    navigator.clipboard.writeText(roomId);
+                    setPopup();
+                }}
+            >
+                <Icon path={mdiContentCopy} size="1em" color="var(--text)" />
             </Option>
         </ContextMenu>
     )

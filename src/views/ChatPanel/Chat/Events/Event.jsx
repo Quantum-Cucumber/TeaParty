@@ -2,7 +2,7 @@ import "./Event.scss";
 import { useContext, memo, useState, useEffect, useRef } from "react";
 
 import { Avatar, Member, UserOptions, UserPopup } from "../../../../components/user";
-import { Button, Option } from "../../../../components/elements";
+import { IconButton, Option } from "../../../../components/elements";
 import { Tooltip, ContextMenu, Modal, popupCtx, modalCtx } from "../../../../components/popups";
 import { Code, TextCopy } from "../../../../components/wrappers";
 import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
@@ -152,9 +152,9 @@ function EventButtons(props) {
 
     return (
         <div className="event__buttons">
-            {/*<Button subClass="message__buttons__entry" path={mdiReply} size="100%" tipDir="top" tipText="Reply" />
-            <Button subClass="message__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction" />*/}
-            <Button subClass="event__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
+            {/*<IconButton subClass="message__buttons__entry" path={mdiReply} size="100%" tipDir="top" tipText="Reply" />
+            <IconButton subClass="message__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction" />*/}
+            <IconButton subClass="event__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
                 clickFunc={(e) => {
                     setPopup(
                         <EventOptions parent={e.target.closest(".event__buttons__entry")} {...props} x="right" y="align-top" />

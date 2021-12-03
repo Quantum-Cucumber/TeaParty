@@ -7,7 +7,7 @@ import Settings from "../../utils/settings";
 import { getEventById } from "../../utils/matrix-client";
 
 import Chat from "./Chat/Chat";
-import { Button, Loading, RoomIcon } from "../../components/elements";
+import { IconButton, Loading, RoomIcon } from "../../components/elements";
 import { ContextMenu, popupCtx, Tooltip } from "../../components/popups";
 import { TimelineEvent } from "./Chat/Events/Event";
 
@@ -57,7 +57,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
 
     return (<>
         <div className="header chat-header">
-            <Button path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
+            <IconButton path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
 
             {room.current && <>
                 <div className="chat-header__icon">
@@ -78,7 +78,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
                 </div>
             </>}
 
-            <Button path={mdiPin} size="25px" tipDir="bottom" tipText="Pinned Events" clickFunc={(e: SyntheticEvent) => {
+            <IconButton path={mdiPin} size="25px" tipDir="bottom" tipText="Pinned Events" clickFunc={(e: SyntheticEvent) => {
                 e.stopPropagation();  // Needed to stop the popup from immediately closing
                 const target = e.target as HTMLElement;
                 setPopup(
@@ -87,7 +87,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
                     }/>
                 )
             }} />
-            <Button path={mdiAccountMultiple} size="25px" tipDir="left" tipText={`${hideMemberList ? "Show" : "Hide"} Members`} clickFunc={() => {setHideMemberList((current) => !current)}} />
+            <IconButton path={mdiAccountMultiple} size="25px" tipDir="left" tipText={`${hideMemberList ? "Show" : "Hide"} Members`} clickFunc={() => {setHideMemberList((current) => !current)}} />
         </div>
 
         <div className="chat-frame">

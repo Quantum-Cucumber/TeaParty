@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import SettingsPage from "../Settings"
 import RoomPermissions, { getPowerLevels } from "./RoomPermissions";
 import { EditableText, Section, Toggle, DropDownRow, ImageUpload } from "../components";
-import { Button } from "../../../components/elements";
+import { Button, IconButton } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
 
 import { classList, stringSize } from "../../../utils/utils";
@@ -231,7 +231,7 @@ function Overview({ room }: {room: Room}) {
                                                         {alias}
                                                     </div>
                                                     { canEditAliases &&
-                                                        <Button path={mdiClose} size="1em" 
+                                                        <IconButton path={mdiClose} size="1em" 
                                                             clickFunc={() => {
                                                                 const newAliases = [...roomAliases.filter((a) => a !== alias)]
                                                                 setAliases(newAliases, {action: "remove", alias: alias});
@@ -250,12 +250,12 @@ function Overview({ room }: {room: Room}) {
                                                     value={newAlias} onChange={(e) => {setNewAlias(e.target.value); setNewAliasValid(true)}} 
                                                 />
                                             </form>
-                                            <Button path={mdiCheck} subClass="settings__row__action" size="1em" clickFunc={submitAlias}/>
+                                            <IconButton path={mdiCheck} subClass="settings__row__action" size="1em" clickFunc={submitAlias}/>
                                         </div>
                                     }
                                 </Section>
                             :
-                                <button className="settings__button--link" onClick={loadAliases}>Load aliases</button>
+                                <Button link onClick={loadAliases}>Load aliases</Button>
                             }
                         </div>
                     </div>
@@ -308,12 +308,12 @@ function Bans({room}: {room: Room}) {
                                 </div>
                             </div>
                             { canEditBans &&
-                                <button className="settings__button--danger"
+                                <Button danger
                                     onClick={() => {
                                         const newBanList = bannedMembers.filter((m) => m.userId !== member.userId);
                                         setBannedMembers(newBanList, member.userId);
                                     }}
-                                >Unban</button>
+                                >Unban</Button>
                             }
                         </div>
                     )

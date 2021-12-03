@@ -1,7 +1,7 @@
 import "./MessageContent.scss";
 import { useState, useEffect, useContext } from "react";
 
-import { A, Button } from "../../../../components/elements";
+import { A, IconButton } from "../../../../components/elements";
 import { ImagePopup, Tooltip, popupCtx } from "../../../../components/popups";
 import { UserPopup } from "../../../../components/user";
 import HtmlContent from "./HtmlContent";
@@ -178,7 +178,7 @@ function MessageFile({ eventContent }) {
                 <div className="message__content__file__text__size">{bytesToFriendly(size)}</div>
             </div>
             <A href={blobUrl} download={name || "download"} onClick={download}>
-                <Button subClass="message__content__file__download" path={mdiDownload} size="1.5rem" tipDir="top" tipText="Download" />
+                <IconButton subClass="message__content__file__download" path={mdiDownload} size="1.5rem" tipDir="top" tipText="Download" />
             </A>
         </div>
     );

@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 
 import { DropDown, Section, DropDownRow } from "../components";
-import { Button } from "../../../components/elements";
+import { IconButton } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
 
 
@@ -149,7 +149,7 @@ export default function RoomPermissions({ room }: {room: Room}) {
                     </div>
                     <DropDown value={newStateOverridePL} options={powerLevelOptions} allowCustom number canEdit={canEditPowerLevels} min={0} max={maxPowerLevel}saveFunc={setNewStateOverridePL}/>
                     
-                    <Button path={mdiCheck} subClass="settings__row__action" size="1em"
+                    <IconButton path={mdiCheck} subClass="settings__row__action" size="1em"
                         clickFunc={() => {
                             // Validate new user ID
                             if (!newStateOverride) {
@@ -223,7 +223,7 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
                         />
 
                         { (canEditPowerLevels && powerLevel <= maxPowerLevel) &&
-                            <Button path={mdiClose} subClass="settings__row__action" size="1em" 
+                            <IconButton path={mdiClose} subClass="settings__row__action" size="1em" 
                                 clickFunc={() => {
                                     const newEvent = {...powerLevelEvent};
                                     newEvent.users = {...newEvent.users};  // copy .users to not modify the SDK's state object
@@ -244,7 +244,7 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
                     value={newUserId} onChange={(e) => {setNewUserId(e.target.value); setNewUserIdValid(true)}} 
                 />
                 <DropDown value={newPowerLevel} options={powerLevelOptions} allowCustom number saveFunc={setNewPowerlevel} min={0} max={maxPowerLevel} />
-                <Button path={mdiCheck} subClass="settings__row__action" size="1em"
+                <IconButton path={mdiCheck} subClass="settings__row__action" size="1em"
                     clickFunc={() => {
                         // Validate new user ID
                         if (!userIdRegex.test(newUserId)) {

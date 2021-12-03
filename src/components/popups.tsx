@@ -1,13 +1,19 @@
 import "./popups.scss";
 import { useState, useEffect, useRef, useCallback, createContext, useContext, useLayoutEffect, cloneElement } from "react";
-import { A, Button } from "./elements";
+
+import { A, IconButton, Button, Loading } from "./elements";
+
 import { classList } from '../utils/utils';
-import { useOnKeypress, useDownloadUrl } from "../utils/hooks";
+import { useOnKeypress, useDownloadUrl, useCatchState } from "../utils/hooks";
+
 import Icon from "@mdi/react";
 import { mdiDownload, mdiClose, mdiOpenInNew } from "@mdi/js";
 
 
-export function positionFloating(positionMe, referenceNode, x, y, offset=0, mouseEvent=null, constrain=false) {
+type xPos = "center" | "left" | "right" | "align-left" | "align-right" | "mouse" | "align-mouse-left" | "align-mouse-right";
+type yPos = "center" | "top" | "bottom" | "align-top" | "align-bottom" | "mouse" | "align-mouse-top" | "align-mouse-bottom";
+
+export function positionFloating(positionMe: HTMLElement, referenceNode: HTMLElement, x: xPos, y: yPos, offset=0, mouseEvent: MouseEvent = null, constrain=false) {
     // What to position relative to
     const referenceRect = referenceNode.getBoundingClientRect();
 
@@ -111,14 +117,23 @@ export function positionFloating(positionMe, referenceNode, x, y, offset=0, mous
     return positionMe;
 }
 
-export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }) {
-    const [visible, setVisible] = useState(false);
-    const tooltipRef = useRef();
-    const childRef = useRef();
-    const timer = useRef();  // If a delay is set, this tracks the setTimeout ID
-    const mouseEvent = useRef({});
+type TooltipProps = {
+    text: string,
+    dir: "top" | "bottom" | "left" | "right",
+    children: JSX.Element,
+    x?: xPos,
+    y?: yPos,
+    delay?: number,
+}
 
-    const setPosition = useCallback((e) => {
+export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }: TooltipProps) {
+    const [visible, setVisible] = useState(false);
+    const tooltipRef = useRef<HTMLDivElement>();
+    const childRef = useRef<HTMLElement>();
+    const timer = useRef<NodeJS.Timer>();  // If a delay is set, this tracks the setTimeout ID
+    const mouseEvent = useRef<MouseEvent>();
+
+    const setPosition = useCallback((e: MouseEvent) => {
         const offset = 5 + 5;  // Offset + arrow size
         // Calculate position of tooltip
         const tooltip = tooltipRef.current;
@@ -132,7 +147,7 @@ export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }) 
             "right": {x: "right", "y": "center"},
         }
 
-        positionFloating(tooltip, child, x || presets[dir]?.x, y || presets[dir]?.y, offset, e);
+        positionFloating(tooltip, child, x || presets[dir]?.x as xPos, y || presets[dir]?.y as yPos, offset, e);
     }, [x, y, dir])
     function show() {
         timer.current = setTimeout(() => {
@@ -165,7 +180,7 @@ export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }) 
         onMouseEnter: show,
         onMouseLeave: hide,
         ref: childRef,
-        onMouseMove: x === "mouse" || y === "mouse" ? (e) => {mouseEvent.current = e} : null,
+        onMouseMove: x === "mouse" || y === "mouse" ? (e: MouseEvent) => {mouseEvent.current = e} : null,
     });
 
     return (
@@ -176,16 +191,29 @@ export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }) 
     );
 }
 
+
+type OverlayProps = {
+    children: React.ReactNode,
+    opacity?: string,
+    click?: (e?: React.MouseEvent<HTMLElement>) => void,
+    modalClass?: string,
+    dim?: boolean,
+    fade?: number,
+    render?: boolean,
+    mountAnimation?: string,
+    unmountAnimation?: string,
+}
+
 export function Overlay({ children, opacity = "85%", click = null, modalClass = "", dim = true, 
-                          fade = 0, render = true, mountAnimation = null, unmountAnimation = null }) {
+                          fade = 0, render = true, mountAnimation = null, unmountAnimation = null }: OverlayProps) {
     /* click refers to the onClick function for the dim bg
        dim is whether to add a transparent overlay to the background
        fade determines how long the dim element will fade for
        render is passed to determine if the overlay should display
     */
     const [mount, setMount] = useState(true);  // Master state for whether to display or not
-    const [modal, modalUpdate] = useState();  // Acts as a ref except triggers the state update
-    const [dimNode, dimUpdate] = useState();  // ^
+    const [modal, modalUpdate] = useState<HTMLElement>();  // Acts as a ref except triggers the state update
+    const [dimNode, dimUpdate] = useState<HTMLElement>();  // ^
 
     // Allows for playing an animation when unmounting
     useLayoutEffect(() => {  // LayoutEffect creates a smoother animation
@@ -230,9 +258,18 @@ export function Overlay({ children, opacity = "85%", click = null, modalClass = 
         </div>
     )
 }
-export function Modal(props) {
+
+
+type ModalProps = {
+    title: string,
+    hide: () => void,
+    children: JSX.Element,
+    modalClass?: string,
+    bodyClass?: string,
+}
+
+export function Modal({title, hide, children, modalClass, bodyClass, ...passThroughProps}: ModalProps) {
     /* High order component of overlay that gives the modal styling and adds a title/close button */
-    const { title, hide, children, modalClass, bodyClass, ...passThroughProps } = props;
 
     useOnKeypress("Escape", hide)
 
@@ -255,7 +292,59 @@ export function Modal(props) {
     )
 }
 
-export function ImagePopup({ sourceUrl, render, setRender, name }) {
+
+type ConfirmProps = {
+    title?: string,
+    body?: JSX.Element,
+    onConfirm: () => Promise<void>,
+}
+
+export function Confirm({title = null, body = null, onConfirm}: ConfirmProps) {
+    const setPopup = useContext(popupCtx);
+    const [loading, setLoading] = useCatchState(false, run);
+
+    useOnKeypress("Escape", setPopup);
+
+    async function run() {
+        await onConfirm();
+        setPopup(null);
+    }
+
+    return (
+        <Overlay click={() => {setPopup(null)}} modalClass="overlay__modal--bg">
+            <div className="overlay__title">
+                {title}
+            </div>
+            <div className="overlay__body">
+                {body}
+            </div>
+            <div className="overlay__buttons">
+                { !loading ?
+                    <>
+                        <Button plain onClick={() => setPopup(null)}>Cancel</Button>
+                        <Button danger
+                            onClick={async () => {
+                                await setLoading(true)
+                            }}
+                        >Accept</Button>
+                    </>
+                :
+                    <Loading size="1.5em" />
+                }
+            </div>
+        </Overlay>
+    )
+}
+
+
+type ImagePopupProps = {
+    sourceUrl: string,
+    render: boolean,
+    setRender: (render: boolean) => void,
+    name: string,
+}
+
+export function ImagePopup({ sourceUrl, render, setRender, name }: ImagePopupProps) {
     const [blobUrl, download] = useDownloadUrl(sourceUrl);
 
     useOnKeypress("Escape", setRender, false, render);
@@ -266,19 +355,30 @@ export function ImagePopup({ sourceUrl, render, setRender, name }) {
             <img src={sourceUrl} alt={name} className="image-popup" />
             <div className="image-popup__buttons">
                 <A href={blobUrl || sourceUrl} download={name || "download"} onClick={download}>
-                    <Button path={mdiDownload} size="1.5rem" tipDir="top" tipText="Download" />
+                    <IconButton path={mdiDownload} size="1.5rem" tipDir="top" tipText="Download" />
                 </A>
                 <A href={sourceUrl}>
-                    <Button path={mdiOpenInNew} size="1.5rem" tipDir="top" tipText="Open Original" />
+                    <IconButton path={mdiOpenInNew} size="1.5rem" tipDir="top" tipText="Open Original" />
                 </A>
             </div>
         </Overlay>
     );
 }
 
-export function ContextMenu({ parent, x, y, mouseEvent = null, subClass = null, padding = 10, children }) {
+
+type ContextMenuProps = {
+    parent: HTMLElement,
+    x: xPos,
+    y: yPos,
+    mouseEvent?: MouseEvent,
+    subClass?: string,
+    padding?: number,
+    children: React.ReactNode,
+}
+
+export function ContextMenu({ parent, x, y, mouseEvent = null, subClass = null, padding = 10, children }: ContextMenuProps) {
     const setVisible = useContext(popupCtx);
-    const menuRef = useRef();
+    const menuRef = useRef<HTMLDivElement>();
 
     useOnKeypress("Escape", setVisible);
 
@@ -288,7 +388,7 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, subClass = null, 
     }, [x, y, parent, padding, mouseEvent])
 
     useEffect(() => {
-        function hide(e) {
+        function hide(e: MouseEvent<HTMLElement>) {
             if (!e.target.closest(".context-menu")) {
                 setVisible(null);
             }
@@ -310,6 +410,6 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, subClass = null, 
 
 // TODO: Use a eventemitter for this to be used with mentions etc
 // Modals are windows of information
-export const modalCtx = createContext(() => {});
+export const modalCtx: React.Context<(modal?: JSX.Element) => void> = createContext(() => {});
 // Popups are small snippets of information that can sit over the top of modals
-export const popupCtx = createContext(() => {});
+export const popupCtx: React.Context<(popup?: JSX.Element) => void>  = createContext(() => {});

@@ -99,6 +99,7 @@
             max-height: 75%;
             display: flex;
             flex-direction: column;
+            min-width: 400px;
             max-width: 75%;
         }
     }
@@ -112,13 +113,6 @@
         margin-bottom: 0.8rem;
     }
 
-    &__body {
-        flex: 1 1 auto;
-        overflow: hidden auto;
-        padding: 0 10px;
-        @include common.scroll-style();
-    }
-
     &__close{
         cursor: pointer;
         float: right;
@@ -126,6 +120,20 @@
         &:hover > path {
             fill: var(--text) !important;
         }
+    }
+
+    &__body {
+        flex: 1 1 auto;
+        overflow: hidden auto;
+        padding: 0 10px;
+        @include common.scroll-style();
+    }
+
+    &__buttons {
+        width: 100%;
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-end;
     }
 }
 

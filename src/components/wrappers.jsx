@@ -4,7 +4,7 @@ import Twemoji from "twemoji";
 import linkifyElement from "linkify-element";
 import hljs from 'highlight.js';
 
-import { Button } from "./elements";
+import { IconButton } from "./elements";
 
 import { classList } from "../utils/utils";
 import { useDrag, useStableState } from "../utils/hooks"
@@ -32,7 +32,7 @@ export function TextCopy({ text, children }) {
     return (
         <div className="copy-text">
         {children || text}&nbsp;
-        <Button subClass="copy-text__button" path={mdiContentCopy} size="100%" tipDir="top" tipText={tooltip} clickFunc={copyText} />
+        <IconButton subClass="copy-text__button" path={mdiContentCopy} size="100%" tipDir="top" tipText={tooltip} clickFunc={copyText} />
         </div>
     )
 }

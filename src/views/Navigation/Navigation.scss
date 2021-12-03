@@ -216,6 +216,11 @@ $group-padding: 11px;
         overflow: hidden;
         border-radius: var(--avatar-radius);
         flex: none;
+
+        & > .avatar {
+            color: var(--text);
+            background-color: var(--bg-dark);
+        }
     }
 
     &__label {

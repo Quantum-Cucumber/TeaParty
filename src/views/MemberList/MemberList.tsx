@@ -20,7 +20,7 @@ function filterName(name: string) {
 
 
 function MemberList({ currentRoom }: {currentRoom: string}) {
-    const setPopup: (node: JSX.Element) => void = useContext(popupCtx);
+    const setPopup = useContext(popupCtx);
     const [memberList, setMembers] = useState<RoomMember[]>([]);
 
     const [updateVal, update] = useReducer((current: boolean) => !current, false);

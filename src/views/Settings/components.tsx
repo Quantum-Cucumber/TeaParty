@@ -1,7 +1,7 @@
 import "./components.scss";
 import { useCallback, useState, useRef, useEffect, useContext } from "react";
 
-import { Button, Loading, Option } from "../../components/elements";
+import { IconButton, Loading, Option, Button } from "../../components/elements";
 import { FancyText } from "../../components/wrappers";
 import { ContextMenu, popupCtx } from "../../components/popups";
 
@@ -190,7 +190,7 @@ export function TextBox({ initialValue = "", placeholder, multiline = false, foc
                     <input className={classList("textbox__input", {"textbox__input--error": !valid})} type="text" placeholder={placeholder} value={value} onChange={onChange} ref={inputRef} />
                 }
             </form>
-            <Button path={mdiCheck} clickFunc={save} subClass="textbox__button" tipText="Save" tipDir="right" />
+            <IconButton path={mdiCheck} clickFunc={save} subClass="textbox__button" tipText="Save" tipDir="right" />
         </div>
     )
 }
@@ -227,7 +227,7 @@ export function EditableText({ label, text, subClass = null, saveFunc = () => {}
                         {text || label}
                     </FancyText>
                     { canEdit &&
-                        <Button path={mdiPencil} clickFunc={() => {setEditing(true)}} subClass="text-edit__button" tipText="Edit" tipDir="right" />
+                        <IconButton path={mdiPencil} clickFunc={() => {setEditing(true)}} subClass="text-edit__button" tipText="Edit" tipDir="right" />
                     }
                 </>
             }
@@ -278,7 +278,7 @@ export function DropDown(props: DropDownStringProps): JSX.Element;
 export function DropDown(props: DropDownNumberProps): JSX.Element;
 export function DropDown({value, options, saveFunc, canEdit = true, allowCustom = false, allowNull = false, placeholder = "Unknown value", number = false, min = 0, max = Infinity}: DropDownProps) {
     const [isCustom, setCustom] = useState(false);
-    const setPopup: (popup: JSX.Element) => void = useContext(popupCtx);
+    const setPopup = useContext(popupCtx);
 
     const save = useCallback((newValue) => {
         if (value !== newValue) {
@@ -469,7 +469,7 @@ export function ImageUpload({ mxcUrl, onSelect, canEdit = true }: ImageUploadPro
                 {statusElement}
             </div>
             { (state === "edit" && currentMxcUrl) &&
-                <button className="settings__button--link" onClick={() => setMxcUrl(null)}>Remove</button>
+                <Button link onClick={() => setMxcUrl(null)}>Remove</Button>
             }
             <input type="file" accept="image/*" className="image-upload__input" onChange={onChange} ref={inputRef} />
         </div>

@@ -11,15 +11,15 @@ import Icon from '@mdi/react';
 import { mdiChevronDown, mdiChevronRight, mdiLoading } from "@mdi/js";
 
 
-export function Button({ path, clickFunc, subClass=null, size="1em", tipDir="top", tipText=null }) {
+export function IconButton({ path, clickFunc, subClass=null, size="1em", tipDir="top", tipText=null }) {
     return (
-        <div className={classList("button", subClass)} onClick={clickFunc}>
+        <div className={classList("icon-button", subClass)} onClick={clickFunc}>
             {tipText ?
                 <Tooltip text={tipText} dir={tipDir}>
-                    <Icon path={path} className="button__icon" size={size} />
+                    <Icon path={path} className="icon-button__icon" size={size} />
                 </Tooltip> 
                 :
-                <Icon path={path} className="button__icon" size={size} />
+                <Icon path={path} className="icon-button__icon" size={size} />
             }
         </div>
     );
@@ -143,5 +143,18 @@ export function A(props) {
         <a target="_blank" rel="noopener noreferrer" {...passthroughProps}>
             {children}
         </a>
+    )
+}
+
+export function Button({plain = false, save = false, danger = false, link = false, ...props}) {
+    const variation = classList(
+        {"button--plain": plain},
+        {"button--save": save},
+        {"button--danger": danger},
+        {"button--link": link},
+    )
+
+    return (
+        <button className={variation} {...props} />
     )
 }
