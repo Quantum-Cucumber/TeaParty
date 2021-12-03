@@ -1,33 +1,37 @@
 import "./MemberList.scss";
 import { useState, useEffect, memo, useReducer, useContext } from "react";
+
 import { Member, UserPopup } from "../../components/user";
 import { popupCtx } from "../../components/popups";
+
 import { useScrollPaginate } from "../../utils/hooks";
+
+import type { MatrixEvent, RoomMember, User } from "matrix-js-sdk";
 
 const membersPerPage = 30;
 const memberEvents = ["RoomMember.membership", "RoomMember.name", "RoomMember.powerLevel"];
 
 
-function filterName(name) {
+function filterName(name: string) {
     // matches all ASCII punctuation: !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
     const SORT_REGEX = /[\x21-\x2F\x3A-\x40\x5B-\x60\x7B-\x7E]+/g;
     return name.replace(SORT_REGEX, "");
 }
 
 
-function MemberList({ currentRoom }) {
-    const setPopup = useContext(popupCtx);
-    const [memberList, setMembers] = useState([]);
+function MemberList({ currentRoom }: {currentRoom: string}) {
+    const setPopup: (node: JSX.Element) => void = useContext(popupCtx);
+    const [memberList, setMembers] = useState<RoomMember[]>([]);
 
-    const [updateVal, update] = useReducer(false, current => !current);
-    const [loadingRef, setLoadingRef] = useState();
+    const [updateVal, update] = useReducer((current: boolean) => !current, false);
+    const [loadingRef, setLoadingRef] = useState<HTMLDivElement>();
     const loadedMembers = useScrollPaginate(loadingRef, membersPerPage);
 
     // When the room changes, attach a listener to look for member updateevents
     useEffect(() => {
         setMembers([]);  // Reset member list
 
-        function memberUpdated(event, member) {
+        function memberUpdated(_event: MatrixEvent, member: RoomMember) {
             if (member.roomId === currentRoom) {
                 update();
             }
@@ -44,7 +48,7 @@ function MemberList({ currentRoom }) {
         if (!currentRoom) {return}
         if (!global.matrix.getRoom(currentRoom)) {return}
 
-        let members = global.matrix.getRoom(currentRoom).getJoinedMembers();
+        let members: RoomMember[] = global.matrix.getRoom(currentRoom).getJoinedMembers();
 
         const collator = Intl.Collator("en", {sensitivity: "base", ignorePunctuation: true})
         members.sort((a, b) => {
@@ -58,8 +62,8 @@ function MemberList({ currentRoom }) {
 
     // Convert member objects to elements
     const members = memberList.slice(0, loadedMembers).map((member) => {
-        const user = global.matrix.getUser(member.userId);
-        function clickFunc(e) {
+        const user: User = global.matrix.getUser(member.userId);
+        function clickFunc(e: MouseEvent) {
             setPopup(
                 <UserPopup parent={e.target.closest(".member-list__member")} user={user} room={currentRoom} setPopup={setPopup} />
             );
