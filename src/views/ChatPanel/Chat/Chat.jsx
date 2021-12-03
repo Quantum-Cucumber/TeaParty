@@ -46,7 +46,7 @@ function Chat({ currentRoom }) {
         timeline.current = new eventTimeline(currentRoom);
 
         // Set up timeline event handler
-        function onEvent(event, eventRoom, toStartOfTimeline) {
+        function onEvent(event, eventRoom, toStartOfTimeline = true) {
             if (eventRoom.roomId !== currentRoom) {return}
             
             // Pass event to timeline handler and refresh message list
@@ -54,11 +54,19 @@ function Chat({ currentRoom }) {
             updateEventList();
         }
         global.matrix.on("Room.timeline", onEvent);
+        global.matrix.on("Room.redaction", onEvent);
+
+        const timelineReset = () => setEventList([]);
+        global.matrix.on("Room.timelineReset", timelineReset)
 
         updateEventList();
 
         // Remove listener on unmount (room change)
-        return () => {global.matrix.removeListener("Room.timeline", onEvent)};
+        return () => {
+            global.matrix.removeListener("Room.timeline", onEvent);
+            global.matrix.removeListener("Room.redaction", onEvent);
+            global.matrix.removeListener("Room.timelineReset", timelineReset)
+        };
     }, [currentRoom, setEventList, updateEventList]);
     // Settings listener
     useEffect(() => {

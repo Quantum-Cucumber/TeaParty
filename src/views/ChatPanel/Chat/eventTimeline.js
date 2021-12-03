@@ -7,16 +7,17 @@ const msgLoadCount = 30;
 
 export function shouldDisplayEvent(event) {
     return event && (
-        (   // If m.room.message should be displayed
-            isMessageEvent(event) && 
-            !isEditEvent(event) &&  // Edits will update the original event object
-            (!event.isRedacted() || Settings.get("showRedactedEvents"))
-        ) ||
-        // Join/leave events
-        (isJoinEvent(event) && Settings.get("showJoinEvents")) || (isLeaveEvent(event) && Settings.get("showLeaveEvents")) ||
-        (isRoomEditEvent(event) && Settings.get("showRoomEdits")) ||
-        isPinEvent(event) ||
-        isStickerEvent(event)
+        // If event is allowed to be displayed
+        (
+            isMessageEvent(event) ||
+            (isJoinEvent(event) && Settings.get("showJoinEvents")) || (isLeaveEvent(event) && Settings.get("showLeaveEvents")) ||
+            (isRoomEditEvent(event) && Settings.get("showRoomEdits")) ||
+            isPinEvent(event) ||
+            isStickerEvent(event)
+        ) &&
+        // If event otherwise shouldn't be displayed
+        !isEditEvent(event) &&  // Edits will update the original event object so don't display them
+        (!event.isRedacted() || Settings.get("showRedactedEvents"))
     )
 }
 
@@ -57,15 +58,7 @@ export default class eventTimeline {
     }
 
     getEvents() {
-        /* Filter events that will update the state of the chat */
-        let compiled = this.room?.getLiveTimeline().getEvents().filter((event) => {
-            // isMessageEvent also counts message redactions/edits
-            return (
-                isMessageEvent(event) || shouldDisplayEvent(event) || 
-                event.getType() === "m.room.redaction" || event.getType() === "m.reaction"
-            );
-        })
-        
+        let compiled = this.room?.getLiveTimeline().getEvents().filter(shouldDisplayEvent)
         return compiled;
     }
 

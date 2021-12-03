@@ -17,7 +17,7 @@ import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent,
 import { useScrollPaginate } from "../../../../utils/hooks";
 import { MatrixtoPermalink } from "../../../../utils/linking";
 
-import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon, mdiShareVariant } from "@mdi/js";
+import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon, mdiShareVariant, mdiDelete } from "@mdi/js";
 import Icon from "@mdi/react";
 
 function eventIsSame(oldProps, newProps) {
@@ -185,7 +185,9 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
         // Hide popup as it would render over the top of the modal
         setPopup();
     }
+
     const trueEvent = event.replacingEvent() || event;
+    const room = global.matrix.getRoom(event.getRoomId());
 
     return (
         <ContextMenu {...contextMenuProps}>
@@ -214,6 +216,16 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
                 <Icon path={mdiShareVariant} size="1em" color="var(--text)" />
             </Option>
 
+            { room.currentState.maySendRedactionForEvent(event, global.matrix.getUserId()) &&
+                <Option compact danger text="Delete" 
+                    onClick={() => {
+                        global.matrix.redactEvent(event.getRoomId(), event.getId());
+                        setPopup();
+                    }}
+                >
+                    <Icon path={mdiDelete} size="1em" color="var(--error)" />
+                </Option>
+            }
             
             { Settings.get("devMode") &&
                 <Option compact text="View source" select={() => {
