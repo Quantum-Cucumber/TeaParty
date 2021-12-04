@@ -150,6 +150,10 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
     const _membershipChange = useCallback((room, state, oldState) => {
         console.log("Membership change", oldState, state, room);
 
+        if (oldState === "invite" && state !== "invite") {
+            refreshInvites();
+        }
+
         switch (state) {
             case "invite":
                 refreshInvites();
@@ -160,11 +164,12 @@ export default function useRoomStates({ currentGroup, setGroupRooms }) {
             case "leave":
             case "ban":
                 refreshRooms();
+                refreshRoomStates();
                 break;
             default:
                 break;
         }
-    }, [refreshRooms, refreshInvites])
+    }, [refreshRooms, refreshInvites, refreshRoomStates])
 
     // Direct room added
     const _accountData = useCallback((event) => {

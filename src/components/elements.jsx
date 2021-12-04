@@ -40,6 +40,7 @@ export function RoomIcon({ room }) {
 
     // Bind listener for room avatar updates
     useEffect(() => {
+        console.log("bind room icon", room.name)
         // When the room changes, update the icon
         setIconUrl(getRoomUrl(room));
 

@@ -195,7 +195,9 @@ $group-padding: 11px;
     }
 }
 
-
+.invite__type {
+    font-weight: bold;
+}
 .invite-entry {
     display: flex;
     flex-direction: row;

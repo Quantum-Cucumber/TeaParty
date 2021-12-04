@@ -82,7 +82,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
                 e.stopPropagation();  // Needed to stop the popup from immediately closing
                 const target = e.target as HTMLElement;
                 setPopup(
-                    <PinnedMessages parent={target.closest(".button")} room={room.current} eventIds={
+                    <PinnedMessages parent={target.closest(".icon-button")} room={room.current} eventIds={
                         room.current?.currentState.getStateEvents("m.room.pinned_events", "")?.getContent().pinned
                     }/>
                 )

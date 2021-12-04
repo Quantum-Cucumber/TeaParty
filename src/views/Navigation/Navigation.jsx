@@ -9,7 +9,6 @@ import { Avatar } from "../../components/user";
 import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup } from "./RoomStates";
 
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
-import { useOnKeypress } from "../../utils/hooks";
 import { classList } from "../../utils/utils";
 import Settings from "../../utils/settings";
 
@@ -295,12 +294,6 @@ function InvitesIcon({ invLen, invites }) {
 
 function Invites({ invitedRooms }) {
     const setModal = useContext(modalCtx);
-    function hide() {
-        setModal();
-    }
-
-    if (invitedRooms.length === 0) {hide()};
-    useOnKeypress("Escape", hide);
 
     // Make a holder for each invite type and populate with its values
     const holders = Object.keys(invitedRooms).reduce((holders, name) => {
@@ -312,15 +305,15 @@ function Invites({ invitedRooms }) {
         })
 
         return holders.concat([
-            <div className="invites__modal__holder" key={name}>
-                {name}
-                {invites}
+            <div key={name}>
+                <div className="invite__type">{name}</div>
+                <div>{invites}</div>
             </div>
         ]);
     }, []);
 
     return (
-        <Modal title="Invites" hide={hide}>
+        <Modal title="Invites" hide={() => setModal(null)}>
             {holders}
         </Modal>
     )
@@ -330,33 +323,37 @@ function InviteEntry({ invite, direct }) {
     const [status, setStatus] = useState(null);
     const { inviter, room } = invite;
 
-    function acceptInvite() {
+    async function acceptInvite() {
         setStatus(<Loading size="1.5rem"/>);
-        global.matrix.joinRoom(room.roomId).then(() => {
+        try {
+            await global.matrix.joinRoom(room.roomId);
             setStatus("Joined");
-        }).catch(() => {
-            setStatus("Error")
-        });
+        }
+        catch {
+            setStatus("Error");
+        }
 
         if (direct) {
             // Update account data
             const directs = global.matrix.getAccountData("m.direct")?.getContent() || {};
             directs[inviter] = room.roomId;
             try {
-                global.matrix.setAccountData("m.direct", directs);
+                await global.matrix.setAccountData("m.direct", directs);
             } catch (e) {
                 console.warn(e);
             }
         }
     }
 
-    function declineInvite() {
+    async function declineInvite() {
         setStatus(<Loading size="1.5rem"/>);
-        global.matrix.leave(room.roomId).then(() => {
+        try {
+            await global.matrix.leave(room.roomId)
             setStatus("Declined");
-        }).catch(() => {
+        }
+        catch {
             setStatus("Error")
-        });
+        }
     }
 
     return (
@@ -365,7 +362,7 @@ function InviteEntry({ invite, direct }) {
                 <RoomIcon room={room} />
             </div>
             <div className="invite-entry__label">
-                <div className="invite-entry__label--name">{room.name}</div>
+                <div>{room.name}</div>
                 <div className="invite-entry__label--inviter">{inviter}</div>
             </div>
             { status === null ?

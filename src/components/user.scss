@@ -18,6 +18,7 @@
 .user {
     &__avatar {
         margin-right: 0.5em;
+        height: 100%; /* Without this, firefox lays stuff out weirdly in the flex box */
     }
     
     &__username {
