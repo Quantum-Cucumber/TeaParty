@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { mediaToBlob } from "./utils";
 
 export function useOnKeypress<T>(key: string, setState: (value?: T) => void, value?: T, bind=true) {
@@ -23,7 +23,7 @@ export function useOnKeypress<T>(key: string, setState: (value?: T) => void, val
     }, [keyPress])
 }
 
-export function useDebouncedState(initial: any, delay: number) {
+export function useDebouncedState<T>(initial: T, delay: number): [T, React.Dispatch<React.SetStateAction<T>>] {
     // The pending state to return
     const [queuedState, queueState] = useState(initial);
     // The final state (when the timeout ends)
@@ -50,7 +50,7 @@ export function useDebouncedState(initial: any, delay: number) {
     return [debouncedState, queueState];
 }
 
-export function useStableState(prop: any) {
+export function useStableState<T>(prop: T) {
     /* Creates a ref that is updated when the prop changes */
     const stableProp = useRef(prop);
 

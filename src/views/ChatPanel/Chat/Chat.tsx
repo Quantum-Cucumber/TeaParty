@@ -1,5 +1,5 @@
 import "./Chat.scss";
-import { useEffect, useState, useRef, useCallback, memo } from "react";
+import React, { useEffect, useRef, useCallback, memo, useState } from "react";
 
 import { Loading } from "../../../components/elements";
 import { TimelineEvent } from "./Events/Event";
@@ -10,8 +10,10 @@ import { dayBorder, dateToDateStr } from "../../../utils/datetime";
 import Settings, { isEventVisibility } from "../../../utils/settings";
 import { getReplyId } from "../../../utils/event";
 
+import type { MatrixEvent, Room } from "matrix-js-sdk";
 
-function nextShouldBePartial(thisMsg, lastMsg) {
+
+function nextShouldBePartial(thisMsg: MatrixEvent, lastMsg: MatrixEvent) {
     // No message above current
     if (!lastMsg) {return false}
     // Different senders
@@ -19,20 +21,44 @@ function nextShouldBePartial(thisMsg, lastMsg) {
     // Is a reply
     if (getReplyId(thisMsg) !== undefined) {return false}
     // Within 10 min of each other
-    if ((thisMsg.getDate() - lastMsg.getDate()) > (10 * 60 * 1000)) {return false}
+    if ((thisMsg.getDate().getTime() - lastMsg.getDate().getTime()) > (10 * 60 * 1000)) {return false}
     // All others passed
     return true
 }
 
 
-function Chat({ currentRoom }) {
-    const timeline = useRef();
-    const [eventList, setEventList] = useDebouncedState([], 400);
+function Chat({ currentRoom }: {currentRoom: string}) {
+    const timeline = useRef<eventTimeline>();
+    const [eventList, setEventList] = useDebouncedState<MatrixEvent[]>([], 400);
 
     const updateEventList = useCallback(() => {
         if (!timeline.current) {setEventList([]); return};
         setEventList(timeline.current.getEvents());
     }, [setEventList]);
+
+    // Unread indicator should be displayed when the page is not focussed and a message is sent
+    // When this happens, the last read event ID should be grabbed and saved
+    // The indicator should show until the escape key is pressed to clear it (TODO: Dont do this)
+    // The indicator should also be displayed when the room is initially opened
+    const [lastUnread, setLastUnread] = useState<string>(null);  // Contains last read event's Id and is retained until esc pressed
+    
+    const updateUnread = useCallback((clear = false) => {
+        if (clear) {
+            // Allow for new unread to be set and hide indicator
+            setLastUnread(null);
+            return;
+        }
+
+        const room: Room = global.matrix.getRoom(currentRoom);
+        setLastUnread((current) => {
+            if (current) {
+                return current;
+            }
+            else {
+                return currentRoom ? room?.getEventReadUpTo(global.matrix.getUserId()) : null
+            }
+        });
+    }, [currentRoom]);
 
     // Add event listener when room is changed
     useEffect(() => {
@@ -46,7 +72,7 @@ function Chat({ currentRoom }) {
         timeline.current = new eventTimeline(currentRoom);
 
         // Set up timeline event handler
-        function onEvent(event, eventRoom, toStartOfTimeline = true) {
+        function onEvent(event: MatrixEvent, eventRoom: Room, toStartOfTimeline = true) {
             if (eventRoom.roomId !== currentRoom) {return}
             
             // Pass event to timeline handler and refresh message list
@@ -60,6 +86,7 @@ function Chat({ currentRoom }) {
         global.matrix.on("Room.timelineReset", timelineReset)
 
         updateEventList();
+        updateUnread();
 
         // Remove listener on unmount (room change)
         return () => {
@@ -67,10 +94,10 @@ function Chat({ currentRoom }) {
             global.matrix.removeListener("Room.redaction", onEvent);
             global.matrix.removeListener("Room.timelineReset", timelineReset)
         };
-    }, [currentRoom, setEventList, updateEventList]);
+    }, [currentRoom, setEventList, updateEventList, updateUnread]);
     // Settings listener
     useEffect(() => {
-        function settingUpdate(setting) {
+        function settingUpdate(setting: string) {
             if (isEventVisibility(setting)) {
                 updateEventList();
             }
@@ -84,23 +111,22 @@ function Chat({ currentRoom }) {
 
     /* Render timeline */
     
-    var events = [];
-    const lastRead = currentRoom && !timeline.current?.isRead() ? global.matrix.getRoom(currentRoom)?.getEventReadUpTo(global.matrix.getUserId()) : null;
+    var events: JSX.Element[] = [];
     const filteredEvents = eventList.filter((event) => {return shouldDisplayEvent(event)});
     filteredEvents.forEach((event, index) => {
         const prevEvent = filteredEvents[index - 1];
         event = event.toSnapshot();
 
-        if (lastRead && prevEvent?.getId() === lastRead) {
+        if (lastUnread && prevEvent?.getId() === lastUnread) {
             events.push(
-                <UnreadBorder key="unread"/>
+                <UnreadBorder updateUnread={updateUnread} key="unread"/>
             );
         }
 
         const border = dayBorder(event, prevEvent);
         if (border !== null) {
             events.push(
-                <EventBorder text={border} color="var(--text-greyed)" key={event.getDate().toISOString()}/>
+                <EventBorder text={border} colour="var(--text-greyed)" key={event.getDate().toISOString()}/>
             );
         }
         
@@ -117,12 +143,12 @@ function Chat({ currentRoom }) {
         const text = dateToDateStr(filteredEvents[0].getDate());
         events.unshift(
             <div style={{height: "30vh"}} key="padding"></div>,
-            <EventBorder text={text} color="var(--text-greyed)" key={text}/>
+            <EventBorder text={text} colour="var(--text-greyed)" key={text}/>
         );
     }
 
     return (
-        <ChatScroll timeline={timeline} updateEventList={updateEventList}>
+        <ChatScroll timeline={timeline} updateEventList={updateEventList} updateUnread={updateUnread}>
             <div className="chat">
                 {events}
             </div>
@@ -130,11 +156,18 @@ function Chat({ currentRoom }) {
     );
 }
 
-function ChatScroll({ children, timeline, updateEventList }) {
+
+type ChatScrollProps = {
+    children: JSX.Element,
+    timeline: React.MutableRefObject<eventTimeline>,
+    updateEventList: () => void,
+    updateUnread:  (clear?: boolean) => void,
+}
+function ChatScroll({ children, timeline, updateEventList, updateUnread }: ChatScrollProps) {
     const atBottom = useRef(true);
-    const scrollPos = useRef(false);
-    const scrollRef = useRef();
-    const loadingRef = useRef();
+    const scrollPos = useRef<number>(null);
+    const scrollRef = useRef<HTMLDivElement>();
+    const loadingRef = useRef<HTMLDivElement>();
     const isLoading = useRef(false);
 
     // When escape key pressed, scroll to the bottom and mark chat as read
@@ -156,12 +189,18 @@ function ChatScroll({ children, timeline, updateEventList }) {
         });
     }, [timeline, updateEventList]);
 
+
     // When children are modified, if scroll was at the bottom, stay there
     useEffect(() => {
         if (atBottom.current) {
             scrollToBottom();
-        } 
-    }, [children]);
+        }
+
+        // If document isn't focussed, show the indicator
+        if (document.visibilityState === "hidden") {
+            updateUnread();
+        }
+    }, [children, updateUnread]);
 
     // When new events load
     useEffect(() => {
@@ -172,6 +211,7 @@ function ChatScroll({ children, timeline, updateEventList }) {
             loadMore();
         }
     }, [children, timeline, loadMore]);
+
 
     function scrollToBottom() {
         if (scrollRef) {
@@ -191,9 +231,8 @@ function ChatScroll({ children, timeline, updateEventList }) {
         return loadingRef.current.getBoundingClientRect().bottom >= 0;
     }
 
-    function onScroll(e) {
+    function onScroll(e: React.UIEvent<HTMLDivElement>) {
         atBottom.current = false;  // Will be reset if needed
-        timeline.current.isReading = false;  // ^
         saveScrollPos();  // Save scroll position in case it will be restored
 
         // When we can see the loading wheel and are able to load events
@@ -201,13 +240,12 @@ function ChatScroll({ children, timeline, updateEventList }) {
             loadMore();
         } 
         // Scrolled to bottom
-        else if (e.target.scrollTop === e.target.scrollHeight - e.target.offsetHeight) {
+        else if (e.currentTarget.scrollTop === e.currentTarget.scrollHeight - e.currentTarget.offsetHeight) {
             atBottom.current = true;
             
             // Mark event as read when scrolled to the bottom, if the page is opened
             if (document.visibilityState === "visible") {
-                timeline.current.isReading = true;
-                markAsRead()
+                markAsRead();
             }
         }
     }
@@ -221,9 +259,9 @@ function ChatScroll({ children, timeline, updateEventList }) {
 }
 
 
-function EventBorder({ text, color }) {
+function EventBorder({ text, colour }: {text: string, colour: string}) {
     return (
-        <div className="chat__border" style={{"--color": color}}>
+        <div className="chat__border" style={{"--color": colour} as React.CSSProperties}>
             <div className="chat__border__line"></div>
             <div className="chat__border__text">
                 {text}
@@ -233,11 +271,14 @@ function EventBorder({ text, color }) {
     );
 }
 
-function UnreadBorder() {
-    const [visible, setVisible] = useState(true);
-    useOnKeypress("Escape", setVisible, false, "unread border");
 
-    return visible && <EventBorder text="New Messages" color="var(--error)"/>;
+type UnreadBorderProps = {
+    updateUnread: (clear?: boolean) => void,
+}
+function UnreadBorder({ updateUnread }: UnreadBorderProps) {
+    useOnKeypress("Escape", () => updateUnread(true));
+
+    return <EventBorder text="New Messages" colour="var(--error)"/>;
 }
 
 export default memo(Chat);

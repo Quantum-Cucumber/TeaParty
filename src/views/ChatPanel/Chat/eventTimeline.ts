@@ -2,38 +2,38 @@ import Settings from "../../../utils/settings";
 import { debounce } from "../../../utils/utils";
 import { isMessageEvent, isEditEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent, isStickerEvent } from "../../../utils/event";
 
+import type { MatrixEvent, Room } from "matrix-js-sdk";
+
 const msgLoadCount = 30;
 
 
-export function shouldDisplayEvent(event) {
-    return event && (
+export function shouldDisplayEvent(event: MatrixEvent) {
+    return !!event && (
         // If event is allowed to be displayed
         (
             isMessageEvent(event) ||
-            (isJoinEvent(event) && Settings.get("showJoinEvents")) || (isLeaveEvent(event) && Settings.get("showLeaveEvents")) ||
-            (isRoomEditEvent(event) && Settings.get("showRoomEdits")) ||
+            (isJoinEvent(event) && !!Settings.get("showJoinEvents")) || (isLeaveEvent(event) && !!Settings.get("showLeaveEvents")) ||
+            (isRoomEditEvent(event) && !!Settings.get("showRoomEdits")) ||
             isPinEvent(event) ||
             isStickerEvent(event)
         ) &&
         // If event otherwise shouldn't be displayed
         !isEditEvent(event) &&  // Edits will update the original event object so don't display them
-        (!event.isRedacted() || Settings.get("showRedactedEvents"))
+        (!event.isRedacted() || !!Settings.get("showRedactedEvents"))
     )
 }
 
 export default class eventTimeline {
-    constructor(roomId) {
+    roomId: string;
+    room: Room;
+    userId: string;
+    constructor(roomId: string) {
         this.roomId = roomId;
         this.room = global.matrix.getRoom(this.roomId);
         this.userId = global.matrix.getUserId();
     }
     canLoad = true;
     read = false;
-    isReading = false;  // An override variable for read. true when user is at bottom of the chat
-
-    isRead() {
-        return (this.read || this.isReading);
-    }
 
     async getMore() {
         // Only get scrollback if there are events still to get
@@ -44,7 +44,7 @@ export default class eventTimeline {
         }
     }
 
-    onEvent(event, toStartOfTimeline) {
+    onEvent(event: MatrixEvent, toStartOfTimeline: Boolean) {
         /* Basically just to update unread flag ig?? */
         
         // Only process messages for current room
@@ -63,7 +63,7 @@ export default class eventTimeline {
     }
 
     // Avoid spamming read receipts
-    debouncedRead = debounce((event) => {global.matrix.sendReadReceipt(event)}, 500);
+    debouncedRead = debounce((event: MatrixEvent) => {global.matrix.sendReadReceipt(event)}, 500);
     markAsRead() {
         if (!this.read) {
             const events = this.getEvents()

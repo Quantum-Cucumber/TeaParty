@@ -11,6 +11,10 @@
         font-size: 1rem;  /* Override h1/h2 etc */
         margin: 0;
     }
+
+    p {
+        white-space: pre-wrap;
+    }
 }
 
 
@@ -43,7 +47,7 @@
         color: var(--text);
     }
     /* Code block */
-    code:only-child, pre > code:only-child {
+    pre > code:only-child {
         @include common.codeblock;
         width: 90%;
     }
