@@ -21,6 +21,7 @@ export type pagesType = {
     title: string,
     icon?: string,
     divider?: boolean,
+    condition?: () => boolean,
     render: renderType,
 }[]
 
@@ -44,7 +45,9 @@ export default function SettingsPage({ pages, tabsFooter = null, ...props }: Set
 
     const tabs = [];
     
-    pages.forEach(({ icon, title, render, divider = false }) => {
+    pages.forEach(({ icon, title, render, condition = () => true, divider = false }) => {
+        if (!condition()) {return}
+
         if (divider) {
             tabs.push(
                 <div className="options-divider" key={`${title}-divider`}></div>

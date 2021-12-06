@@ -38,7 +38,7 @@ function Chat({ currentRoom }: {currentRoom: string}) {
 
     // Unread indicator should be displayed when the page is not focussed and a message is sent
     // When this happens, the last read event ID should be grabbed and saved
-    // The indicator should show until the escape key is pressed to clear it (TODO: Dont do this)
+    // The indicator should show until the escape key is pressed to clear it (TODO: Not this)
     // The indicator should also be displayed when the room is initially opened
     const [lastUnread, setLastUnread] = useState<string>(null);  // Contains last read event's Id and is retained until esc pressed
     
@@ -55,15 +55,19 @@ function Chat({ currentRoom }: {currentRoom: string}) {
                 return current;
             }
             else {
-                return currentRoom ? room?.getEventReadUpTo(global.matrix.getUserId()) : null
+                const a = currentRoom ? room?.getEventReadUpTo(global.matrix.getUserId()) : null
+                return a;
             }
         });
     }, [currentRoom]);
+
 
     // Add event listener when room is changed
     useEffect(() => {
         timeline.current = null;
         setEventList([]);
+        setLastUnread(null);
+
         // No listener when no selected room
         if (!currentRoom) {return};
         if (!global.matrix.getRoom(currentRoom)) {return}
@@ -188,7 +192,6 @@ function ChatScroll({ children, timeline, updateEventList, updateUnread }: ChatS
             isLoading.current = false;
         });
     }, [timeline, updateEventList]);
-
 
     // When children are modified, if scroll was at the bottom, stay there
     useEffect(() => {

@@ -12,12 +12,13 @@ import { classList, stringSize } from "../../../utils/utils";
 import { useCatchState, useScrollPaginate } from "../../../utils/hooks";
 import { aliasRegex, getMember } from "../../../utils/matrix-client";
 
-import { mdiChatQuestion, mdiCheck, mdiClose, mdiEarth, mdiEmail, mdiGavel, mdiShield, mdiText } from "@mdi/js"
+import { mdiChatQuestion, mdiCheck, mdiClose, mdiEarth, mdiEmail, mdiGavel, mdiHammerWrench, mdiShield, mdiText } from "@mdi/js"
 
 import type { FormEvent } from "react";
 import type { Room, RoomMember } from "matrix-js-sdk";
 import type { Visibility } from "matrix-js-sdk/lib/@types/partials";
 import type {pagesType} from "../Settings";
+import Settings from "../../../utils/settings";
 
 
 export default function RoomSettings({ roomId }) {
@@ -60,7 +61,17 @@ const roomPages: pagesType = [
             return (
                 <Bans room={room} />
             )
-        }
+        },
+    },
+    {
+        title: "Advanced",
+        icon: mdiHammerWrench,
+        condition: () => Settings.get("devMode"),
+        render: ({ room }) => {
+            return (
+                <Advanced room={room} />
+            )
+        },
     }
 ]
 
@@ -320,6 +331,21 @@ function Bans({room}: {room: Room}) {
                 })
             }
             <div ref={setLoadingRef} style={{height: "1px", width: "100%"}}></div>
+        </Section>
+    )
+}
+
+function Advanced({ room }: {room: Room}) {
+    return (
+        <Section name="Advanced">
+            <div className="settings__row">
+                <div className="settings__row__label">Room ID:</div>
+                { room.roomId }
+            </div>
+            <div className="settings__row">
+                <div className="settings__row__label">Room Version:</div>
+                { room.getVersion() }
+            </div>
         </Section>
     )
 }
