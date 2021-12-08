@@ -13,7 +13,7 @@ import { mdiDownload, mdiClose, mdiOpenInNew } from "@mdi/js";
 type xPos = "center" | "left" | "right" | "align-left" | "align-right" | "mouse" | "align-mouse-left" | "align-mouse-right";
 type yPos = "center" | "top" | "bottom" | "align-top" | "align-bottom" | "mouse" | "align-mouse-top" | "align-mouse-bottom";
 
-export function positionFloating(positionMe: HTMLElement, referenceNode: HTMLElement, x: xPos, y: yPos, offset=0, mouseEvent: MouseEvent = null, constrain=false) {
+export function positionFloating(positionMe: HTMLElement, referenceNode: HTMLElement, x: xPos, y: yPos, offset=0, mouseEvent: React.MouseEvent<HTMLElement> = null, constrain=false) {
     // What to position relative to
     const referenceRect = referenceNode.getBoundingClientRect();
 
@@ -131,9 +131,9 @@ export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }: 
     const tooltipRef = useRef<HTMLDivElement>();
     const childRef = useRef<HTMLElement>();
     const timer = useRef<NodeJS.Timer>();  // If a delay is set, this tracks the setTimeout ID
-    const mouseEvent = useRef<MouseEvent>();
+    const mouseEvent = useRef<React.MouseEvent<HTMLElement>>();
 
-    const setPosition = useCallback((e: MouseEvent) => {
+    const setPosition = useCallback((e: React.MouseEvent<HTMLElement>) => {
         const offset = 5 + 5;  // Offset + arrow size
         // Calculate position of tooltip
         const tooltip = tooltipRef.current;
@@ -180,7 +180,7 @@ export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }: 
         onMouseEnter: show,
         onMouseLeave: hide,
         ref: childRef,
-        onMouseMove: x === "mouse" || y === "mouse" ? (e: MouseEvent) => {mouseEvent.current = e} : null,
+        onMouseMove: x === "mouse" || y === "mouse" ? (e: React.MouseEvent<HTMLElement>) => {mouseEvent.current = e} : null,
     });
 
     return (
@@ -370,7 +370,7 @@ type ContextMenuProps = {
     parent: HTMLElement,
     x: xPos,
     y: yPos,
-    mouseEvent?: MouseEvent,
+    mouseEvent?: React.MouseEvent<HTMLElement>,
     subClass?: string,
     padding?: number,
     children: React.ReactNode,
@@ -388,8 +388,8 @@ export function ContextMenu({ parent, x, y, mouseEvent = null, subClass = null, 
     }, [x, y, parent, padding, mouseEvent])
 
     useEffect(() => {
-        function hide(e: MouseEvent<HTMLElement>) {
-            if (!e.target.closest(".context-menu")) {
+        function hide(this: Document, e: MouseEvent) {
+            if (e.target instanceof HTMLElement && !e.target.closest(".context-menu")) {
                 setVisible(null);
             }
         }

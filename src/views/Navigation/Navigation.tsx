@@ -1,8 +1,8 @@
 import "./Navigation.scss";
-import { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { IconButton, Option, OptionDropDown, Loading, RoomIcon } from "../../components/elements";
+import { IconButton, Option, OptionDropDown, Loading, RoomIcon, HoverOption } from "../../components/elements";
 import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx, Confirm } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
@@ -11,19 +11,28 @@ import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { classList } from "../../utils/utils";
 import Settings from "../../utils/settings";
+import { getRoomNotifIcon, NotificationOptions } from "../../utils/notifications";
 
 import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy, mdiEye, mdiExitToApp } from "@mdi/js";
 import { Icon } from "@mdi/react";
 
+import type { Room } from "matrix-js-sdk";
 
-function Navigation({ currentRoom, selectRoom, hideRoomListState }) {
+
+type NavigationProps = {
+    currentRoom: string,
+    selectRoom: React.Dispatch<string>,
+    hideRoomListState: [boolean, React.Dispatch<React.SetStateAction<boolean>>],
+}
+
+function Navigation({ currentRoom, selectRoom, hideRoomListState }: NavigationProps) {
     const history = useHistory();
     // Name will be displayed above the room list and can't (always) be inferred from the key
     const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
     const [groupRooms, setGroupRooms] = useState(getChildRoomsFromGroup(currentGroup.key))
-    const [showRoomSeperate, setShowRoomSeperate] = useState(null);
+    const [showRoomSeperate, setShowRoomSeperate] = useState<Room>(null);
     
-    const [collapseGroups, setCollapseGroups] = useState();
+    const [collapseGroups, setCollapseGroups] = useState<boolean>();
     useEffect(() => {
         setCollapseGroups(hideRoomListState[0] && Settings.get("collapseGroups"))
     }, [hideRoomListState])
@@ -33,7 +42,7 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }) {
     
 
     // Get the total length of all the value arrays
-    const invLen = Object.values(invitedRooms).reduce((x, invs) => {return x + invs.length}, 0);
+    const invLen: number = Object.values(invitedRooms).reduce((x, invs) => {return x + invs.length}, 0);
 
     // When a group is selected, load its rooms
     useEffect(() => {
@@ -42,7 +51,7 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }) {
 
     // If the current room isn't in the room list, add an entry above the groups list to represent the selected room
     useEffect(() => {
-        const room = global.matrix.getRoom(currentRoom);
+        const room: Room = global.matrix.getRoom(currentRoom);
         if (room && !roomInGroup(currentGroup.key, room)) {
             setShowRoomSeperate(room);
         }
@@ -66,7 +75,7 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }) {
                     <div className="group__seperator"></div>
                 }
 
-                <GroupList setGroup={setGroup} currentGroup={currentGroup} roomStates={roomStates} />
+                <GroupList currentGroup={currentGroup} setGroup={setGroup} roomStates={roomStates} />
             </div>
             <Resize side="right" initialSize={260} collapseSize={collapseGroups ? 170 : 100} collapseState={hideRoomListState}>
                 <div className="column column--rooms">
@@ -76,7 +85,7 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }) {
                         </div>
                     </div>
                     <div className="column--rooms__holder scroll--hover">
-                        <RoomList rooms={groupRooms} currentGroup={currentGroup} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} />
+                        <RoomList rooms={groupRooms} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} />
                     </div>
 
                     <div className="client__user-bar">
@@ -91,12 +100,13 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }) {
     );
 }
 
-function GroupList(props) {
+type GroupListProps = Omit<GroupProps, "groupName" | "k" | "builtin" | "children">
+function GroupList(props: GroupListProps) {
     var groups = [
         <Group {...props} groupName="Home" key="home" k="home" builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </Group>,
-        <Group {...props} groupName="Direct Messages" key="directs" k="directs" path={mdiHomeVariant} builtin>
+        <Group {...props} groupName="Direct Messages" key="directs" k="directs" builtin>
             <Icon path={mdiAccountMultiple} color="var(--text)" size="100%" />
         </Group>,
     ];
@@ -114,9 +124,19 @@ function GroupList(props) {
         );
     })
 
-    return groups;
+    return <>{groups}</>;
 }
-function Group({ setGroup = ()=>{}, currentGroup, roomStates, groupName, k, children, builtin = false }) {
+
+type GroupProps = {
+    setGroup?: ({ name, key }: {name: string, key: string}) => void,
+    currentGroup: { name: string, key: string },
+    roomStates: any,  // TODO: Change when RoomStates.js is converted to typescript
+    groupName: string,
+    k: string,
+    children: React.ReactNode,
+    builtin?: boolean,
+}
+function Group({ setGroup = () => {}, currentGroup, roomStates, groupName, k, children, builtin = false }: GroupProps) {
     const setPopup = useContext(popupCtx);
 
     const roomState = roomStates[k];
@@ -137,7 +157,7 @@ function Group({ setGroup = ()=>{}, currentGroup, roomStates, groupName, k, chil
                         e.preventDefault();
                         e.stopPropagation();
                         setPopup(
-                            <RoomOptions roomId={k} parent={e.target} mouseEvent={e} />
+                            <RoomOptions roomId={k} parent={e.target as HTMLElement} mouseEvent={e} />
                         )
                     }}
                 >
@@ -150,9 +170,15 @@ function Group({ setGroup = ()=>{}, currentGroup, roomStates, groupName, k, chil
     );
 }
 
-function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) {
+type RoomListProps = {
+    rooms: Room[],
+    roomStates: any,  // TODO: Change when RoomStates.js is converted to typescript
+    currentRoom: string,
+    selectRoom: React.Dispatch<string>,
+}
+function RoomList({ rooms, roomStates, currentRoom, selectRoom }: RoomListProps) {
     const setPopup = useContext(popupCtx);
-    const showRoomIcons = Settings.get("showRoomIcons");
+    const showRoomIcons: boolean = Settings.get("showRoomIcons");
 
     const elements = rooms.map((room) => {
         const key = room.roomId;
@@ -175,7 +201,7 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
                         )
                     }}
                 >
-                    <RoomList rooms={children} currentGroup={currentGroup} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} /> 
+                    <RoomList rooms={children} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} /> 
                 </OptionDropDown>
             )
         }
@@ -184,11 +210,11 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
                 <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom} 
                     unread={unreadDot} notifications={notifications}
             
-                    onContextMenu={(e) => {
+                    onContextMenu={(e: React.MouseEvent<HTMLElement>) => {
                         e.preventDefault();
                         e.stopPropagation();
                         setPopup(
-                            <RoomOptions roomId={key} parent={e.target} mouseEvent={e} />
+                            <RoomOptions roomId={key} parent={e.target as HTMLElement} mouseEvent={e} />
                         )
                     }}
                 >
@@ -198,10 +224,14 @@ function RoomList({ rooms, currentGroup, roomStates, currentRoom, selectRoom }) 
         }
     });
 
-    return elements.length !== 0 ? elements : (<div className="room__placeholder">No joined rooms</div>);
+    return elements.length !== 0 ? <>{elements}</> : (<div className="room__placeholder">No joined rooms</div>);
 }
 
-function RoomOptions({ roomId, ...props }) {
+type RoomOptionsProps = {
+    roomId: string,
+} & Omit<React.ComponentProps<typeof ContextMenu>, "x" | "y" | "children">;
+
+function RoomOptions({ roomId, ...props }: RoomOptionsProps) {
     const setPopup = useContext(popupCtx);
     const history = useHistory();
 
@@ -209,6 +239,14 @@ function RoomOptions({ roomId, ...props }) {
 
     return (
         <ContextMenu {...props} x="align-mouse-left" y="align-mouse-top">
+            { !room.isSpaceRoom() &&  // Technically you could set the space room notifications, but you won't likely read the events
+                <HoverOption text="Notifications"
+                        icon={<Icon path={getRoomNotifIcon(room)} size="1em" color="var(--text)" />}
+                >
+                    <NotificationOptions room={room} />
+                </HoverOption>
+            }
+
             {   room.isSpaceRoom() && Settings.get("devMode") &&
                 <Option compact text="View Timeline"
                     select={() => {
@@ -272,7 +310,13 @@ function MyUser() {
     </>);
 }
 
-function InvitesIcon({ invLen, invites }) {
+
+type InvitesIconProps = {
+    invLen: number,
+    invites: any,   // TODO: Change when RoomStates.js is converted to typescript  // TODO: Change when RoomStates.js is converted to typescript
+}
+
+function InvitesIcon({ invLen, invites }: InvitesIconProps) {
     const setModal = useContext(modalCtx);
     function showInviteModal() {
         setModal(
@@ -292,7 +336,7 @@ function InvitesIcon({ invLen, invites }) {
     );    
 }
 
-function Invites({ invitedRooms }) {
+function Invites({ invitedRooms }: {invitedRooms: any}) {
     const setModal = useContext(modalCtx);
 
     // Make a holder for each invite type and populate with its values
@@ -314,7 +358,7 @@ function Invites({ invitedRooms }) {
 
     return (
         <Modal title="Invites" hide={() => setModal(null)}>
-            {holders}
+            <>{holders}</>
         </Modal>
     )
 }
@@ -367,10 +411,10 @@ function InviteEntry({ invite, direct }) {
             </div>
             { status === null ?
                 <div className="invite-entry__buttons">
-                    <div style={{"--button": "var(--error)"}} onClick={declineInvite}>
+                    <div style={{"--button": "var(--error)"} as React.CSSProperties} onClick={declineInvite}>
                         <Icon path={mdiClose} size="100%" />
                     </div>
-                    <div style={{"--button": "var(--success)"}} onClick={acceptInvite}>
+                    <div style={{"--button": "var(--success)"} as React.CSSProperties} onClick={acceptInvite}>
                         <Icon path={mdiCheck} size="100%" />
                     </div>
                 </div>

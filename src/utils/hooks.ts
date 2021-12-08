@@ -62,8 +62,8 @@ export function useStableState<T>(prop: T) {
 }
 
 
-export function useDownloadUrl(url: string) {
-    const [blobUrl, setBlobUrl] = useState<string>();
+export function useDownloadUrl(url: string): [string, (e: React.MouseEvent) => void] {
+    const [blobUrl, setBlobUrl] = useState<string>("");
     function download(e: any) {
         if (!url || blobUrl) {return}
         e.preventDefault();

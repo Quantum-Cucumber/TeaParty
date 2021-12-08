@@ -46,16 +46,19 @@ function Chat({ currentRoom }: {currentRoom: string}) {
         if (clear) {
             // Allow for new unread to be set and hide indicator
             setLastUnread(null);
+            console.log("clear unread")
             return;
         }
 
         const room: Room = global.matrix.getRoom(currentRoom);
         setLastUnread((current) => {
             if (current) {
+                console.log("currently set", current)
                 return current;
             }
             else {
                 const a = currentRoom ? room?.getEventReadUpTo(global.matrix.getUserId()) : null
+                console.log("set unread", a)
                 return a;
             }
         });
@@ -89,8 +92,8 @@ function Chat({ currentRoom }: {currentRoom: string}) {
         const timelineReset = () => setEventList([]);
         global.matrix.on("Room.timelineReset", timelineReset)
 
-        updateEventList();
         updateUnread();
+        updateEventList();
 
         // Remove listener on unmount (room change)
         return () => {

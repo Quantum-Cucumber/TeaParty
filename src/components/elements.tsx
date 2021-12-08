@@ -10,8 +10,19 @@ import { isDirect } from "../utils/roomFilters";
 import Icon from '@mdi/react';
 import { mdiChevronDown, mdiChevronRight, mdiLoading } from "@mdi/js";
 
+import type { MatrixEvent, Room } from "matrix-js-sdk";
 
-export function IconButton({ path, clickFunc, subClass=null, size="1em", tipDir="top", tipText=null }) {
+
+type IconButtonProps = {
+    path: string,
+    clickFunc?: (ev?: React.MouseEvent<HTMLDivElement>) => void,
+    subClass?: string | null,
+    size?: string,
+    tipDir?: "top" | "bottom" | "left" | "right",
+    tipText?: string | null,
+}
+
+export function IconButton({ path, clickFunc, subClass=null, size="1em", tipDir="top", tipText=null }: IconButtonProps) {
     return (
         <div className={classList("icon-button", subClass)} onClick={clickFunc}>
             {tipText ?
@@ -25,16 +36,16 @@ export function IconButton({ path, clickFunc, subClass=null, size="1em", tipDir=
     );
 }
 
-export function Loading({ size }) {
+export function Loading({ size }: {size: string}) {
     return (
         <Icon path={mdiLoading} color="var(--primary)" size={size} spin={1.2}/>
     );
 }
 
 
-const getRoomUrl = (room) => room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+const getRoomUrl = (room: Room) => room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
 
-export function RoomIcon({ room }) {
+export function RoomIcon({ room }: {room: Room}) {
     const [iconUrl, setIconUrl] = useState(getRoomUrl(room));
     const directRoom = isDirect(room);
 
@@ -44,9 +55,9 @@ export function RoomIcon({ room }) {
         // When the room changes, update the icon
         setIconUrl(getRoomUrl(room));
 
-        function stateUpdate(event) {
+        function stateUpdate(event: MatrixEvent) {
             if (event.getRoomId() === room.roomId && event.getType() === "m.room.avatar") {
-                const httpUrl = global.matrix.mxcUrlToHttp(event.getContent().url, 96, 96, "crop");
+                const httpUrl: string = global.matrix.mxcUrlToHttp(event.getContent().url, 96, 96, "crop");
                 setIconUrl(httpUrl);
             }
         }
@@ -69,13 +80,26 @@ export function RoomIcon({ room }) {
 }
 
 
-export function Option({ text, k = null, selected = null, select = ()=>{}, danger=false, compact=false, unread=false, notifications=0, children = null, ...props }) {
+type OptionProps<T> = {
+    text: string,
+    k?: T,
+    selected?: T,
+    select?: (k?: T) => void,
+    danger?: boolean,
+    compact?: boolean,
+    unread?: boolean,
+    notifications?: number,
+    children?: JSX.Element,
+    [key: string]: any,
+}
+
+export function Option<T>({ text, k = undefined, selected = undefined, select = () => {}, danger=false, compact=false, unread=false, notifications=0, children = null, ...props }: OptionProps<T>) {
     const className = classList("option",
-                                {"option--selected": k ? selected===k : null}, 
+                                {"option--selected": k !== undefined ? (selected === k) : false}, 
                                 {"option--danger": danger},
                                 {"option--compact": compact}) 
 
-    let indicator = null;
+    let indicator: React.ReactNode = null;
     if (notifications > 0) {
         indicator = (<div className="option__notification">{notifications}</div>);
     } else if (unread) {
@@ -91,9 +115,16 @@ export function Option({ text, k = null, selected = null, select = ()=>{}, dange
     );
 }
 
-export function HoverOption({ icon, text, children }) {
+
+type HoverOptionProps = {
+    icon: JSX.Element,
+    text: string,
+    children: React.ReactNode,
+}
+
+export function HoverOption({ icon, text, children }: HoverOptionProps) {
     const [show, setShow] = useState(false);
-    const anchor = useRef();
+    const anchor = useRef<HTMLDivElement>();
 
     return (
         <div className="option option--compact" onMouseOver={() => {setShow(true)}} onMouseLeave={() => {setShow(false)}} ref={anchor}>
@@ -102,7 +133,7 @@ export function HoverOption({ icon, text, children }) {
             <Icon path={mdiChevronRight} size="1em" color="var(--text)" />
 
             { show && 
-                <ContextMenu parent={anchor.current} x="right" y="align-top" padding={0}>
+                <ContextMenu parent={anchor.current as HTMLElement} x="right" y="align-top" padding={0}>
                     {children}
                 </ContextMenu>
             }
@@ -110,10 +141,20 @@ export function HoverOption({ icon, text, children }) {
     )
 }
 
-export function OptionDropDown({ icon, text, children, unread=false, notifications=0, ...props }) {
+
+type OptionDropDownProps = {
+    icon: React.ReactNode,
+    text: string,
+    children: React.ReactNode,
+    unread?: boolean,
+    notifications?: number,
+    [key: string]: any,
+}
+
+export function OptionDropDown({ icon, text, children, unread=false, notifications=0, ...props }: OptionDropDownProps) {
     const [open, toggleOpen] = useReducer((current) => !current, false);
 
-    let indicator = null;
+    let indicator: React.ReactNode = null;
     if (notifications > 0) {
         indicator = (<div className="option--dropdown__notification">{notifications}</div>);
     } else if (unread) {
@@ -137,11 +178,10 @@ export function OptionDropDown({ icon, text, children, unread=false, notificatio
     )
 }
 
-export function A(props) {
-    const {children, ...passthroughProps} = props;
-
+export function A(props: React.HTMLProps<HTMLAnchorElement>) {
+    const {children, ...otherProps} = props;
     return (
-        <a target="_blank" rel="noopener noreferrer" {...passthroughProps}>
+        <a target="_blank" rel="noopener noreferrer" {...otherProps}>
             {children}
         </a>
     )
