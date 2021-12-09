@@ -1,6 +1,7 @@
 import "./ChatPanel.scss";
 import { useEffect, useState, useRef, useContext, useCallback, useReducer } from "react";
 import { useHistory } from "react-router-dom";
+import { EventType } from "matrix-js-sdk/src/@types/event";
 
 import { classList, friendlyList } from "../../utils/utils";
 import Settings from "../../utils/settings";
@@ -71,9 +72,9 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
                         <Icon path={mdiShieldLock} color="var(--text-greyed)" className="chat-header__shield" size="1.2rem" />
                     </Tooltip>
                 }
-                <div className="chat-header__topic" title={room.current.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic}>
+                <div className="chat-header__topic" title={room.current.currentState.getStateEvents(EventType.RoomTopic)[0]?.getContent().topic}>
                     <FancyText>
-                        {room.current.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic}
+                        {room.current.currentState.getStateEvents(EventType.RoomTopic)[0]?.getContent().topic}
                     </FancyText>
                 </div>
             </>}
@@ -83,7 +84,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
                 const target = e.target as HTMLElement;
                 setPopup(
                     <PinnedMessages parent={target.closest(".icon-button")} room={room.current} eventIds={
-                        room.current?.currentState.getStateEvents("m.room.pinned_events", "")?.getContent().pinned
+                        room.current?.currentState.getStateEvents(EventType.RoomPinnedEvents, "")?.getContent().pinned
                     }/>
                 )
             }} />
@@ -191,12 +192,12 @@ function Status({ room }: {room: Room | null}) {
     }, [setStatus, history])
     useEffect(() => {
         // Set on first render
-        const tombstone = room?.currentState.getStateEvents("m.room.tombstone", "");
+        const tombstone = room?.currentState.getStateEvents(EventType.RoomTombstone, "");
         setTombstoneStatus(tombstone)
 
         // Pass new m.room.tombstone events to the handler
         function checkTombstone(event: MatrixEvent, _room: Room, toStartOfTimeline: boolean) {
-            if (event.getRoomId() === room.roomId && event.getType() === "m.room.tombstone" && !toStartOfTimeline) {
+            if (event.getRoomId() === room.roomId && event.getType() === EventType.RoomTombstone && !toStartOfTimeline) {
                 setTombstoneStatus(event);
             }
         }

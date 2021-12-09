@@ -1,9 +1,9 @@
 import { useState, useMemo } from "react";
+import { EventType } from "matrix-js-sdk/src/@types/event";
 
 import { DropDown, Section, DropDownRow } from "../components";
 import { IconButton } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
-
 
 import { getMember, userIdRegex } from "../../../utils/matrix-client";
 import { classList, asyncDebounce } from "../../../utils/utils";
@@ -43,18 +43,18 @@ const powerLevelContent = Object.freeze({
 })
 
 const stateEvents = Object.freeze({
-    "m.room.canonical_alias": "Set canonical room aliases",
-    "m.room.join_rules": "Change this room's join rules",
-    "m.room.power_levels": "Change room permissions",
-    "m.room.name": "Change the room name",
-    "m.room.topic": "Change this room's topic",
-    "m.room.avatar": "Change the room avatar",
-    "m.room.pinned_events": "Pin/unpin events",
-    "m.room.server_acl": "Modify the room ACL",
-    "m.room.guest_access": "Control whether guest users can join this room",
-    "m.room.history_visibility": "Modify event visibility",
-    "m.room.encryption": "Modify this room's encryption settings",
-    "m.room.tombstone": "Upgrade this room",
+    [EventType.RoomCanonicalAlias]: "Set canonical room aliases",
+    [EventType.RoomJoinRules]: "Change this room's join rules",
+    [EventType.RoomPowerLevels]: "Change room permissions",
+    [EventType.RoomName]: "Change the room name",
+    [EventType.RoomTopic]: "Change this room's topic",
+    [EventType.RoomAvatar]: "Change the room avatar",
+    [EventType.RoomPinnedEvents]: "Pin/unpin events",
+    [EventType.RoomServerAcl]: "Modify the room ACL",
+    [EventType.RoomGuestAccess]: "Control whether guest users can join this room",
+    [EventType.RoomHistoryVisibility]: "Modify event visibility",
+    [EventType.RoomEncryption]: "Modify this room's encryption settings",
+    [EventType.RoomTombstone]: "Upgrade this room",
 });
 const stateEventOptions = Object.freeze(
     Object.fromEntries(
@@ -75,12 +75,12 @@ type mRoomPowerlevels = {
     },
 } & {[key: string]: number};
 
-export const getPowerLevels = (room: Room) => room.currentState.getStateEvents("m.room.power_levels")[0]?.getContent() as object as mRoomPowerlevels;
+export const getPowerLevels = (room: Room) => room.currentState.getStateEvents(EventType.RoomPowerLevels)[0]?.getContent() as object as mRoomPowerlevels;
 
 export default function RoomPermissions({ room }: {room: Room}) {
     // Inline function has to be defined before useCatchState
     const save = useMemo(() => asyncDebounce(async (newState: mRoomPowerlevels) => {
-        await global.matrix.sendStateEvent(room.roomId, "m.room.power_levels", newState, "")
+        await global.matrix.sendStateEvent(room.roomId, EventType.RoomPowerLevels, newState, "")
     }, 2500), [room]);
 
     const [powerLevelState, setPowerLevels] = useCatchState(() => getPowerLevels(room), save);  // The local view of the power levels
@@ -88,7 +88,7 @@ export default function RoomPermissions({ room }: {room: Room}) {
     const [newStateOverride, setNewStateOverride] = useState(null);
     const [newStateOverridePL, setNewStateOverridePL] = useState(0);
 
-    const canEditPowerLevels = room.currentState.maySendStateEvent("m.room.power_levels", global.matrix.getUserId());
+    const canEditPowerLevels = room.currentState.maySendStateEvent(EventType.RoomPowerLevels, global.matrix.getUserId());
 
     const powerLevelOptions = {
         50: {
@@ -185,7 +185,7 @@ type MemberPowerLevelsProps = {
 
 function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPowerLevelsProps) {
     const save = useMemo(() => asyncDebounce(async (newState: ReturnType<typeof getPowerLevels>) => {
-        await global.matrix.sendStateEvent(room.roomId, "m.room.power_levels", newState, "")
+        await global.matrix.sendStateEvent(room.roomId, EventType.RoomPowerLevels, newState, "")
     }, 2500), [room])
     const [powerLevelEvent, setPowerLevelEvent] = useCatchState(() => getPowerLevels(room), save);
 
@@ -194,7 +194,7 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
     const [newUserIdValid, setNewUserIdValid] = useState(true);
     const [newPowerLevel, setNewPowerlevel] = useState(0);
 
-    const canEditPowerLevels = room.currentState.maySendStateEvent("m.room.power_levels", global.matrix.getUserId());
+    const canEditPowerLevels = room.currentState.maySendStateEvent(EventType.RoomPowerLevels, global.matrix.getUserId());
 
     return (<>
         {

@@ -1,6 +1,6 @@
 import "./Reactions.scss";
 import { useReducer, useEffect, useState, useContext, useCallback } from "react";
-import { EventType, RelationType } from "matrix-js-sdk/lib/@types/event";
+import { EventType, RelationType } from "matrix-js-sdk/src/@types/event";
 
 import { Option } from "../../../../components/elements";
 import { popupCtx, Tooltip } from "../../../../components/popups"
@@ -24,7 +24,7 @@ function getEventRelations(event: MatrixEvent, relationType:  RelationType, even
 }
 export function getEventReactions(event: MatrixEvent) {
     // MSC2677: https://github.com/matrix-org/matrix-doc/pull/2677
-    const relations = getEventRelations(event, RelationType.Annotation, "m.reaction");
+    const relations = getEventRelations(event, RelationType.Annotation, EventType.Reaction);
     return relations;
 }
 

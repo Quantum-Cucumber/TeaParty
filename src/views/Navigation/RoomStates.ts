@@ -1,4 +1,7 @@
 import { useEffect, useRef, useCallback, useReducer } from "react";
+import { NotificationCountType } from "matrix-js-sdk";
+import { EventType } from "matrix-js-sdk/src/@types/event";
+
 import Settings, { isEventVisibility } from "../../utils/settings";
 import { debounce } from "../../utils/utils";
 import { useStableState } from "../../utils/hooks";
@@ -6,7 +9,6 @@ import { getOrpanedRooms, getDirects, getSpaceChildren, getJoinedRooms, getSpace
 import { shouldDisplayEvent } from "../ChatPanel/Chat/eventTimeline";
 import { sortRooms } from "../../utils/roomFilters";
 
-import { NotificationCountType } from "matrix-js-sdk";
 import type { Room, MatrixEvent } from "matrix-js-sdk";
 
 
@@ -215,7 +217,7 @@ export default function useRoomStates({ currentGroup, setGroupRooms }: useRoomSt
         console.log("Account data", event)
 
         // If m.directs list updated, refresh the dms list
-        if (event.getType() === "m.direct") {
+        if (event.getType() === EventType.Direct) {
             refreshRooms();
         };
     }, [refreshRooms])

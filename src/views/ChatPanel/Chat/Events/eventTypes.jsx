@@ -1,5 +1,6 @@
 import "./eventTypes.scss";
 import { useContext } from "react";
+import { EventType } from "matrix-js-sdk/src/@types/event";
 
 import { UserPopup } from "../../../../components/user";
 import { popupCtx, Tooltip } from "../../../../components/popups";
@@ -123,23 +124,23 @@ export function RoomEditEvent({ event, partial }) {
     let icon;
     let what;  // The property that was edited
     switch (type) {
-        case "m.room.name":
+        case EventType.RoomName:
             icon = mdiPencil;
             what = "name to: " + content.name;
             break;
-        case "m.room.avatar":
+        case EventType.RoomAvatar:
             icon = mdiImage;
             what = "icon";
             break;
-        case "m.room.topic":
+        case EventType.RoomTopic:
             icon = mdiTextBox;
             what = "topic to: " + content.topic;
             break;
-        case "m.room.server_acl":
+        case EventType.RoomServerAcl:
             icon = mdiShield;
             what = "ACL";
             break;
-        case "m.room.tombstone":
+        case EventType.RoomTombstone:
             icon = mdiUpdate;
             what = "version: " + content.body;
             break;

@@ -1,4 +1,5 @@
 import type { Room } from "matrix-js-sdk";
+import { EventType } from "matrix-js-sdk/src/@types/event";
 import { AclChecker, getHomeserver } from "./matrix-client";
 
 const matrixtoRegex = /^(?:https:\/\/)?(?:www\.)?matrix\.to\/#\/(([!@#+]).+)/i;
@@ -92,7 +93,7 @@ function getCandidates(room: Room) {
 
     // Get the user with the highest power level - Candidate 1
 
-    const powerLevelsEvent = room.currentState.getStateEvents("m.room.power_levels", "");
+    const powerLevelsEvent = room.currentState.getStateEvents(EventType.RoomPowerLevels, "");
     if (powerLevelsEvent?.getContent()?.users) {
         // Get all the set power levels
         const powerLevels: {string: number} = powerLevelsEvent.getContent().users;

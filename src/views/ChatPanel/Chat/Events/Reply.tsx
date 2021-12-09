@@ -1,4 +1,8 @@
 import "./Reply.scss";
+import { useEffect, useState } from "react";
+import { EventType, MsgType } from "matrix-js-sdk/src/@types/event";
+
+import { MessageText } from "./MessageContent";
 
 import { getEventById, getMember } from "../../../../utils/matrix-client";
 import { getUserColour } from "../../../../utils/utils";
@@ -6,8 +10,6 @@ import { getUserColour } from "../../../../utils/utils";
 import Icon from "@mdi/react";
 
 import type { MatrixEvent } from "matrix-js-sdk";
-import { MessageText } from "./MessageContent";
-import { useEffect, useState } from "react";
 
 const mdiArrowDownLeft = "M20 4V6H13.5C11 6 9 8 9 10.5V16.17L12.09 13.09L13.5 14.5L8 20L2.5 14.5L3.91 13.08L7 16.17V10.5C7 6.91 9.91 4 13.5 4H20Z";
 
@@ -60,28 +62,28 @@ type ReplyBodyProps = {event: MatrixEvent}
 function ReplyBody({event}: ReplyBodyProps) {
     const msgType = event.getContent().msgtype;
 
-    if (event.getType() !== "m.room.message") {return null};
+    if (event.getType() !== EventType.RoomMessage) {return null};
 
     let content = null;
     switch (msgType) {
-        case "m.image":
+        case MsgType.Image:
             content = "sent an image.";
             break;
-        case "m.video":
+        case MsgType.Video:
             content = "sent a video.";
             break;
-        case "m.audio":
+        case MsgType.Audio:
             content = "sent an audio file.";
             break;
-        case "m.file":
+        case MsgType.File:
             content = "sent a file.";
             break;
-        case "m.location":
+        case MsgType.Location:
             content = "sent a location.";
             break;
-        case "m.text":
-        case "m.emote":
-        case "m.notice":
+        case MsgType.Text:
+        case MsgType.Emote:
+        case MsgType.Notice:
             content = (
                 <MessageText event={event} />
             );

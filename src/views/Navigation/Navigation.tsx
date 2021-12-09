@@ -1,6 +1,7 @@
 import "./Navigation.scss";
 import React, { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
+import { EventType } from "matrix-js-sdk/src/@types/event";
 
 import { IconButton, Option, OptionDropDown, Loading, RoomIcon, HoverOption, OptionIcon } from "../../components/elements";
 import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx, Confirm } from "../../components/popups";
@@ -414,10 +415,10 @@ function InviteEntry({ invite, direct }: InviteEntryProps) {
 
         if (direct) {
             // Update account data
-            const directs = global.matrix.getAccountData("m.direct")?.getContent() || {};
+            const directs = global.matrix.getAccountData(EventType.Direct)?.getContent() || {};
             directs[inviter] = room.roomId;
             try {
-                await global.matrix.setAccountData("m.direct", directs);
+                await global.matrix.setAccountData(EventType.Direct, directs);
             } catch (e) {
                 console.warn(e);
             }

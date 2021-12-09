@@ -1,4 +1,5 @@
 import { Room } from "matrix-js-sdk";
+import { EventType } from "matrix-js-sdk/src/@types/event";
 
 function _isJoined(room: Room) {
     return room?.getMyMembership() === "join";
@@ -62,7 +63,7 @@ export function getDirects() {
        Assumes structure of - {userId: [roomId]}
     */
 
-    const directInfo: {string: string[]} = global.matrix.getAccountData("m.direct").getContent();
+    const directInfo: {string: string[]} = global.matrix.getAccountData(EventType.Direct).getContent();
     const directs: Set<string> = new Set();
 
     Object.values(directInfo).forEach((roomIds) => {

@@ -1,4 +1,4 @@
-import { RelationType } from "matrix-js-sdk/lib/@types/event";
+import { EventType, RelationType } from "matrix-js-sdk/src/@types/event";
 
 import type { MatrixEvent } from "matrix-js-sdk";
 
@@ -11,5 +11,5 @@ export async function addReaction(event: MatrixEvent, emote: string) {
             key: emote,
         }
     };
-    await global.matrix.sendEvent(event.getRoomId(), "m.reaction", newEvent)
+    await global.matrix.sendEvent(event.getRoomId(), EventType.Reaction, newEvent)
 }

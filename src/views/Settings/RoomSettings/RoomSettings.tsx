@@ -1,12 +1,14 @@
 import "./RoomSettings.scss";
 import React, { useCallback, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
+import { EventType } from "matrix-js-sdk/src/@types/event";
 
 import SettingsPage from "../Settings"
 import RoomPermissions, { getPowerLevels } from "./RoomPermissions";
 import { EditableText, Section, Toggle, DropDownRow, ImageUpload } from "../components";
 import { Button, IconButton } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
+import Settings from "../../../utils/settings";
 
 import { classList, stringSize } from "../../../utils/utils";
 import { useCatchState, useScrollPaginate } from "../../../utils/hooks";
@@ -18,7 +20,6 @@ import type { FormEvent } from "react";
 import type { Room, RoomMember } from "matrix-js-sdk";
 import type { Visibility } from "matrix-js-sdk/lib/@types/partials";
 import type {pagesType} from "../Settings";
-import Settings from "../../../utils/settings";
 
 
 export default function RoomSettings({ roomId }) {
@@ -90,8 +91,8 @@ const visibilityMap = Object.freeze({
     },
 })
 
-const getTopic = (room: Room) => room.currentState.getStateEvents("m.room.topic")[0]?.getContent().topic as string;
-const getJoinRule = (room: Room) => room.currentState.getStateEvents("m.room.join_rules")[0]?.getContent().join_rule as keyof typeof visibilityMap as string;
+const getTopic = (room: Room) => room.currentState.getStateEvents(EventType.RoomTopic)[0]?.getContent().topic as string;
+const getJoinRule = (room: Room) => room.currentState.getStateEvents(EventType.RoomJoinRules)[0]?.getContent().join_rule as keyof typeof visibilityMap as string;
 
 function Overview({ room }: {room: Room}) {
     const [roomName, setName] = useState(room.name);
@@ -106,11 +107,11 @@ function Overview({ room }: {room: Room}) {
 
 
     // Determine what state events can be sent
-    const canEditName = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
-    const canEditTopic = room.currentState.maySendStateEvent("m.room.name", global.matrix.getUserId());
-    const canEditAvatar = room.currentState.maySendStateEvent("m.room.avatar", global.matrix.getUserId());
-    const canEditJoinRules = room.currentState.maySendStateEvent("m.room.join_rules", global.matrix.getUserId());
-    const canEditAliases = room.currentState.maySendStateEvent("m.room.canonical_aliases", global.matrix.getUserId());
+    const canEditName = room.currentState.maySendStateEvent(EventType.RoomName, global.matrix.getUserId());
+    const canEditTopic = room.currentState.maySendStateEvent(EventType.RoomTopic, global.matrix.getUserId());
+    const canEditAvatar = room.currentState.maySendStateEvent(EventType.RoomAvatar, global.matrix.getUserId());
+    const canEditJoinRules = room.currentState.maySendStateEvent(EventType.RoomJoinRules, global.matrix.getUserId());
+    const canEditAliases = room.currentState.maySendStateEvent(EventType.RoomCanonicalAlias, global.matrix.getUserId());
 
 
     // Display the updated data -> send the event -> if an error occurs, use the previous state
@@ -135,7 +136,7 @@ function Overview({ room }: {room: Room}) {
         const content = {
             join_rule: join_rule,
         }
-        global.matrix.sendStateEvent(room.roomId, "m.room.join_rules", content, "")
+        global.matrix.sendStateEvent(room.roomId, EventType.RoomJoinRules, content, "")
         .catch(() => {
             setName(roomVisibility);
         });
@@ -151,11 +152,11 @@ function Overview({ room }: {room: Room}) {
 
     async function saveCanonicalAlias(newAlias: string) {
         // Get current state event
-        const oldEvent = room.currentState.getStateEvents("m.room.canonical_alias", "")?.getContent() || {};
+        const oldEvent = room.currentState.getStateEvents(EventType.RoomCanonicalAlias, "")?.getContent() || {};
         // Create new event
         const newEvent = {alias: newAlias, alt_aliases: "alt_aliases" in oldEvent ? oldEvent.alt_aliases : []};
         // Send event
-        await global.matrix.sendStateEvent(room.roomId, "m.room.canonical_alias", newEvent, "");
+        await global.matrix.sendStateEvent(room.roomId, EventType.RoomCanonicalAlias, newEvent, "");
     }
 
     async function saveAliases(_newAliases: string[], alias: {action: "add" | "remove", alias: string}) {
@@ -172,7 +173,7 @@ function Overview({ room }: {room: Room}) {
     }
 
     async function changeAvatar(newMxcUrl: string) {
-        await global.matrix.sendStateEvent(room.roomId, "m.room.avatar", newMxcUrl ? {url: newMxcUrl} : {}, "");
+        await global.matrix.sendStateEvent(room.roomId, EventType.RoomAvatar, newMxcUrl ? {url: newMxcUrl} : {}, "");
     }
 
 

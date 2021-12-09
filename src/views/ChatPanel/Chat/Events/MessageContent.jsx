@@ -1,10 +1,13 @@
 import "./MessageContent.scss";
 import { useState, useEffect, useContext } from "react";
+import { MsgType } from "matrix-js-sdk/src/@types/event";
 
 import { A, IconButton } from "../../../../components/elements";
 import { ImagePopup, Tooltip, popupCtx } from "../../../../components/popups";
 import { UserPopup } from "../../../../components/user";
+import { FancyText } from "../../../../components/wrappers";
 import HtmlContent from "./HtmlContent";
+
 
 import { messageTimestampFull } from "../../../../utils/datetime";
 import { bytesToFriendly } from "../../../../utils/utils";
@@ -13,30 +16,29 @@ import { tryGetUser } from "../../../../utils/matrix-client";
 
 import { mdiChatRemove, mdiDownload, mdiFileDocumentOutline } from "@mdi/js";
 import Icon from "@mdi/react";
-import { FancyText } from "../../../../components/wrappers";
 
 export default function MessageContent({ event }) {
     const eventContent = event.getContent();
 
     let content;
     switch (eventContent.msgtype) {
-        case "m.text":
+        case MsgType.Text:
         case "org.matrix.custom.html":
             content = (
                 <MessageText event={event} />
             );
             break;
-        case "m.image": 
+        case MsgType.Image: 
             content = (
                 <MessageImage eventContent={eventContent} />
             )
             break;
-        case "m.file":
+        case MsgType.File:
             content = (
                 <MessageFile eventContent={eventContent} />
             )
             break;
-        case "m.notice":
+        case MsgType.Notice:
             content = (
                 <MessageNotice eventContent={eventContent} />
             )

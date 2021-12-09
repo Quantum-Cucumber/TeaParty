@@ -1,22 +1,23 @@
 import type { MatrixEvent } from "matrix-js-sdk";
+import { EventType, RelationType } from "matrix-js-sdk/src/@types/event";
 
 // Filters
 
 export function isMessageEvent(event: MatrixEvent) {
-    return event.getType() === "m.room.message";
+    return event.getType() === EventType.RoomMessage;
 }
-export function isEditEvent(event: MatrixEvent) {return event.isRelation("m.replace")}
+export function isEditEvent(event: MatrixEvent) {return event.isRelation(RelationType.Replace)}
 
 export function isJoinEvent(event: MatrixEvent) {
     return (
-        event.getType() === "m.room.member" &&
+        event.getType() === EventType.RoomMember &&
         event.getContent()?.membership === "join" &&
         event.getPrevContent()?.membership !== "join"  // If current and previous membership is join, the member object was updated
     )
 }
 export function isLeaveEvent(event: MatrixEvent) {
     return (
-        event.getType() === "m.room.member" && (
+        event.getType() === EventType.RoomMember && (
             event.getContent()?.membership === "leave" ||
             event.getContent()?.membership === "ban"
         ) &&
@@ -25,20 +26,20 @@ export function isLeaveEvent(event: MatrixEvent) {
 }
 export function isRoomEditEvent(event: MatrixEvent) {
     return (
-        event.getType() === "m.room.name" ||
-        event.getType() === "m.room.avatar" ||
-        event.getType() === "m.room.topic" ||
-        event.getType() === "m.room.server_acl" ||
-        event.getType() === "m.room.tombstone"
+        event.getType() === EventType.RoomName ||
+        event.getType() === EventType.RoomAvatar ||
+        event.getType() === EventType.RoomTopic ||
+        event.getType() === EventType.RoomServerAcl ||
+        event.getType() === EventType.RoomTombstone
     )
 }
 
 export function isPinEvent(event: MatrixEvent) {
-    return event.getType() === "m.room.pinned_events";
+    return event.getType() === EventType.RoomPinnedEvents;
 }
 
 export function isStickerEvent(event: MatrixEvent) {
-    return event.getType() === "m.sticker";
+    return event.getType() === EventType.Sticker;
 }
 
 // Utils

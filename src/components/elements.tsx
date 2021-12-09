@@ -1,5 +1,6 @@
 import "./elements.scss";
 import { useState, useReducer, useRef, useEffect } from "react";
+import { EventType } from "matrix-js-sdk/src/@types/event";
 
 import { ContextMenu, Tooltip } from "./popups";
 import { Avatar } from "./user";
@@ -56,7 +57,7 @@ export function RoomIcon({ room }: {room: Room}) {
         setIconUrl(getRoomUrl(room));
 
         function stateUpdate(event: MatrixEvent) {
-            if (event.getRoomId() === room.roomId && event.getType() === "m.room.avatar") {
+            if (event.getRoomId() === room.roomId && event.getType() === EventType.RoomAvatar) {
                 const httpUrl: string = global.matrix.mxcUrlToHttp(event.getContent().url, 96, 96, "crop");
                 setIconUrl(httpUrl);
             }

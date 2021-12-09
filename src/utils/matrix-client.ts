@@ -1,4 +1,5 @@
 import * as matrixsdk from "matrix-js-sdk";
+import { EventType } from "matrix-js-sdk/src/@types/event";
 import globToRegexp from "glob-to-regexp";
 
 import type { MatrixEvent, Room, RoomMember, User } from "matrix-js-sdk";
@@ -196,7 +197,7 @@ export class AclChecker {
 
     private process() {
     // Load allowed/denied servers
-        const aclState = this.room.currentState.getStateEvents("m.room.server_acl", "");
+        const aclState = this.room.currentState.getStateEvents(EventType.RoomServerAcl, "");
         if (aclState) {
             const allow: string[] = aclState.getContent().allow || [];
             allow.forEach((rule) => {

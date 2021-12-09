@@ -1,5 +1,6 @@
 import "./Event.scss";
 import { useContext, memo, useState, useEffect, useRef } from "react";
+import { MsgType } from "matrix-js-sdk/src/@types/event";
 
 import { Avatar, Member, UserOptions, UserPopup } from "../../../../components/user";
 import { IconButton, Option, OptionIcon } from "../../../../components/elements";
@@ -32,7 +33,7 @@ function eventIsSame(oldProps, newProps) {
 export const TimelineEvent = memo(({ event, partial=false }) => {    
     let eventEntry = null;
     if (isMessageEvent(event)) {
-        if (event.getContent().msgtype === "m.emote") {
+        if (event.getContent().msgtype === MsgType.Emote) {
             eventEntry = (
                 <EmoteMsg event={event} partial={partial} />
             );
