@@ -6,7 +6,7 @@ import { IconButton, Option, OptionDropDown, Loading, RoomIcon, HoverOption } fr
 import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx, Confirm } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
-import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup } from "./RoomStates";
+import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup, invitedRoomsType, inviteInfo, roomStatesType } from "./RoomStates";
 
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { classList } from "../../utils/utils";
@@ -17,18 +17,19 @@ import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClos
 import { Icon } from "@mdi/react";
 
 import type { Room } from "matrix-js-sdk";
+import type { groupType } from "./RoomStates";
 
 
 type NavigationProps = {
     currentRoom: string,
-    selectRoom: React.Dispatch<string>,
+    selectRoom: React.Dispatch<string | null>,
     hideRoomListState: [boolean, React.Dispatch<React.SetStateAction<boolean>>],
 }
 
 function Navigation({ currentRoom, selectRoom, hideRoomListState }: NavigationProps) {
     const history = useHistory();
     // Name will be displayed above the room list and can't (always) be inferred from the key
-    const [currentGroup, setGroup] = useState({ name: "Home", key: "home" });
+    const [currentGroup, setGroup] = useState<groupType>({ name: "Home", key: "home" });
     const [groupRooms, setGroupRooms] = useState(getChildRoomsFromGroup(currentGroup.key))
     const [showRoomSeperate, setShowRoomSeperate] = useState<Room>(null);
     
@@ -128,9 +129,9 @@ function GroupList(props: GroupListProps) {
 }
 
 type GroupProps = {
-    setGroup?: ({ name, key }: {name: string, key: string}) => void,
-    currentGroup: { name: string, key: string },
-    roomStates: any,  // TODO: Change when RoomStates.js is converted to typescript
+    setGroup?: (group: groupType) => void,
+    currentGroup: groupType,
+    roomStates: roomStatesType,
     groupName: string,
     k: string,
     children: React.ReactNode,
@@ -172,7 +173,7 @@ function Group({ setGroup = () => {}, currentGroup, roomStates, groupName, k, ch
 
 type RoomListProps = {
     rooms: Room[],
-    roomStates: any,  // TODO: Change when RoomStates.js is converted to typescript
+    roomStates: roomStatesType,
     currentRoom: string,
     selectRoom: React.Dispatch<string>,
 }
@@ -313,7 +314,7 @@ function MyUser() {
 
 type InvitesIconProps = {
     invLen: number,
-    invites: any,   // TODO: Change when RoomStates.js is converted to typescript  // TODO: Change when RoomStates.js is converted to typescript
+    invites: invitedRoomsType,
 }
 
 function InvitesIcon({ invLen, invites }: InvitesIconProps) {
@@ -336,7 +337,7 @@ function InvitesIcon({ invLen, invites }: InvitesIconProps) {
     );    
 }
 
-function Invites({ invitedRooms }: {invitedRooms: any}) {
+function Invites({ invitedRooms }: {invitedRooms: invitedRoomsType}) {
     const setModal = useContext(modalCtx);
 
     // Make a holder for each invite type and populate with its values
@@ -363,7 +364,12 @@ function Invites({ invitedRooms }: {invitedRooms: any}) {
     )
 }
 
-function InviteEntry({ invite, direct }) {
+type InviteEntryProps = {
+    invite: inviteInfo,
+    direct: boolean,
+}
+
+function InviteEntry({ invite, direct }: InviteEntryProps) {
     const [status, setStatus] = useState(null);
     const { inviter, room } = invite;
 
