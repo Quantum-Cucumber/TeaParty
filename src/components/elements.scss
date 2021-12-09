@@ -38,17 +38,32 @@
         margin: 0 8px;
     }
 
+    &:hover .option__notification, &:hover .option__unread {
+        display: none;
+    }
+    &:not(:hover) .option__options {
+        display: none;
+    }
+    &--selected {
+        .option__notification, .option__unread {
+            background-color: var(--text);
+            color: var(--primary);
+        }
+    }
+
     &__notification {
         flex: none;
+
         background-color: var(--primary);
         border-radius: 0.6rem;
         padding: 2px;
         height: 1.3rem;
-        line-height: 1.3rem;
-        aspect-ratio: 1;
+        width: 1.3rem;
+
         display: flex;
         justify-content: center;
         align-items: center;
+        line-height: 1.3rem;
     }
 
     &__unread {
@@ -71,12 +86,6 @@
     &--selected {
         background-color: var(--primary) !important;
     }
-    &:hover, &--selected {
-        .option__notification, .option__unread {
-            background-color: var(--text);
-            color: var(--primary);
-        }
-    }
 
     &--danger {
         color: var(--error);
@@ -94,6 +103,19 @@
     &--compact {
         padding: 5px 8px;
         border-radius: 5px;
+    }
+
+    &--disabled {
+        color: var(--text-greyed);
+        cursor: default !important;
+
+        &:hover {
+            background-color: transparent !important;
+        }
+
+        & > svg > path {
+            fill: var(--text-greyed) !important;
+        }
     }
 }
 

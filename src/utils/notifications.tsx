@@ -1,10 +1,9 @@
 import type { Room } from "matrix-js-sdk";
 
-import { Option } from "../components/elements";
+import { Option, OptionIcon } from "../components/elements";
 
 import { useCatchState } from "../utils/hooks";
 
-import { Icon } from "@mdi/react";
 import { mdiBellAlert, mdiBellOff, mdiBellOutline, mdiBellRing } from "@mdi/js";
 
 import { ConditionKind, IPushRules, PushRuleActionName, PushRuleKind } from "matrix-js-sdk/lib/@types/PushRules";
@@ -114,9 +113,9 @@ export function NotificationOptions({ room }: {room: Room}) {
     return (<>{
         notifDisplay.map(({type, icon, text}) => {
             return (
-                <Option compact text={text} k={type} selected={notifSetting} select={setNotifSetting} key={type}>
-                    <Icon path={icon} color="var(--text)" size="1em" />
-                </Option>
+                <Option compact text={text} k={type} selected={notifSetting} select={setNotifSetting} key={type}
+                    icon={<OptionIcon path={icon} />}
+                />
             )
         })
     }</>)

@@ -7,9 +7,8 @@ import { getLocalpart, powerLevelText } from "../utils/matrix-client";
 
 import { ContextMenu, ImagePopup, popupCtx, positionFloating } from "./popups";
 import { TextCopy } from "./wrappers";
-import { Option } from "./elements";
+import { Option, OptionIcon } from "./elements";
 
-import Icon from "@mdi/react";
 import { mdiContentCopy } from "@mdi/js";
 
 
@@ -131,12 +130,13 @@ export function UserOptions({ userId, ...props }) {
 
     return (
         <ContextMenu {...props}>
-            <Option compact text="Copy user ID" select={() => {
+            <Option compact text="Copy user ID" 
+                select={() => {
                     navigator.clipboard.writeText(userId);
                     setPopup();
-            }}>
-                    <Icon path={mdiContentCopy} size="1em" color="var(--text)" />
-            </Option>
+                }}
+                icon={<OptionIcon path={mdiContentCopy} />}
+            />
         </ContextMenu>
     )
 }

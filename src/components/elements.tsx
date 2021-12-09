@@ -87,32 +87,33 @@ type OptionProps<T> = {
     select?: (k?: T) => void,
     danger?: boolean,
     compact?: boolean,
-    unread?: boolean,
-    notifications?: number,
+    enabled?: boolean,
+    icon?: JSX.Element,
     children?: JSX.Element,
     [key: string]: any,
 }
 
-export function Option<T>({ text, k = undefined, selected = undefined, select = () => {}, danger=false, compact=false, unread=false, notifications=0, children = null, ...props }: OptionProps<T>) {
+export function Option<T>({ text, k = undefined, selected = undefined, select = () => {}, danger=false, compact=false, enabled=true, icon = null, children, ...props }: OptionProps<T>) {
     const className = classList("option",
                                 {"option--selected": k !== undefined ? (selected === k) : false}, 
                                 {"option--danger": danger},
-                                {"option--compact": compact}) 
-
-    let indicator: React.ReactNode = null;
-    if (notifications > 0) {
-        indicator = (<div className="option__notification">{notifications}</div>);
-    } else if (unread) {
-        indicator = (<div className="option__unread"></div>);
-    }
+                                {"option--compact": compact},
+                                {"option--disabled": !enabled},
+                               )
 
     return (
-        <div className={className} onClick={() => select(k)} {...props}>
-            {children}
+        <div className={className} onClick={enabled ? () => select(k) : null} {...props}>
+            {icon}
             <div className="option__text">{text}</div>
-            {indicator}
+            {children}
         </div>
     );
+}
+
+export function OptionIcon({ path, colour = "text" }: {path: string, colour?: string}) {
+    return (
+        <Icon path={path} size="1em" color={`var(--${colour})`} />
+    )
 }
 
 
@@ -145,21 +146,15 @@ export function HoverOption({ icon, text, children }: HoverOptionProps) {
 type OptionDropDownProps = {
     icon: React.ReactNode,
     text: string,
+    indicator: JSX.Element,
     children: React.ReactNode,
     unread?: boolean,
     notifications?: number,
     [key: string]: any,
 }
 
-export function OptionDropDown({ icon, text, children, unread=false, notifications=0, ...props }: OptionDropDownProps) {
+export function OptionDropDown({ icon, text, indicator, children, ...props }: OptionDropDownProps) {
     const [open, toggleOpen] = useReducer((current) => !current, false);
-
-    let indicator: React.ReactNode = null;
-    if (notifications > 0) {
-        indicator = (<div className="option--dropdown__notification">{notifications}</div>);
-    } else if (unread) {
-        indicator = (<div className="option--dropdown__unread"></div>);
-    }
 
     return (
         <div className="option--dropdown-wrapper">
@@ -167,7 +162,7 @@ export function OptionDropDown({ icon, text, children, unread=false, notificatio
                 <Icon path={mdiChevronDown} color={open ? "var(--text)" : "var(--text-greyed)"} size="1.5rem" className="option--dropdown__chevron" rotate={open ? 0 : -90} />
                 { icon }
                 <div className="option--dropdown__text">{text}</div>
-                {indicator}
+                { indicator }
             </div>
             { open &&
                 <div className="option--dropdown__content">

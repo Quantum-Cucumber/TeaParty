@@ -2,7 +2,7 @@ import "./Event.scss";
 import { useContext, memo, useState, useEffect, useRef } from "react";
 
 import { Avatar, Member, UserOptions, UserPopup } from "../../../../components/user";
-import { IconButton, Option } from "../../../../components/elements";
+import { IconButton, Option, OptionIcon } from "../../../../components/elements";
 import { Tooltip, ContextMenu, Modal, popupCtx, modalCtx } from "../../../../components/popups";
 import { Code, TextCopy } from "../../../../components/wrappers";
 import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
@@ -18,7 +18,6 @@ import { useScrollPaginate } from "../../../../utils/hooks";
 import { MatrixtoPermalink } from "../../../../utils/linking";
 
 import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon, mdiShareVariant, mdiDelete } from "@mdi/js";
-import Icon from "@mdi/react";
 
 function eventIsSame(oldProps, newProps) {
     const oldEvent = oldProps.event;
@@ -192,60 +191,63 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
     return (
         <ContextMenu {...contextMenuProps}>
             { reactions && 
-                <Option compact text="Reactions" select={() => {
-                    selectModal("Reactions", 
-                                <ReactionViewer event={event} reactions={reactions} />, 
-                                null, "overlay__modal--reacts"
-                    )
-                }}>
-                    <Icon path={mdiEmoticon} size="1em" color="var(--text)" />
-                </Option>
+                <Option compact text="Reactions"
+                    select={() => {
+                        selectModal("Reactions", 
+                                    <ReactionViewer event={event} reactions={reactions} />, 
+                                    null, "overlay__modal--reacts"
+                        )
+                    }}
+                    icon={<OptionIcon path={mdiEmoticon} />}
+                />
             }
 
-            <Option compact text="Read Receipts" select={() => {
-                selectModal("Read By", <ReadReceipts event={event} />, null, "overlay__modal--read")
-            }}>
-                <Icon path={mdiCheckAll} size="1em" color="var(--text)" />
-            </Option>
+            <Option compact text="Read Receipts"
+                select={() => {
+                    selectModal("Read By", <ReadReceipts event={event} />, null, "overlay__modal--read")
+                }}
+                icon={<OptionIcon path={mdiCheckAll} />}
+            />
 
-            <Option compact text="Copy link" select={() => {
-                    const url = (new MatrixtoPermalink()).event(event.getRoomId(), event.getId());
-                    navigator.clipboard.writeText(url);
-                    setPopup();
-            }}>
-                <Icon path={mdiShareVariant} size="1em" color="var(--text)" />
-            </Option>
+            <Option compact text="Copy link"
+                select={() => {
+                        const url = (new MatrixtoPermalink()).event(event.getRoomId(), event.getId());
+                        navigator.clipboard.writeText(url);
+                        setPopup();
+                }}
+                icon={<OptionIcon path={mdiShareVariant} />}
+            />
 
             { room.currentState.maySendRedactionForEvent(event, global.matrix.getUserId()) &&
                 <Option compact danger text="Delete" 
-                    onClick={() => {
+                    select={() => {
                         global.matrix.redactEvent(event.getRoomId(), event.getId());
                         setPopup();
                     }}
-                >
-                    <Icon path={mdiDelete} size="1em" color="var(--error)" />
-                </Option>
+                    icon={<OptionIcon path={mdiDelete} colour="error" />}
+                />
             }
             
             { Settings.get("devMode") &&
-                <Option compact text="View source" select={() => {
-                    selectModal("Event Source", 
-                        <>
-                            <TextCopy text={trueEvent.getId()}>
-                                <b>Event ID:</b> {trueEvent.getId()}
-                            </TextCopy>
-                            <TextCopy text={trueEvent.getRoomId()}>
-                                <b>Room ID:</b> {trueEvent.getRoomId()}
-                            </TextCopy>
-                            <br />
-                            <Code className="language-json">
-                                {JSON.stringify(trueEvent.toJSON(), null, 4)}
-                            </Code>
-                        </>
-                    )
-                }}>
-                    <Icon path={mdiXml} size="1em" color="var(--text)" />
-                </Option>
+                <Option compact text="View source"
+                    select={() => {
+                        selectModal("Event Source", 
+                            <>
+                                <TextCopy text={trueEvent.getId()}>
+                                    <b>Event ID:</b> {trueEvent.getId()}
+                                </TextCopy>
+                                <TextCopy text={trueEvent.getRoomId()}>
+                                    <b>Room ID:</b> {trueEvent.getRoomId()}
+                                </TextCopy>
+                                <br />
+                                <Code className="language-json">
+                                    {JSON.stringify(trueEvent.toJSON(), null, 4)}
+                                </Code>
+                            </>
+                        )
+                    }}
+                    icon={<OptionIcon path={mdiXml} />}
+                />
             }
         </ContextMenu>
     )

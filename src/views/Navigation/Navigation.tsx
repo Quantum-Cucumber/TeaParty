@@ -2,7 +2,7 @@ import "./Navigation.scss";
 import React, { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { IconButton, Option, OptionDropDown, Loading, RoomIcon, HoverOption } from "../../components/elements";
+import { IconButton, Option, OptionDropDown, Loading, RoomIcon, HoverOption, OptionIcon } from "../../components/elements";
 import { Tooltip, Modal, modalCtx, ContextMenu, popupCtx, Confirm } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
@@ -13,7 +13,7 @@ import { classList } from "../../utils/utils";
 import Settings from "../../utils/settings";
 import { getRoomNotifIcon, NotificationOptions } from "../../utils/notifications";
 
-import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy, mdiEye, mdiExitToApp } from "@mdi/js";
+import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiEmail, mdiCheck, mdiClose, mdiContentCopy, mdiEye, mdiExitToApp, mdiDotsHorizontal, mdiCheckAll } from "@mdi/js";
 import { Icon } from "@mdi/react";
 
 import type { Room } from "matrix-js-sdk";
@@ -189,18 +189,36 @@ function RoomList({ rooms, roomStates, currentRoom, selectRoom }: RoomListProps)
         const unreadDot = roomState ? !roomState.read : false;
         const notifications = roomState ? roomState.notifications : 0;
 
+        const indicator = (<>
+            {
+                notifications ?
+                <div className="option__notification">{notifications}</div>
+            : unreadDot &&
+                <div className="option__unread" />
+            }
+            <IconButton path={mdiDotsHorizontal} subClass="option__options" size="1.2em"
+                clickFunc={(e: React.MouseEvent<HTMLElement>) => {
+                    e.stopPropagation();
+                    setPopup(
+                        <RoomOptions roomId={key} parent={e.target as HTMLElement} mouseEvent={e} read={!!notifications || !unreadDot} />
+                    )
+                }}
+            />
+        </>)
+
         if (room.isSpaceRoom()) {
             const children = getSpaceChildren(room);
 
             return (
-                <OptionDropDown key={key} icon={icon} text={room.name} notifications={notifications} unread={unreadDot}
+                <OptionDropDown key={key} icon={icon} text={room.name}
                     onContextMenu={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
                         setPopup(
-                            <RoomOptions roomId={key} parent={e.target} mouseEvent={e} />
+                            <RoomOptions roomId={key} parent={e.target} mouseEvent={e} read={!!notifications || !unreadDot} />
                         )
                     }}
+                    indicator={indicator}
                 >
                     <RoomList rooms={children} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} /> 
                 </OptionDropDown>
@@ -208,18 +226,16 @@ function RoomList({ rooms, roomStates, currentRoom, selectRoom }: RoomListProps)
         }
         else {
             return (
-                <Option key={key} k={key} text={room.name} selected={currentRoom} select={selectRoom} 
-                    unread={unreadDot} notifications={notifications}
-            
+                <Option key={key} k={key} text={room.name} icon={icon} selected={currentRoom} select={selectRoom} 
                     onContextMenu={(e: React.MouseEvent<HTMLElement>) => {
                         e.preventDefault();
                         e.stopPropagation();
                         setPopup(
-                            <RoomOptions roomId={key} parent={e.target as HTMLElement} mouseEvent={e} />
+                            <RoomOptions roomId={key} parent={e.target as HTMLElement} mouseEvent={e} read={!!notifications || !unreadDot} />
                         )
                     }}
                 >
-                    {icon}
+                    {indicator}
                 </Option>
             )
         }
@@ -230,19 +246,34 @@ function RoomList({ rooms, roomStates, currentRoom, selectRoom }: RoomListProps)
 
 type RoomOptionsProps = {
     roomId: string,
+    read?: boolean,
 } & Omit<React.ComponentProps<typeof ContextMenu>, "x" | "y" | "children">;
 
-function RoomOptions({ roomId, ...props }: RoomOptionsProps) {
+function RoomOptions({ roomId, read = true, ...props }: RoomOptionsProps) {
     const setPopup = useContext(popupCtx);
     const history = useHistory();
 
-    const room = global.matrix.getRoom(roomId);
+    const room: Room = global.matrix.getRoom(roomId);
 
     return (
         <ContextMenu {...props} x="align-mouse-left" y="align-mouse-top">
+            { !room.isSpaceRoom() &&
+                <Option compact text="Mark as read" icon={<OptionIcon path={mdiCheckAll} />} enabled={!read}
+                    select={() => {
+                        setPopup(null);
+                        const events = room.getLiveTimeline().getEvents();
+                        const lastEvent = events[events.length - 1];
+                        if (lastEvent) {
+                            console.log(`Mark ${lastEvent.getId()} as read`)
+                            global.matrix.sendReadReceipt(lastEvent);
+                        }
+                    }}
+                />
+            }
+
             { !room.isSpaceRoom() &&  // Technically you could set the space room notifications, but you won't likely read the events
                 <HoverOption text="Notifications"
-                        icon={<Icon path={getRoomNotifIcon(room)} size="1em" color="var(--text)" />}
+                        icon={<OptionIcon path={getRoomNotifIcon(room)} />}
                 >
                     <NotificationOptions room={room} />
                 </HoverOption>
@@ -253,18 +284,17 @@ function RoomOptions({ roomId, ...props }: RoomOptionsProps) {
                     select={() => {
                         history.push("/room/" + roomId);
                     }}
-                >
-                    <Icon path={mdiEye} size="1em" color="var(--text)" />
-                </Option>
+                    icon={<OptionIcon path={mdiEye} />}
+                />
             }
 
-            <Option compact text="Settings" select={() => {
+            <Option compact text="Settings"
+                select={() => {
                     history.push("/settings/room/" + roomId);
                     setPopup();
                 }}
-            >
-                <Icon path={mdiCog} size="1em" color="var(--text)" />
-            </Option>
+                icon={<OptionIcon path={mdiCog} />}
+            />
 
             <Option compact danger text="Leave"
                 select={() => {
@@ -272,17 +302,16 @@ function RoomOptions({ roomId, ...props }: RoomOptionsProps) {
                         <Confirm title={`Leave ${room.name}?`} onConfirm={async () => await global.matrix.leave(roomId)} />
                     );
                 }}
-            >
-                <Icon path={mdiExitToApp} size="1em" color="var(--error)" />
-            </Option>
+                icon={<OptionIcon path={mdiExitToApp} colour="error" />}
+            />
 
-            <Option compact text="Copy Room ID" select={() => {
+            <Option compact text="Copy Room ID"
+                select={() => {
                     navigator.clipboard.writeText(roomId);
                     setPopup();
                 }}
-            >
-                <Icon path={mdiContentCopy} size="1em" color="var(--text)" />
-            </Option>
+                icon={<OptionIcon path={mdiContentCopy} />}
+            />
         </ContextMenu>
     )
 }

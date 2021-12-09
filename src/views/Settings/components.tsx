@@ -302,11 +302,8 @@ export function DropDown({value, options, saveFunc, canEdit = true, allowCustom 
                                     setPopup(null);
                                     save(number ? parseInt(key) : key);
                                 }}
-                            >
-                                {icon && 
-                                    <Icon path={icon} color="var(--text)" size="1em"/>
-                                }
-                            </Option>
+                                icon={icon && <Icon path={icon} color="var(--text)" size="1em"/>}
+                            />
                         )
                     })
                 }

@@ -55,11 +55,9 @@ export default function SettingsPage({ pages, tabsFooter = null, ...props }: Set
         }
 
         tabs.push(
-            <Option key={title} k={title} text={title} select={render ? () => selectOption(title, render) : undefined} selected={tab}>
-                {icon && 
-                    <Icon path={icon} size="1.4rem" color="var(--text)" />
-                }
-            </Option>
+            <Option key={title} k={title} text={title} select={render ? () => selectOption(title, render) : undefined} selected={tab}
+                icon={icon && <Icon path={icon} size="1.4rem" color="var(--text)" />}
+            />
         );
     });
     
