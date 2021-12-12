@@ -116,10 +116,9 @@
 .matrix-logo {
     height: calc(16px + 1rem);  /* Match option's height */
     width: auto;
-    overflow: visible;  /* Needed otherwise there can be some clipping */
 
     /* Override SVG's colour so it can be modified by the theme */
-    #Made-for-Matrix-\\u2014-Preferred {
+    path {
         fill: var(--matrix-logo);
     }
 }
