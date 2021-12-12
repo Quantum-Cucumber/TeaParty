@@ -1,5 +1,5 @@
 import { Room } from "matrix-js-sdk";
-import { EventType } from "matrix-js-sdk/src/@types/event";
+import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 function _isJoined(room: Room) {
     return room?.getMyMembership() === "join";

@@ -1,6 +1,6 @@
 import "./Reply.scss";
 import { useEffect, useState } from "react";
-import { EventType, MsgType } from "matrix-js-sdk/src/@types/event";
+import { EventType, MsgType } from "matrix-js-sdk/lib/@types/event";
 
 import { MessageText } from "./MessageContent";
 

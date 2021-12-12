@@ -1,6 +1,6 @@
 import "./eventTypes.scss";
 import { useContext } from "react";
-import { EventType } from "matrix-js-sdk/src/@types/event";
+import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import { UserPopup } from "../../../../components/user";
 import { popupCtx, Tooltip } from "../../../../components/popups";

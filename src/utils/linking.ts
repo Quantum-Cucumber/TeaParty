@@ -1,5 +1,5 @@
 import type { Room } from "matrix-js-sdk";
-import { EventType } from "matrix-js-sdk/src/@types/event";
+import { EventType } from "matrix-js-sdk/lib/@types/event";
 import { AclChecker, getHomeserver } from "./matrix-client";
 
 const matrixtoRegex = /^(?:https:\/\/)?(?:www\.)?matrix\.to\/#\/(([!@#+]).+)/i;

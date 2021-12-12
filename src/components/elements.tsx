@@ -1,6 +1,6 @@
 import "./elements.scss";
 import { useState, useReducer, useRef, useEffect } from "react";
-import { EventType } from "matrix-js-sdk/src/@types/event";
+import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import { ContextMenu, Tooltip } from "./popups";
 import { Avatar } from "./user";

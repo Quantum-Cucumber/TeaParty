@@ -1,5 +1,5 @@
 import * as matrixsdk from "matrix-js-sdk";
-import { EventType } from "matrix-js-sdk/src/@types/event";
+import { EventType } from "matrix-js-sdk/lib/@types/event";
 import globToRegexp from "glob-to-regexp";
 
 import type { MatrixEvent, Room, RoomMember, User } from "matrix-js-sdk";

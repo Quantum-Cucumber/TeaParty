@@ -1,6 +1,6 @@
 import "./Event.scss";
 import { useContext, memo, useState, useEffect, useRef } from "react";
-import { MsgType } from "matrix-js-sdk/src/@types/event";
+import { MsgType } from "matrix-js-sdk/lib/@types/event";
 
 import { Avatar, Member, UserOptions, UserPopup } from "../../../../components/user";
 import { IconButton, Option, OptionIcon } from "../../../../components/elements";

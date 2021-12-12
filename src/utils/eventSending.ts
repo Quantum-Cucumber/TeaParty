@@ -1,4 +1,4 @@
-import { EventType, RelationType } from "matrix-js-sdk/src/@types/event";
+import { EventType, RelationType } from "matrix-js-sdk/lib/@types/event";
 
 import type { MatrixEvent } from "matrix-js-sdk";
 

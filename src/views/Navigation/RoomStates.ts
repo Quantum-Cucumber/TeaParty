@@ -1,6 +1,6 @@
 import { useEffect, useRef, useCallback, useReducer } from "react";
 import { NotificationCountType } from "matrix-js-sdk";
-import { EventType } from "matrix-js-sdk/src/@types/event";
+import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import Settings, { isEventVisibility } from "../../utils/settings";
 import { debounce } from "../../utils/utils";

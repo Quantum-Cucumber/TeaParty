@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { EventType } from "matrix-js-sdk/src/@types/event";
+import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import { DropDown, Section, DropDownRow } from "../components";
 import { IconButton } from "../../../components/elements";

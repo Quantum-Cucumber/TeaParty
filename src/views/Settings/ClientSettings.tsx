@@ -12,7 +12,7 @@ import { logoutMatrix } from "../../utils/matrix-client";
 
 import { Icon } from "@mdi/react" ;
 import { mdiBrush, mdiLock, mdiHammerWrench, mdiTune, mdiGithub, mdiEye, mdiEyeOff } from "@mdi/js";
-import {ReactComponent as MatrixLogo} from "./matrix-logo.svg";
+import MatrixLogo from "./matrix-logo.svg";
 import { IMyDevice } from "matrix-js-sdk";
 import { useCatchState } from "../../utils/hooks";
 

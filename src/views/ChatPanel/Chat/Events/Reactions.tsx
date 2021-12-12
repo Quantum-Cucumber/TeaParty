@@ -1,6 +1,6 @@
 import "./Reactions.scss";
 import { useReducer, useEffect, useState, useContext, useCallback } from "react";
-import { EventType, RelationType } from "matrix-js-sdk/src/@types/event";
+import { EventType, RelationType } from "matrix-js-sdk/lib/@types/event";
 
 import { Option } from "../../../../components/elements";
 import { popupCtx, Tooltip } from "../../../../components/popups"

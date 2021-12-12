@@ -1,6 +1,6 @@
 import "./MessageContent.scss";
 import { useState, useEffect, useContext } from "react";
-import { MsgType } from "matrix-js-sdk/src/@types/event";
+import { MsgType } from "matrix-js-sdk/lib/@types/event";
 
 import { A, IconButton } from "../../../../components/elements";
 import { ImagePopup, Tooltip, popupCtx } from "../../../../components/popups";

@@ -1,5 +1,5 @@
 import type { MatrixEvent } from "matrix-js-sdk";
-import { EventType, RelationType } from "matrix-js-sdk/src/@types/event";
+import { EventType, RelationType } from "matrix-js-sdk/lib/@types/event";
 
 // Filters
 
