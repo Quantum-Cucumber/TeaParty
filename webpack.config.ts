@@ -1,6 +1,7 @@
 import path from "path";
 import { Configuration, SourceMapDevToolPlugin } from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
+import ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
 
 const config: Configuration = {
     mode: "development",
@@ -13,6 +14,7 @@ const config: Configuration = {
     devServer: {
         historyApiFallback: true,
         port: 3000,
+        hot: true,
     },
 
     resolve: {
@@ -57,6 +59,7 @@ const config: Configuration = {
     plugins: [
         new SourceMapDevToolPlugin({}),
         new HtmlWebpackPlugin({template: '/public/index.html'}),
+        new ReactRefreshWebpackPlugin(),
     ]
 }
 
