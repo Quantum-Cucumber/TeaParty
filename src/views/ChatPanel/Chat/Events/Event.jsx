@@ -1,6 +1,6 @@
 import "./Event.scss";
 import { useContext, memo, useState, useEffect, useRef } from "react";
-import { MsgType } from "matrix-js-sdk/lib/@types/event";
+import { EventType, MsgType } from "matrix-js-sdk/lib/@types/event";
 
 import { Avatar, Member, UserOptions, UserPopup } from "../../../../components/user";
 import { IconButton, Option, OptionIcon } from "../../../../components/elements";
@@ -18,7 +18,8 @@ import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent,
 import { useScrollPaginate } from "../../../../utils/hooks";
 import { MatrixtoPermalink } from "../../../../utils/linking";
 
-import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon, mdiShareVariant, mdiDelete } from "@mdi/js";
+import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon, mdiShareVariant, mdiDelete, mdiPinOff, mdiPin } from "@mdi/js";
+import { updatePins } from "../../../../utils/eventSending";
 
 function eventIsSame(oldProps, newProps) {
     const oldEvent = oldProps.event;
@@ -189,6 +190,10 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
     const trueEvent = event.replacingEvent() || event;
     const room = global.matrix.getRoom(event.getRoomId());
 
+    const pinnedEvents = room.currentState.getStateEvents(EventType.RoomPinnedEvents, "")?.getContent().pinned ?? [];
+    const isPinned = pinnedEvents.includes(event.getId());
+    const canPin = room.currentState.maySendStateEvent(EventType.RoomPinnedEvents, global.matrix.getUserId());
+
     return (
         <ContextMenu {...contextMenuProps}>
             { reactions && 
@@ -210,14 +215,25 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
                 icon={<OptionIcon path={mdiCheckAll} />}
             />
 
-            <Option compact text="Copy link"
-                select={() => {
-                        const url = (new MatrixtoPermalink()).event(event.getRoomId(), event.getId());
-                        navigator.clipboard.writeText(url);
+            { canPin &&
+                <Option compact text={isPinned ? "Unpin" : "Pin"}
+                    icon={<OptionIcon path={isPinned ? mdiPinOff : mdiPin} />}
+                    select={() => {
+                        let newPins;
+                        if (isPinned) {
+                            // Remove pin
+                            newPins = pinnedEvents.filter((eventId) => eventId !== event.getId());
+                        }
+                        else {
+                            // Add pin
+                            newPins = [event.getId(), ...pinnedEvents];
+                        }
+                        // Send state event
+                        updatePins(event.getRoomId(), newPins);
                         setPopup();
-                }}
-                icon={<OptionIcon path={mdiShareVariant} />}
-            />
+                    }}
+                />
+            }
 
             { room.currentState.maySendRedactionForEvent(event, global.matrix.getUserId()) &&
                 <Option compact danger text="Delete" 
@@ -228,6 +244,15 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
                     icon={<OptionIcon path={mdiDelete} colour="error" />}
                 />
             }
+
+            <Option compact text="Copy link"
+                select={() => {
+                        const url = (new MatrixtoPermalink()).event(event.getRoomId(), event.getId());
+                        navigator.clipboard.writeText(url);
+                        setPopup();
+                }}
+                icon={<OptionIcon path={mdiShareVariant} />}
+            />
             
             { Settings.get("devMode") &&
                 <Option compact text="View source"

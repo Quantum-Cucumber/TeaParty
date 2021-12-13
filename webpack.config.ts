@@ -1,5 +1,5 @@
 import path from "path";
-import { Configuration } from "webpack";
+import { Configuration, SourceMapDevToolPlugin } from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 
 const config: Configuration = {
@@ -9,6 +9,7 @@ const config: Configuration = {
         path: path.resolve(__dirname, "build"),
         filename: "[name].bundle.js",
     },
+    devtool: false,  // Defined through a plugin
     devServer: {
         historyApiFallback: true,
         port: 3000,
@@ -54,6 +55,7 @@ const config: Configuration = {
         ],
     },
     plugins: [
+        new SourceMapDevToolPlugin({}),
         new HtmlWebpackPlugin({template: '/public/index.html'}),
     ]
 }

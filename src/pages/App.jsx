@@ -1,13 +1,13 @@
 import './themes.scss';
 import './root.scss';
-import { BrowserRouter, Switch, Route, Redirect } from "react-router-dom";
+import { BrowserRouter, Switch, Route, Redirect, HashRouter } from "react-router-dom";
 import Login from "./Login/Login";
 import ClientRouter from "./Client/ClientRouter";
 import { logged_in } from "../utils/matrix-client";
 
 function App() {
     return (
-        <BrowserRouter>
+        <HashRouter>
             <Switch>
                 {/*<Route path="/register">
                     {logged_in() ? <Redirect to="/app" /> : <Login type="Register" />}
@@ -21,7 +21,7 @@ function App() {
                         {logged_in() ? <ClientRouter /> : <Redirect to="/login" />}
                 </Route>
             </Switch>
-        </BrowserRouter>
+        </HashRouter>
     );
 }
 

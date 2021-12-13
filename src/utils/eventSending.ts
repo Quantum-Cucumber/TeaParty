@@ -13,3 +13,10 @@ export async function addReaction(event: MatrixEvent, emote: string) {
     };
     await global.matrix.sendEvent(event.getRoomId(), EventType.Reaction, newEvent)
 }
+
+export async function updatePins(roomId: string, pins: string[]) {
+    const newContent = {
+        pinned: pins,
+    }
+    await global.matrix.sendStateEvent(roomId, EventType.RoomPinnedEvents, newContent);
+}
