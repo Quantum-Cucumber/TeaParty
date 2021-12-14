@@ -1,0 +1,53 @@
+.room-list {
+    &__loading {
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    &__room {
+        display: flex;
+        flex-direction: row;
+
+        padding: 10px 0;
+        &:not(:last-child) {
+            border-bottom: 2px solid var(--bg);
+        }
+
+        &__avatar {
+            height: 2.5em;
+            margin-right: 1em;
+
+            .avatar:not(.avatar--img) {
+                background-color: var(--bg-dark);
+                color: var(--text-greyed);
+            }
+        }
+        &__name {
+            font-size: 1.1em;
+        }
+        &__details {
+            color: var(--text-greyed);
+            font-size: 0.9em;
+        }
+        &__body {
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-around;
+
+            &--topic {
+                white-space: pre-line;
+            }
+        }
+        &__button {
+            flex: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-width: 60px;
+        }
+    }
+}

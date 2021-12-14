@@ -201,4 +201,12 @@
         color: var(--primary);
         text-decoration: underline;
     }
+
+    &--disabled {
+        @extend .button;
+        color: var(--text-greyed);
+        background-color: transparent;
+        box-shadow: 0 0 0 1px var(--text-greyed) inset;
+        cursor: default;
+    }
 }

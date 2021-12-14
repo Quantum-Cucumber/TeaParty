@@ -183,12 +183,13 @@ export function A(props: React.HTMLProps<HTMLAnchorElement>) {
     )
 }
 
-export function Button({plain = false, save = false, danger = false, link = false, ...props}) {
+export function Button({plain = false, save = false, danger = false, link = false, disabled = false, ...props}) {
     const variation = classList(
         {"button--plain": plain},
         {"button--save": save},
         {"button--danger": danger},
         {"button--link": link},
+        {"button--disabled": disabled},
     )
 
     return (

@@ -263,7 +263,7 @@ export function Overlay({ children, opacity = "85%", click = null, modalClass = 
 type ModalProps = {
     title: string,
     hide: () => void,
-    children: JSX.Element,
+    children: React.ReactNode,
     modalClass?: string,
     bodyClass?: string,
 }

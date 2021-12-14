@@ -89,6 +89,23 @@ export function useDownloadUrl(url: string): [string, (e: React.MouseEvent) => v
 }
 
 
+export function useOnElementVisible(element: HTMLElement, callback: () => void) {
+    useEffect(() => {
+        if (!element) {return}
+
+        const observer = new IntersectionObserver((entries) => {
+            if (entries[0].isIntersecting) {
+                callback();
+            }
+        })
+
+        observer.observe(element);
+        return () => {
+            observer.disconnect();
+        }
+    }, [element, callback])
+}
+
 export function useScrollPaginate(element: HTMLElement, loadSize: number) {
     const [loaded, setLoaded] = useState(loadSize);
     const stableLoadSize = useStableState(loadSize);
@@ -97,21 +114,7 @@ export function useScrollPaginate(element: HTMLElement, loadSize: number) {
         setLoaded(stableLoadSize.current);
     }, [stableLoadSize])
 
-    useEffect(() => {
-        if (!element) {return}
-
-        const observer = new IntersectionObserver((entries) => {
-            if (entries[0].isIntersecting) {
-                setLoaded(loaded => loaded + stableLoadSize.current);
-            }
-        })
-
-        observer.observe(element);
-
-        return () => {
-            observer.disconnect();
-        }
-    }, [element, stableLoadSize])
+    useOnElementVisible(element, () => setLoaded(loaded => loaded + stableLoadSize.current));
 
     return loaded;
 }

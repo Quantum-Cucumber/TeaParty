@@ -124,7 +124,8 @@ function Chat({ currentRoom }: {currentRoom: string}) {
         const prevEvent = filteredEvents[index - 1];
         event = event.toSnapshot();
 
-        if (lastUnread && prevEvent?.getId() === lastUnread) {
+        const showUnread = lastUnread && prevEvent?.getId() === lastUnread;
+        if (showUnread) {
             events.push(
                 <UnreadBorder updateUnread={updateUnread} key="unread"/>
             );
@@ -140,7 +141,7 @@ function Chat({ currentRoom }: {currentRoom: string}) {
         // Pass to handler to generate message
         events.push(
             <TimelineEvent event={event} partial={
-                border === null && nextShouldBePartial(event, prevEvent)
+                !showUnread && border === null && nextShouldBePartial(event, prevEvent)
             } key={event.getId()}/>
         )
 
@@ -192,8 +193,9 @@ function ChatScroll({ children, timeline, updateEventList, updateUnread }: ChatS
         isLoading.current = true;
         timeline.current.getMore().then(() => {
             updateEventList();
+        }).finally(() => {
             isLoading.current = false;
-        });
+        })
     }, [timeline, updateEventList]);
 
     // When children are modified, if scroll was at the bottom, stay there

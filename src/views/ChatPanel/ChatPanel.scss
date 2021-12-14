@@ -19,7 +19,7 @@
         margin-right: 10px;
         position: relative;
 
-        .avatar {
+        .avatar:not(.avatar--img) {
             font-size: 0.85em;
             color: var(--text);
             background-color: var(--bg-focus);
