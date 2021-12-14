@@ -2,8 +2,8 @@ import "./ClientSettings.scss";
 import { useEffect, useState } from "react";
 
 import SettingsPage from "./Settings";
-import { A, IconButton, Loading, Option } from "../../components/elements";
-import { EditableText, Section, Slider, ToggleSetting } from "./components";
+import { A, IconButton, Loading, Option, EditableText } from "../../components/elements";
+import { Section, Slider, ToggleSetting } from "./components";
 
 import Settings from "../../utils/settings";
 import { msToDate } from "../../utils/datetime";

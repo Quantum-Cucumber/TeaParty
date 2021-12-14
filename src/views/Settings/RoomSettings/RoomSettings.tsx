@@ -5,8 +5,8 @@ import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import SettingsPage from "../Settings"
 import RoomPermissions, { getPowerLevels } from "./RoomPermissions";
-import { EditableText, Section, Toggle, DropDownRow, ImageUpload } from "../components";
-import { Button, IconButton } from "../../../components/elements";
+import { Section, Toggle, DropDownRow, ImageUpload } from "../components";
+import { Button, IconButton, EditableText } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
 import Settings from "../../../utils/settings";
 

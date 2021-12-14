@@ -8,8 +8,8 @@ import { Icon } from "@mdi/react";
 import { mdiMagnify } from "@mdi/js";
 import { IPublicRoomsChunkRoom } from "matrix-js-sdk";
 import { Button, Loading } from "../../components/elements";
-import { useOnElementVisible, useStableState } from "../../utils/hooks";
-import { acronym, debounce } from "../../utils/utils";
+import { useOnElementVisible } from "../../utils/hooks";
+import { acronym } from "../../utils/utils";
 
 
 const ROOMPAGESIZE = 20;

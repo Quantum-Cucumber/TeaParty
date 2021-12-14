@@ -1,15 +1,16 @@
 import "./elements.scss";
-import { useState, useReducer, useRef, useEffect } from "react";
+import React, { useState, useReducer, useRef, useEffect, forwardRef } from "react";
 import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import { ContextMenu, Tooltip } from "./popups";
 import { Avatar } from "./user";
+import { FancyText } from "./wrappers";
 
 import { acronym, classList } from '../utils/utils';
 import { isDirect } from "../utils/roomFilters";
 
 import Icon from '@mdi/react';
-import { mdiChevronDown, mdiChevronRight, mdiLoading } from "@mdi/js";
+import { mdiCheck, mdiChevronDown, mdiChevronRight, mdiLoading, mdiPencil } from "@mdi/js";
 
 import type { MatrixEvent, Room } from "matrix-js-sdk";
 
@@ -194,5 +195,115 @@ export function Button({plain = false, save = false, danger = false, link = fals
 
     return (
         <button className={variation} {...props} />
+    )
+}
+
+
+type ManualTextBoxProps = {
+    placeholder: string,
+    valid?: boolean,
+    multiline?: boolean,
+    value: string
+    setValue: React.Dispatch<React.SetStateAction<string>>,
+}
+type TextInput = HTMLInputElement & HTMLTextAreaElement;
+
+
+/* A simple styled, controlled text box that defers validation and submission to the parent */
+export const ManualTextBox = forwardRef(({ placeholder, valid = true, multiline = false, value, setValue }: ManualTextBoxProps, ref: React.ForwardedRef<TextInput>) => {
+    return ( multiline ?
+        <textarea className={classList("textbox__input", {"textbox__input--error": !valid})} placeholder={placeholder} value={value} rows={4} onChange={(e) => setValue(e.target.value)} ref={ref} />
+    :
+        <input className={classList("textbox__input", {"textbox__input--error": !valid})} type="text" placeholder={placeholder} value={value} onChange={(e) => setValue(e.target.value)} ref={ref} />
+    )
+});
+
+
+type TextBoxProps = {
+    initialValue?: string,
+    placeholder: string,
+    multiline?: boolean,
+    focus?: boolean,
+    saveFunc?: (value: string) => void,
+    validation?: (value: string) => boolean,
+}
+
+/* Text input with a save button */
+export function TextBox({ initialValue = "", placeholder, multiline = false, focus = false, saveFunc, validation = () => true }: TextBoxProps) {
+    const [value, setValue] = useState(initialValue);
+    const inputRef = useRef<TextInput>();
+    const [valid, setValid] = useState(true);
+
+    // Focus on render if flag is set
+    useEffect(() => {
+        if(inputRef.current && focus) {
+            inputRef.current.focus()
+        }
+    }, [focus])
+
+    function save() {
+        if (validation(value.trim())) {
+            saveFunc(value.trim());
+        }
+        else {
+            setValid(false);
+        }
+    }
+
+    // Clear invalid flag when text edited
+    useEffect(() => {
+        setValid(true);
+    }, [value])
+
+    return (
+        <div className="textbox">
+            <form
+                onSubmit={(e) => {e.preventDefault(); save()}}
+            >
+                <ManualTextBox placeholder={placeholder} valid={valid} multiline={multiline} value={value} setValue={setValue} ref={inputRef} />
+            </form>
+            <IconButton path={mdiCheck} clickFunc={save} subClass="textbox__button" tipText="Save" tipDir="right" />
+        </div>
+    )
+}
+
+
+type EditTextProps = {
+    label: string,
+    text: string,
+    subClass?: string,
+    saveFunc?: (value: string) => void;
+    multiline?: boolean,
+    links?: boolean;
+    canEdit?: boolean,
+    validation?: (value: string) => boolean,
+}
+
+/* Text with a pencil icon to indicate it can be edited, transforms into a <TextBox> */
+export function EditableText({ label, text, subClass = null, saveFunc = () => {}, multiline = false, links = false, canEdit = true, validation }: EditTextProps) {
+    const [editing, setEditing] = useState(false);
+
+    function save(value: string) {
+        setEditing(false);
+        if (text !== value) {
+            saveFunc(value); 
+        }
+    }
+
+    return (
+        <div className={classList("text-edit", subClass)}>
+            { editing && canEdit ?
+                <TextBox placeholder={label} initialValue={text} multiline={multiline} saveFunc={save} validation={validation} focus />
+            :
+                <>
+                    <FancyText className={classList("text-edit__current", {"text-edit__current--multiline": multiline}, {"text-edit__current--placeholder": !text})} links={links}>
+                        {text || label}
+                    </FancyText>
+                    { canEdit &&
+                        <IconButton path={mdiPencil} clickFunc={() => {setEditing(true)}} subClass="text-edit__button" tipText="Edit" tipDir="right" />
+                    }
+                </>
+            }
+        </div>
     )
 }

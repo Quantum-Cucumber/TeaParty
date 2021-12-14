@@ -1,8 +1,8 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import { DropDown, Section, DropDownRow } from "../components";
-import { IconButton } from "../../../components/elements";
+import { IconButton, ManualTextBox } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
 
 import { getMember, userIdRegex } from "../../../utils/matrix-client";
@@ -143,7 +143,7 @@ export default function RoomPermissions({ room }: {room: Room}) {
                 })
             }
             { canEditPowerLevels &&
-                <div className="settings__row settings__label">
+                <div className="settings__row settings__row__label">
                     <div style={{flex: "1 1 auto"}}>
                         <DropDown placeholder="Add override" value={newStateOverride} options={stateEventOptions} allowCustom saveFunc={setNewStateOverride} />
                     </div>
@@ -193,6 +193,10 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
     const [newUserId, setNewUserId] = useState("");
     const [newUserIdValid, setNewUserIdValid] = useState(true);
     const [newPowerLevel, setNewPowerlevel] = useState(0);
+    // When user id is edited, clear invalid state
+    useEffect(() => {
+        setNewUserIdValid(true);
+    }, [newUserId])
 
     const canEditPowerLevels = room.currentState.maySendStateEvent(EventType.RoomPowerLevels, global.matrix.getUserId());
 
@@ -239,10 +243,7 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
 
         { canEditPowerLevels && <>
             <div className="settings__row settings__row__label">
-                <input placeholder="User ID" type="text"
-                    className={classList("textbox__input", "room-settings__members__input", {"textbox__input--error": !newUserIdValid})}
-                    value={newUserId} onChange={(e) => {setNewUserId(e.target.value); setNewUserIdValid(true)}} 
-                />
+                <ManualTextBox placeholder="User ID" valid={newUserIdValid} value={newUserId} setValue={setNewUserId} />
                 <DropDown value={newPowerLevel} options={powerLevelOptions} allowCustom number saveFunc={setNewPowerlevel} min={0} max={maxPowerLevel} />
                 <IconButton path={mdiCheck} subClass="settings__row__action" size="1em"
                     clickFunc={() => {

@@ -1,8 +1,7 @@
 import "./components.scss";
 import { useCallback, useState, useRef, useEffect, useContext } from "react";
 
-import { IconButton, Loading, Option, Button } from "../../components/elements";
-import { FancyText } from "../../components/wrappers";
+import { Loading, Option, Button, TextBox } from "../../components/elements";
 import { ContextMenu, popupCtx } from "../../components/popups";
 
 import Settings from "../../utils/settings";
@@ -10,7 +9,7 @@ import { classList } from "../../utils/utils";
 import { useCatchState, useDrag } from "../../utils/hooks";
 
 import Icon from "@mdi/react";
-import { mdiCheck, mdiChevronDown, mdiImageFilterHdr, mdiPencil } from "@mdi/js";
+import { mdiChevronDown, mdiImageFilterHdr } from "@mdi/js";
 
 import type { ChangeEvent, ComponentProps } from "react";
 
@@ -141,101 +140,6 @@ export function Slider({label, setting, min, max, interval, units}: SliderProps)
 }
 
 
-type TextBoxProps = {
-    initialValue?: string,
-    placeholder: string,
-    multiline?: boolean,
-    saveFunc: (value: string) => void,
-    focus?: boolean,
-    validation?: (value: string) => boolean,
-}
-
-
-type TextInput = HTMLInputElement & HTMLTextAreaElement;
-
-export function TextBox({ initialValue = "", placeholder, multiline = false, focus = false, saveFunc, validation = () => true }: TextBoxProps) {
-    const [value, setValue] = useState(initialValue);
-    const inputRef = useRef<TextInput>();
-    const [valid, setValid] = useState(true);
-
-    // Focus on render if flag is set
-    useEffect(() => {
-        if(inputRef && focus) {
-            inputRef.current.focus()
-        }
-    }, [focus])
-
-    function save() {
-        if (validation(value.trim())) {
-            saveFunc(value.trim());
-        }
-        else {
-            setValid(false);
-        }
-    }
-
-    function onChange(e: ChangeEvent<TextInput>) {
-        setValue(e.target.value);
-        setValid(true);  // Reset to valid until submitted for validation again
-    }
-
-    return (
-        <div className="textbox">
-            <form
-                onSubmit={(e) => {e.preventDefault(); save()}}
-            >
-                {   multiline ?
-                    <textarea className={classList("textbox__input", {"textbox__input--error": !valid})} placeholder={placeholder} value={value} rows={4} onChange={onChange} ref={inputRef} />
-                :
-                    <input className={classList("textbox__input", {"textbox__input--error": !valid})} type="text" placeholder={placeholder} value={value} onChange={onChange} ref={inputRef} />
-                }
-            </form>
-            <IconButton path={mdiCheck} clickFunc={save} subClass="textbox__button" tipText="Save" tipDir="right" />
-        </div>
-    )
-}
-
-
-type EditTextProps = {
-    label: string,
-    text: string,
-    subClass?: string,
-    saveFunc?: (value: string) => void;
-    multiline?: boolean,
-    links?: boolean;
-    canEdit?: boolean,
-    validation?: (value: string) => boolean,
-}
-
-export function EditableText({ label, text, subClass = null, saveFunc = () => {}, multiline = false, links = false, canEdit = true, validation }: EditTextProps) {
-    const [editing, setEditing] = useState(false);
-
-    function save(value: string) {
-        setEditing(false);
-        if (text !== value) {
-            saveFunc(value); 
-        }
-    }
-
-    return (
-        <div className={classList("text-edit", subClass)}>
-            { editing && canEdit ?
-                <TextBox placeholder={label} initialValue={text} multiline={multiline} saveFunc={save} validation={validation} focus />
-            :
-                <>
-                    <FancyText className={classList("text-edit__current", {"text-edit__current--multiline": multiline}, {"text-edit__current--placeholder": !text})} links={links}>
-                        {text || label}
-                    </FancyText>
-                    { canEdit &&
-                        <IconButton path={mdiPencil} clickFunc={() => {setEditing(true)}} subClass="text-edit__button" tipText="Edit" tipDir="right" />
-                    }
-                </>
-            }
-        </div>
-    )
-}
-
-
 interface DropDownProps {
     value?: any,
     options: {
@@ -342,7 +246,7 @@ export function DropDown({value, options, saveFunc, canEdit = true, allowCustom 
                             const asInt = parseInt(value, 10);
                             return !isNaN(asInt) && asInt >= min && asInt <= max;
                         })
-                        : null
+                        : undefined
                     }
                 />
             </div>
@@ -375,30 +279,6 @@ export function DropDownRow({ label, ...dropdownProps }: DropDownRowProps) {
     )
 }
 
-
-// export function ImageUpload({ onSelect, canEdit = true, children }: ImageUploadProps) {
-//     const inputRef = useRef<HTMLInputElement>();
-
-//     function onChange(e: ChangeEvent<HTMLInputElement>) {
-//         onSelect(e.target.files[0]);
-//     }
-
-//     const child = cloneElement(children, {
-//         onClick: () => {inputRef.current?.click()},
-//     });
-
-//     return (
-//         canEdit ?
-//             <div className="image-upload">
-//                 <Tooltip text="Change" dir="bottom">
-//                     {child}
-//                 </Tooltip>
-//                 <input type="file" accept="image/*" className="image-upload__input" onChange={onChange} ref={inputRef} />
-//             </div>
-//         :
-//             children
-//     )
-// }
 
 const mxcToHttp = (mxcUrl: string) => global.matrix.mxcUrlToHttp(mxcUrl, 96, 96, "crop") as string
 
