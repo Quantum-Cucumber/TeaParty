@@ -6,7 +6,7 @@ import { EventType } from "matrix-js-sdk/lib/@types/event";
 import SettingsPage from "../Settings"
 import RoomPermissions, { getPowerLevels } from "./RoomPermissions";
 import { Section, Toggle, DropDownRow, ImageUpload } from "../components";
-import { Button, IconButton, EditableText } from "../../../components/elements";
+import { Button, IconButton, EditableText, AsyncButton } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
 import Settings from "../../../utils/settings";
 
@@ -281,14 +281,10 @@ function Overview({ room }: {room: Room}) {
 const getBans = (room: Room) => room.getMembersWithMembership("ban");
 
 function Bans({room}: {room: Room}) {
-    const [bannedMembers, setBannedMembers] = useCatchState<RoomMember[]>(() => getBans(room), unban);
+    const [bannedMembers, setBannedMembers] = useState<RoomMember[]>(getBans(room));
 
     const [loadingRef, setLoadingRef] = useState<HTMLDivElement>();
     const loaded = useScrollPaginate(loadingRef, 30)
-
-    async function unban(_newBanList: RoomMember[], userId: string) {
-        await global.matrix.unban(room.roomId, userId)
-    }
 
     // Calculate whether the user has the power level needed to ban users
     const powerLevelEvent = getPowerLevels(room);
@@ -320,12 +316,13 @@ function Bans({room}: {room: Room}) {
                                 </div>
                             </div>
                             { canEditBans &&
-                                <Button danger
-                                    onClick={() => {
+                                <AsyncButton activeText="Unban" successText="Success"
+                                    func={async () => {
                                         const newBanList = bannedMembers.filter((m) => m.userId !== member.userId);
-                                        setBannedMembers(newBanList, member.userId);
+                                        await global.matrix.ban(room.roomId, member.userId);
+                                        setBannedMembers(newBanList);
                                     }}
-                                >Unban</Button>
+                                />
                             }
                         </div>
                     )

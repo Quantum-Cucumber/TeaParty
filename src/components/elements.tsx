@@ -198,6 +198,58 @@ export function Button({plain = false, save = false, danger = false, link = fals
     )
 }
 
+type AsyncButtonProps = {
+    activeText: string,
+    errorText?: string,
+    successText?: string,
+    func: () => Promise<void>,
+}
+
+enum asyncButtonState {
+    active,
+    loading,
+    error,
+    success,
+}
+
+export function AsyncButton({activeText, errorText = "Error", successText, func, ...buttonProps}: AsyncButtonProps & React.ComponentProps<typeof Button>) {
+    const [state, setState] = useState<asyncButtonState>(asyncButtonState.active);
+
+    async function click() {
+        setState(asyncButtonState.loading);
+        try {
+            await func();
+            setState(asyncButtonState.success);
+        }
+        catch {
+            setState(asyncButtonState.error);
+        }
+    }
+
+
+    let element: JSX.Element;
+    switch (state) {
+        case asyncButtonState.active:
+            element = (
+                <Button save {...buttonProps} onClick={click}>{activeText}</Button>
+            );
+            break;
+        case asyncButtonState.loading:
+            element = (
+                <Loading size="1.5em" />
+            );
+            break;
+        case asyncButtonState.error:
+            element = <>{errorText}</>
+            break;
+        case asyncButtonState.success:
+            element = <>{successText}</>;
+            break;
+    }
+
+    return element;
+}
+
 
 type ManualTextBoxProps = {
     placeholder: string,

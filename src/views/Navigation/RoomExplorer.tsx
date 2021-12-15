@@ -7,7 +7,7 @@ import { FancyText } from "../../components/wrappers";
 import { Icon } from "@mdi/react";
 import { mdiMagnify } from "@mdi/js";
 import { IPublicRoomsChunkRoom } from "matrix-js-sdk";
-import { Button, Loading } from "../../components/elements";
+import { AsyncButton, Button, Loading, ManualTextBox } from "../../components/elements";
 import { useOnElementVisible } from "../../utils/hooks";
 import { acronym } from "../../utils/utils";
 
@@ -75,59 +75,17 @@ function ExploreModal() {
 }
 
 
-enum roomEntryState {
-    canJoin,
-    loading,
-    joined,
-    error,
-}
-
 function RoomEntry({room_id, name, avatar_url, topic, canonical_alias = null, num_joined_members}: IPublicRoomsChunkRoom) {
-    const [statusState, setStatusState] = useState<roomEntryState>(roomEntryState.canJoin);
-
+    const [joined, setJoined] = useState(false);
     // When loaded, figure out if the room is joined and set state accordingly
     useEffect(() => {
         const isJoined = global.matrix.getRoom(room_id)?.getMyMembership() === "join" ?? false;
         if (isJoined) {
-            setStatusState(roomEntryState.joined);
+            setJoined(true);
         }
     }, [])
-    
 
     const httpUrl: string = global.matrix.mxcUrlToHttp(avatar_url, 96, 96, "crop");
-
-    let status: JSX.Element;
-    switch (statusState) {
-        case roomEntryState.canJoin:
-            status = (
-                <Button save
-                    onClick={() => {
-                        setStatusState(roomEntryState.loading);
-                        global.matrix.joinRoom(room_id)
-                        .then(() => { setStatusState(roomEntryState.joined) })
-                        .catch(() => { setStatusState(roomEntryState.error) })
-                    }}
-                >
-                    Join
-                </Button>
-            );
-            break;
-        case roomEntryState.joined:
-            status = (
-                <Button disabled>Joined</Button>
-            );
-            break;
-        case roomEntryState.loading:
-            status = (
-                <Loading size="1em" />
-            );
-            break;
-        case roomEntryState.error:
-            status = (
-                <>Error</>
-            );
-            break;
-    }
 
     return (
         <div className="room-list__room">
@@ -152,7 +110,15 @@ function RoomEntry({room_id, name, avatar_url, topic, canonical_alias = null, nu
                 }
             </div>
             <div className="room-list__room__button">
-                {status}
+                { joined ?
+                    "Joined"
+                :
+                    <AsyncButton activeText="Join" successText="Joined"
+                        func={async () => {
+                            await global.matrix.joinRoom(room_id)
+                        }}
+                    />
+                }
             </div>
         </div>
     )
