@@ -8,7 +8,8 @@ import type { IStore } from "matrix-js-sdk/lib/store";
 export const logged_in = () => { return localStorage.getItem("token") !== null };
 
 export const userIdRegex = /^@\S+:\S+$/;
-export const aliasRegex = /#\S+:\S+$/;
+export const roomIdRegex = /^!\S+:\S+$/;
+export const aliasRegex = /^#\S+:\S+$/;
 
 async function discover_base_url(homeserver: string): Promise<string> {
     /* Query the selected homeserver to get the base_url */

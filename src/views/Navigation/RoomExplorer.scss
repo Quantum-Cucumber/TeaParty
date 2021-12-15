@@ -1,4 +1,19 @@
 .room-list {
+    width: 100%;
+    height: 100%;
+
+    &__manual {
+        & > * {
+            margin: 0 5px;
+        }
+
+        &__error {
+            margin: 0 5px;
+            color: var(--error);
+            font-size: 0.9em;
+        }
+    }
+
     &__loading {
         width: 100%;
         display: flex;

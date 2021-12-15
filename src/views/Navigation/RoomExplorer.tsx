@@ -1,15 +1,19 @@
 import "./RoomExplorer.scss";
-import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useHistory } from "react-router-dom";
 
 import { Modal, modalCtx, Tooltip } from "../../components/popups";
 import { FancyText } from "../../components/wrappers";
+import { AsyncButton, Button, Loading, ManualTextBox } from "../../components/elements";
+
+import { useOnElementVisible } from "../../utils/hooks";
+import { acronym } from "../../utils/utils";
+import { aliasRegex, roomIdRegex } from "../../utils/matrix-client";
 
 import { Icon } from "@mdi/react";
 import { mdiMagnify } from "@mdi/js";
-import { IPublicRoomsChunkRoom } from "matrix-js-sdk";
-import { AsyncButton, Button, Loading, ManualTextBox } from "../../components/elements";
-import { useOnElementVisible } from "../../utils/hooks";
-import { acronym } from "../../utils/utils";
+
+import type { IPublicRoomsChunkRoom, Room } from "matrix-js-sdk";
 
 
 const ROOMPAGESIZE = 20;
@@ -34,8 +38,17 @@ export function ExploreIcon() {
     )
 }
 
+
+enum joinStatus {
+    canJoin,
+    loading,
+    error,
+}
+
 function ExploreModal() {
     const setModal = useContext(modalCtx);
+    const history = useHistory();
+
     const [publicRooms, setPublicRooms] = useState<IPublicRoomsChunkRoom[]>([]);
     // string is a token exists, null if no more entries, undefined if no token aquired
     const paginateToken = useRef<string | null | undefined>(undefined);
@@ -58,8 +71,55 @@ function ExploreModal() {
 
     useOnElementVisible(loadingRef.current, loadMore);
 
+
+    // Manual room joining
+    const [roomToJoin, setRoomToJoin] = useState("");
+    const [roomIsValid, setRoomIsValid] = useState(true);
+    const [manualJoinStatus, setManualJoinStatus] = useState<joinStatus>(joinStatus.canJoin);
+
+    useEffect(() => {
+        setRoomIsValid(true);
+        setManualJoinStatus((current) => current === joinStatus.error ? joinStatus.canJoin : current);
+    }, [roomToJoin])
+
+    async function manualJoin() {
+        const cleanedRoom = roomToJoin.trim();
+        if (aliasRegex.test(cleanedRoom) || roomIdRegex.test(cleanedRoom)) {
+            setRoomIsValid(true);
+            setManualJoinStatus(joinStatus.loading);
+            try {
+                const room: Room = await global.matrix.joinRoom(cleanedRoom);
+                // Close modal and navigate to the room
+                history.push("/room/" + room.roomId);
+                setModal(null);
+            }
+            catch {
+                setManualJoinStatus(joinStatus.error);
+                setRoomIsValid(false);
+            }
+        }
+        else {
+            setRoomIsValid(false);
+        }
+    }
+
+
     return (
-        <Modal title="Join Room" hide={() => setModal(null)}>
+        <Modal title="Join Room" hide={() => setModal(null)} modalClass="room-list">
+            <form className="textbox room-list__manual" onSubmit={(e) => {e.preventDefault(); manualJoin()}}>
+                <ManualTextBox placeholder="Room ID or Alias" value={roomToJoin} setValue={setRoomToJoin} valid={roomIsValid} />
+                { manualJoinStatus === joinStatus.loading ?
+                    <Loading size="1.5em" />
+                :
+                    <Button save onClick={manualJoin}>Join</Button>
+                }
+            </form>
+            { manualJoinStatus === joinStatus.error &&
+                <div className="room-list__manual__error">Unable to join room</div>
+            }
+
+            <br />
+            Public Room Directory
             {
                 publicRooms.map((room) => {
                     return (

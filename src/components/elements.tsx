@@ -309,9 +309,7 @@ export function TextBox({ initialValue = "", placeholder, multiline = false, foc
 
     return (
         <div className="textbox">
-            <form
-                onSubmit={(e) => {e.preventDefault(); save()}}
-            >
+            <form onSubmit={(e) => {e.preventDefault(); save()}}>
                 <ManualTextBox placeholder={placeholder} valid={valid} multiline={multiline} value={value} setValue={setValue} ref={inputRef} />
             </form>
             <IconButton path={mdiCheck} clickFunc={save} subClass="textbox__button" tipText="Save" tipDir="right" />
