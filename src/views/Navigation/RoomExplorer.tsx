@@ -1,17 +1,17 @@
 import "./RoomExplorer.scss";
-import { useCallback, useContext, useEffect, useRef, useState } from "react";
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Modal, modalCtx, Tooltip } from "../../components/popups";
 import { FancyText } from "../../components/wrappers";
-import { AsyncButton, Button, Loading, ManualTextBox } from "../../components/elements";
+import { AsyncButton, Button, IconButton, Loading, ManualTextBox } from "../../components/elements";
 
-import { useOnElementVisible } from "../../utils/hooks";
-import { acronym } from "../../utils/utils";
+import { useOnElementVisible, useStableState } from "../../utils/hooks";
+import { acronym, debounce } from "../../utils/utils";
 import { aliasRegex, roomIdRegex } from "../../utils/matrix-client";
 
 import { Icon } from "@mdi/react";
-import { mdiMagnify } from "@mdi/js";
+import { mdiClose, mdiMagnify } from "@mdi/js";
 
 import type { IPublicRoomsChunkRoom, Room } from "matrix-js-sdk";
 
@@ -46,36 +46,13 @@ enum joinStatus {
 }
 
 function ExploreModal() {
-    const setModal = useContext(modalCtx);
     const history = useHistory();
-
-    const [publicRooms, setPublicRooms] = useState<IPublicRoomsChunkRoom[]>([]);
-    // string is a token exists, null if no more entries, undefined if no token aquired
-    const paginateToken = useRef<string | null | undefined>(undefined);
-    const loadingRef = useRef<HTMLDivElement>();
-
-    const loadMore = useCallback(() => {
-        if (paginateToken.current === null) {return}
-
-        global.matrix.publicRooms({limit: ROOMPAGESIZE, since: paginateToken.current})
-        .then((result) => {
-            paginateToken.current = result.next_batch as string;
-            setPublicRooms((current) => [...current, ...result.chunk]);
-        })
-    }, [])
-
-    // When component mounts, load one page of rooms
-    useEffect(() => {
-        loadMore();
-    }, [loadMore])
-
-    useOnElementVisible(loadingRef.current, loadMore);
-
+    const setModal = useContext(modalCtx);
 
     // Manual room joining
     const [roomToJoin, setRoomToJoin] = useState("");
     const [roomIsValid, setRoomIsValid] = useState(true);
-    const [manualJoinStatus, setManualJoinStatus] = useState<joinStatus>(joinStatus.canJoin);
+    const [manualJoinStatus, setManualJoinStatus] = useState(joinStatus.canJoin);
 
     useEffect(() => {
         setRoomIsValid(true);
@@ -119,19 +96,99 @@ function ExploreModal() {
             }
 
             <br />
-            Public Room Directory
-            {
-                publicRooms.map((room) => {
-                    return (
-                        <RoomEntry {...room} key={room.room_id} />
-                    )
-                })
-            }
-            { paginateToken.current !== null &&
-                <div className="room-list__loading" ref={loadingRef}><Loading size="2.5em"/></div>
-            }
+            <RoomDirectory />
         </Modal>
     )
+}
+
+
+enum directoryStatus {
+    loading,  // Able to load new entries
+    loaded,  // Has loaded all available entries
+    error,  // Error occured gettting entries
+}
+
+export function RoomDirectory() {
+    const [publicRooms, setPublicRooms] = useState<IPublicRoomsChunkRoom[]>([]);
+    // string is a token exists, null if no more entries, undefined if no token aquired
+    const paginateToken = useRef<string | null | undefined>(undefined);
+
+    const loading = useRef(false);
+    const loadingRef = useRef<HTMLDivElement>();
+
+    const [status, setStatus] = useState(directoryStatus.loading);
+
+    const [searchTerm, setSearchTerm] = useState("");
+    const stableSearchTerm = useStableState(searchTerm);
+
+    const loadMore = useCallback(async () => {
+        if (loading.current) {return}  // Don't double up on pending requests
+        loading.current = true;
+        if (paginateToken.current === null) {return}  // No more results to load
+
+        const search = stableSearchTerm.current ? {filter: {generic_search_term: stableSearchTerm.current}} : {};
+
+        try {
+            console.log("request", paginateToken.current)
+            const result = await global.matrix.publicRooms({limit: ROOMPAGESIZE, since: paginateToken.current, ...search});
+
+            const newToken = result.next_batch ?? null;
+            paginateToken.current = newToken;  // If no token provided, set as null
+            if (newToken === null) {
+                setStatus(directoryStatus.loaded);
+            }
+            else {
+                setStatus(directoryStatus.loading);
+            }
+
+            setPublicRooms((current) => [...current, ...result.chunk]);
+        }
+        catch {
+            setStatus(directoryStatus.error);
+        }
+        finally {
+            loading.current = false;
+        }
+    }, [])
+
+    useOnElementVisible(loadingRef.current, loadMore);
+
+    // When search term is changed, after 1s, update the results
+    const search = useMemo(() => debounce(() => {
+        paginateToken.current = undefined;
+        setPublicRooms([]);
+        loadMore();
+    }, 800), [loadMore])
+
+    // Will also fire when mounted
+    useEffect(() => {
+        search();
+    }, [searchTerm, search])
+
+    return (<>
+        <div className="room-list__title">Public Room Directory</div>
+        <div className="room-list__search">
+            <ManualTextBox placeholder="Search rooms" value={searchTerm} setValue={setSearchTerm} />
+            { searchTerm ?
+                <IconButton path={mdiClose} clickFunc={() => {setSearchTerm("")}} size="1em" />
+            :
+                <Icon path={mdiMagnify} size="1em" color="var(--text-greyed)" />
+            }
+        </div>
+        {
+            publicRooms.map((room) => {
+                return (
+                    <RoomEntry {...room} key={room.room_id} />
+                )
+            })
+        }
+        { status === directoryStatus.error &&
+            <>Error loading rooms</>
+        }
+        { status === directoryStatus.loading &&
+            <div className="room-list__loading" ref={loadingRef}><Loading size="2.5em"/></div>
+        }
+    </>)
 }
 
 

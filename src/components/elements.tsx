@@ -160,7 +160,7 @@ export function OptionDropDown({ icon, text, indicator, children, ...props }: Op
 
     return (
         <div className="option--dropdown-wrapper">
-            <div className="option--dropdown" onClick={toggleOpen} {...props}>
+            <div className={classList("option--dropdown", {"option--dropdown--open": open})} onClick={toggleOpen} {...props}>
                 <Icon path={mdiChevronDown} color={open ? "var(--text)" : "var(--text-greyed)"} size="1.5rem" className="option--dropdown__chevron" rotate={open ? 0 : -90} />
                 { icon }
                 <div className="option--dropdown__text">{text}</div>

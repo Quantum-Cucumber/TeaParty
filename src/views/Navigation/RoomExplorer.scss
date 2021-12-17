@@ -14,6 +14,18 @@
         }
     }
 
+    &__title {
+        font-size: 1.1em;
+        margin-bottom: 0.6em;
+    }
+
+    &__search {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        margin-bottom: 0.5em;
+    }
+
     &__loading {
         width: 100%;
         display: flex;

@@ -145,6 +145,12 @@
             margin-bottom: 3px;
         }
     }
+
+    &--open {
+        .option__notification, .option__unread {
+            display: none;
+        }
+    }
 }
 
 
