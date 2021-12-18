@@ -44,7 +44,7 @@ export default class eventTimeline {
         }
     }
 
-    onEvent(event: MatrixEvent, toStartOfTimeline: Boolean) {
+    onEvent(event: MatrixEvent, toStartOfTimeline: boolean) {
         /* Basically just to update unread flag ig?? */
         
         // Only process messages for current room
@@ -58,7 +58,7 @@ export default class eventTimeline {
     }
 
     getEvents() {
-        let compiled = this.room?.getLiveTimeline().getEvents().filter(shouldDisplayEvent)
+        const compiled = this.room?.getLiveTimeline().getEvents().filter(shouldDisplayEvent)
         return compiled;
     }
 

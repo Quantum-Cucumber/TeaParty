@@ -48,7 +48,7 @@ function MemberList({ currentRoom }: {currentRoom: string}) {
         if (!currentRoom) {return}
         if (!global.matrix.getRoom(currentRoom)) {return}
 
-        let members: RoomMember[] = global.matrix.getRoom(currentRoom).getJoinedMembers();
+        const members: RoomMember[] = global.matrix.getRoom(currentRoom).getJoinedMembers();
 
         const collator = Intl.Collator("en", {sensitivity: "base", ignorePunctuation: true})
         members.sort((a, b) => {

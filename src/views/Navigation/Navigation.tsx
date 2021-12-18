@@ -108,7 +108,7 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }: NavigationPr
 
 type GroupListProps = Omit<GroupProps, "groupName" | "k" | "builtin" | "children">
 function GroupList(props: GroupListProps) {
-    var groups = [
+    const groups = [
         <Group {...props} groupName="Home" key="home" k="home" builtin>
             <Icon path={mdiHomeVariant} color="var(--text)" size="100%" />
         </Group>,

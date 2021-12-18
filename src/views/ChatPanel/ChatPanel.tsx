@@ -22,16 +22,16 @@ import type { MatrixEvent, Room, RoomMember } from "matrix-js-sdk";
 
 type ChatPanelTypes = {
     currentRoom: string,
-    hideMemberListState: ReturnType<typeof useState>,
-    hideRoomListState: ReturnType<typeof useState>,
+    hideMemberListState: [boolean, React.Dispatch<boolean>],
+    hideRoomListState: [boolean, React.Dispatch<boolean>], 
 }
 
 export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}: ChatPanelTypes) {
-    const setPopup: Function = useContext(popupCtx);
+    const setPopup = useContext(popupCtx);
 
     // Restore panel states on render
-    const [hideRoomList, setHideRoomList] = hideRoomListState as [boolean, Function];
-    const [hideMemberList, setHideMemberList] = hideMemberListState as [boolean, Function];
+    const [hideRoomList, setHideRoomList] = hideRoomListState;
+    const [hideMemberList, setHideMemberList] = hideMemberListState;
 
     useEffect(() => {
         setHideRoomList(Settings.get("startRoomsCollapsed"));
@@ -58,7 +58,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
 
     return (<>
         <div className="header chat-header">
-            <IconButton path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
+            <IconButton path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
 
             {room.current && <>
                 <div className="chat-header__icon">
@@ -88,7 +88,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
                     }/>
                 )
             }} />
-            <IconButton path={mdiAccountMultiple} size="25px" tipDir="left" tipText={`${hideMemberList ? "Show" : "Hide"} Members`} clickFunc={() => {setHideMemberList((current) => !current)}} />
+            <IconButton path={mdiAccountMultiple} size="25px" tipDir="left" tipText={`${hideMemberList ? "Show" : "Hide"} Members`} clickFunc={() => {setHideMemberList((current) => !current)}} />
         </div>
 
         <div className="chat-frame">
@@ -234,7 +234,7 @@ function Status({ room }: {room: Room | null}) {
 type typingSetType = Set<string>;
 
 function TypingIndicator({currentRoom}: {currentRoom: string}) {
-    const [typing, setTyping] = useState(new Set()) as [typingSetType, Function];
+    const [typing, setTyping] = useState<typingSetType>(new Set());
 
     // Listen for typing events
     useEffect(() => {
@@ -303,13 +303,13 @@ type PinnedMessagesTypes = {
 }
 
 function PinnedMessages({ parent, room, eventIds }: PinnedMessagesTypes) {
-    const [events, setEvents] = useState([]) as [MatrixEvent[], Function];
+    const [events, setEvents] = useState<MatrixEvent[]>([]);
 
     // TODO : Will try setEvents if unmounted while going through for loop
     useEffect(() => {
-        if (!room || !eventIds) {return};
+        if (!room || !eventIds) {return}
         setEvents([]);
-        var isMounted = true;
+        let isMounted = true;
 
         function appendEvent(event: MatrixEvent) {
             if (isMounted) {
@@ -339,7 +339,6 @@ function PinnedMessages({ parent, room, eventIds }: PinnedMessagesTypes) {
                 {
                     events.map((event) => {
                         return event ? (
-                            // @ts-ignore - TimelineEvent is memoized and the props get screwy
                             <TimelineEvent event={event} key={event.getId()} />
                         ) : null
                     })

@@ -21,16 +21,16 @@ export function getUserColour(userId: string) {
 
 
 export function acronym(text: string, len = 3) {
-    if(!text) {return ""};
+    if(!text) {return ""}
     const chars = text.match(/\b([a-z0-9])/gi);
-    if (!chars) {return text[0]};
+    if (!chars) {return text[0]}
     return chars.slice(0, len).join("").toUpperCase()
 }
 
 
 export function classList(...classes: (string | {[key: string]: boolean} | null | undefined)[]) {
     /* Takes a dict of classNames: bool and outputs a string of the classes that are true */
-    var output: string[] = [];
+    const output: string[] = [];
     classes.forEach((item) => {
         if (typeof item === "object") {
             if (item !== null) {
@@ -50,7 +50,7 @@ export function classList(...classes: (string | {[key: string]: boolean} | null 
     return output.join(" ") || null;
 }
 
-export function debounce(func: Function, timeout: number) {
+export function debounce(func: (...args: any) => void, timeout: number) {
     /* Returns a function that will only run once per the timeout period */
     let timer: NodeJS.Timer;
     return function(this: any, ...args: any) {
@@ -61,7 +61,7 @@ export function debounce(func: Function, timeout: number) {
     };
 }
 
-export function asyncDebounce<F extends Function>(func: F, timeout: number): F {
+export function asyncDebounce<F extends (...args: any) => void>(func: F, timeout: number): F {
     /* debounce, but returns a promise */
     let timer: NodeJS.Timer;
     function asyncTimeout() {

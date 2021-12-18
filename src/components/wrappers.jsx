@@ -2,7 +2,7 @@ import "./wrappers.scss";
 import { useEffect, useState, useCallback, useRef } from "react";
 import Twemoji from "twemoji";
 import linkifyElement from "linkify-element";
-import hljs from 'highlight.js';
+import hljs from "highlight.js";
 
 import { IconButton } from "./elements";
 

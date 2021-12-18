@@ -3,7 +3,7 @@ import { useState, useEffect, useRef, useCallback, createContext, useContext, us
 
 import { A, IconButton, Button, Loading } from "./elements";
 
-import { classList } from '../utils/utils';
+import { classList } from "../utils/utils";
 import { useOnKeypress, useDownloadUrl, useCatchState } from "../utils/hooks";
 
 import Icon from "@mdi/react";
@@ -138,7 +138,7 @@ export function Tooltip({ text, dir, children, x = null, y = null, delay = 0 }: 
         // Calculate position of tooltip
         const tooltip = tooltipRef.current;
         const child = childRef.current;
-        if (!tooltip || !child) {return};
+        if (!tooltip || !child) {return}
 
         const presets = {
             "top": {x: "center", y: "top"},

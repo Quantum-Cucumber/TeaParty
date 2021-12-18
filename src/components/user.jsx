@@ -2,7 +2,7 @@ import "./user.scss";
 import { useState, useEffect, useRef, useLayoutEffect, useContext } from "react";
 
 import { getUserColour, acronym, classList } from "../utils/utils";
-import { useOnKeypress } from '../utils/hooks';
+import { useOnKeypress } from "../utils/hooks";
 import { getLocalpart, powerLevelText } from "../utils/matrix-client";
 
 import { ContextMenu, ImagePopup, popupCtx, positionFloating } from "./popups";
@@ -68,7 +68,7 @@ export function UserPopup({ user, room, parent, setPopup }) {
 
     // useLayoutEffect to set position before render
     useLayoutEffect(() => {
-        if (!user || !parent) {return};
+        if (!user || !parent) {return}
         // Want to position at same height at parent, to the right of it while also within window boundaries
         const padding = 10;
         const popup = popupRef.current;
@@ -83,7 +83,7 @@ export function UserPopup({ user, room, parent, setPopup }) {
 
     // Attach click event AFTER render
     useEffect(() => {
-        if (!user || !parent) {return};
+        if (!user || !parent) {return}
 
         setShowFullImage(false);
 
@@ -104,7 +104,7 @@ export function UserPopup({ user, room, parent, setPopup }) {
     }, [user, parent, setPopup]);
     
 
-    if (!user || !parent) {return null};
+    if (!user || !parent) {return null}
 
     return (
         <div className="user-popup" ref={popupRef}>

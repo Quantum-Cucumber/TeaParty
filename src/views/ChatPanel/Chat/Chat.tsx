@@ -32,7 +32,7 @@ function Chat({ currentRoom }: {currentRoom: string}) {
     const [eventList, setEventList] = useDebouncedState<MatrixEvent[]>([], 400);
 
     const updateEventList = useCallback(() => {
-        if (!timeline.current) {setEventList([]); return};
+        if (!timeline.current) {setEventList([]); return}
         setEventList(timeline.current.getEvents());
     }, [setEventList]);
 
@@ -72,7 +72,7 @@ function Chat({ currentRoom }: {currentRoom: string}) {
         setLastUnread(null);
 
         // No listener when no selected room
-        if (!currentRoom) {return};
+        if (!currentRoom) {return}
         if (!global.matrix.getRoom(currentRoom)) {return}
 
         console.info("Load room: ", currentRoom)
@@ -118,7 +118,7 @@ function Chat({ currentRoom }: {currentRoom: string}) {
 
     /* Render timeline */
     
-    var events: JSX.Element[] = [];
+    const events: JSX.Element[] = [];
     const filteredEvents = eventList.filter((event) => {return shouldDisplayEvent(event)});
     filteredEvents.forEach((event, index) => {
         const prevEvent = filteredEvents[index - 1];

@@ -155,7 +155,7 @@ async function unmuteRoom(room: Room) {
 }
 
 async function setRoomPushRule(room: Room, rule: pushStates.all | pushStates.important) {
-    let body: {};
+    let body: Record<string, [PushRuleActionName]>;
     switch (rule) {
         case pushStates.all:
             body = {

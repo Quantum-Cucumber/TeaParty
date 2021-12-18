@@ -29,7 +29,7 @@ export function getEventReactions(event: MatrixEvent) {
 }
 
 function getReacted(relation: Relations) {
-    let output: {[key: string]: {count: number, myReact: MatrixEvent, members: RoomMember[]}} = {};
+    const output: {[key: string]: {count: number, myReact: MatrixEvent, members: RoomMember[]}} = {};
 
     relation.getSortedAnnotationsByKey()
     // Sort by count, then by age
@@ -85,7 +85,7 @@ export default function Reactions({ event, reactionsRelation }: {event: MatrixEv
     const canReact = room.currentState.maySendEvent(EventType.Reaction, global.matrix.getUserId());
     
     // Calculate the <Reaction> components 
-    if (!reactionsRelation) {return null};
+    if (!reactionsRelation) {return null}
     const reactions = getReacted(reactionsRelation);
 
     return (

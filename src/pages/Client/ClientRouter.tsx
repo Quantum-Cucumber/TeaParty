@@ -18,7 +18,7 @@ export default function ClientRouter() {
 
 
         <Route exact path={["/room/:roomId?", "/"]}
-            children={({match}) => {
+            children={({match}) => { // eslint-disable-line react/no-children-prop
                 return (
                     <Client urlRoom={(match && "roomId" in match.params) ? match.params.roomId : null} />
                 )

@@ -2,6 +2,12 @@ import path from "path";
 import { Configuration, SourceMapDevToolPlugin } from "webpack";
 import HtmlWebpackPlugin from "html-webpack-plugin";
 import ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
+import EslintPlugin from "eslint-webpack-plugin";
+
+
+const eslintOptions = {
+    extensions: ["js", "jsx", "ts", "tsx"],
+}
 
 const config: Configuration = {
     mode: "development",
@@ -60,6 +66,7 @@ const config: Configuration = {
         new SourceMapDevToolPlugin({}),
         new HtmlWebpackPlugin({template: '/public/index.html'}),
         new ReactRefreshWebpackPlugin(),
+        new EslintPlugin(eslintOptions),
     ]
 }
 

@@ -19,9 +19,10 @@ export function getChildRoomsFromGroup(groupKey: string) {
         case "directs":
             return sortRooms(getDirects());
 
-        default:  // Likely a space Id
-            const space = global.matrix.getRoom(groupKey);
+        default: {  // Likely a space Id
+            const space: Room = global.matrix.getRoom(groupKey);
             return space ? sortRooms(getSpaceChildren(space)) : [];
+        }
     }
 }
 
@@ -36,9 +37,10 @@ export function roomInGroup(groupKey: string, room: Room) {
         case "directs":
             flatGroupSubrooms = getDirects();
             break;
-        default:
-            const space = global.matrix.getRoom(groupKey);
+        default: {
+            const space: Room = global.matrix.getRoom(groupKey);
             flatGroupSubrooms = space ? flatSubrooms(space, true) : [];
+        }
     }
 
     return flatGroupSubrooms.includes(room);
@@ -50,7 +52,7 @@ function getUnreads(room: Room) {
     const userId: string = global.matrix.getUserId();
     const events = room.getLiveTimeline().getEvents().slice().reverse();  // Get events youngest to oldest
     const lastRead = room.getEventReadUpTo(userId);
-    var read = true;
+    let read = true;
     for (const event of events) {
         // If reached read event, all events are read, so quit the for/of
         if (event.getId() === lastRead) {break}
@@ -76,9 +78,9 @@ export type invitedRoomsType = {
 }
 
 function _getInvitedRooms(): invitedRoomsType {
-    var rooms: inviteInfo[] = [];
-    var directs: inviteInfo[] = [];
-    var spaces: inviteInfo[] = [];
+    const rooms: inviteInfo[] = [];
+    const directs: inviteInfo[] = [];
+    const spaces: inviteInfo[] = [];
     global.matrix.getVisibleRooms().forEach((room: Room) => {
         if (room.getMyMembership() === "invite") {
             //m.room.member event for logged in user
@@ -219,7 +221,7 @@ export default function useRoomStates({ currentGroup, setGroupRooms }: useRoomSt
         // If m.directs list updated, refresh the dms list
         if (event.getType() === EventType.Direct) {
             refreshRooms();
-        };
+        }
     }, [refreshRooms])
 
     // When channel is read
@@ -233,8 +235,8 @@ export default function useRoomStates({ currentGroup, setGroupRooms }: useRoomSt
 
     // Message event
     const _roomEvent = useCallback((event: MatrixEvent, _room: Room, toStartOfTimeline: boolean, removed: boolean) => {
-        if (removed) {return};
-        if (!shouldDisplayEvent(event)) {return};
+        if (removed) {return}
+        if (!shouldDisplayEvent(event)) {return}
         if (toStartOfTimeline) {return}  // Only update for messages at start of chat
         if (event.getSender() === global.matrix.getUserId()) {return}  // No unread indicators for own events
 

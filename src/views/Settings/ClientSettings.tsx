@@ -103,7 +103,7 @@ type ThemeSelectProps = {
 function ThemeSelect({ initial, themeList }: ThemeSelectProps) {
     const [selected, Select] = useState(initial);
 
-    function Theme({ label, name }) {
+    function Theme({ label, name }: {label: string, name: string}) {
         return (
             <div
                 className={classList("theme", name, {"theme--selected": selected === name})}

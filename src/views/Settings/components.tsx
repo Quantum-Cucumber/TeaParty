@@ -123,7 +123,7 @@ export function Slider({label, setting, min, max, interval, units}: SliderProps)
             <div className="slider__bar" ref={barRef} onMouseDown={startDrag}>
                 {
                     // Array with null values, with the appropriate number of steps
-                    Array.apply(null, Array( Math.round((max - min) / interval) + 1 ))
+                    Array( Math.round((max - min) / interval) + 1 ).fill(null)
                     .map((_: null, index: number) => {
                         const perc = (index * interval) / (max - min) * 100;
                         return (

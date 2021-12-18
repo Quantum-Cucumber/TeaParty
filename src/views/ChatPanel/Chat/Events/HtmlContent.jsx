@@ -1,14 +1,14 @@
-import { useState, useEffect, useReducer } from 'react';
-import { render, unmountComponentAtNode } from 'react-dom';
-import sanitizeHtml from 'sanitize-html';
-import hljs from 'highlight.js';
+import { useState, useEffect, useReducer } from "react";
+import { render, unmountComponentAtNode } from "react-dom";
+import sanitizeHtml from "sanitize-html";
+import hljs from "highlight.js";
 
-import { genThumbnailUrl } from './MessageContent';
-import { Tooltip } from '../../../../components/popups';
+import { genThumbnailUrl } from "./MessageContent";
+import { Tooltip } from "../../../../components/popups";
 
-import { parseMatrixto } from '../../../../utils/linking';
-import { getMember } from '../../../../utils/matrix-client';
-import { classList } from '../../../../utils/utils';
+import { parseMatrixto } from "../../../../utils/linking";
+import { getMember } from "../../../../utils/matrix-client";
+import { classList } from "../../../../utils/utils";
 
 const hexColourRegex = /^#[0-9a-f]{6}$/i;
 
@@ -84,8 +84,8 @@ const transformTags = {
 
     span: (tagName, attribs) => {
         let style = "";
-        style += customTagToStyle(attribs, "data-mx-color", "color", (value) => hexColourRegex.test);
-        style += customTagToStyle(attribs, "data-mx-bg-color", "background-color", (value) => hexColourRegex.test);
+        style += customTagToStyle(attribs, "data-mx-color", "color", (value) => hexColourRegex.test(value));
+        style += customTagToStyle(attribs, "data-mx-bg-color", "background-color", (value) => hexColourRegex.test(value));
         
         attribs.style = style;
         return {tagName, attribs};
@@ -93,8 +93,8 @@ const transformTags = {
 
     font: (tagName, attribs) => {
         let style = "";
-        style += customTagToStyle(attribs, "data-mx-color", "color", (value) => hexColourRegex.test);
-        style += customTagToStyle(attribs, "data-mx-bg-color", "background-color", (value) => hexColourRegex.test);
+        style += customTagToStyle(attribs, "data-mx-color", "color", (value) => hexColourRegex.test(value));
+        style += customTagToStyle(attribs, "data-mx-bg-color", "background-color", (value) => hexColourRegex.test(value));
 
         // Check that color property is valid
         if ("color" in attribs) {

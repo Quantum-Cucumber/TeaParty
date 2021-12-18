@@ -51,7 +51,7 @@ export function Message({ event, partial, children }: {event: MatrixEvent, parti
 
 type IconEventProps = {
     event: MatrixEvent, 
-    partial: Boolean,
+    partial: boolean,
     userId: string,
     icon: string,
     text: React.ReactNode,
@@ -126,7 +126,7 @@ export function MembershipEvent({ event, partial }: SpecificIconEventProps) {
             break;
     }
 
-    if (!userId || !membershipText) {return null};
+    if (!userId || !membershipText) {return null}
     return (
         <IconEvent event={event} partial={partial} userId={userId} icon={icon} text={membershipText} />
     )
@@ -164,7 +164,7 @@ export function RoomEditEvent({ event, partial }: SpecificIconEventProps) {
             break;
     }
 
-    if (!userId || !property) {return null};
+    if (!userId || !property) {return null}
     return (
         <IconEvent event={event} partial={partial} userId={userId} icon={icon} text={"changed the room " + property} />
     )
@@ -194,7 +194,7 @@ export function PinEvent({ event, partial }: SpecificIconEventProps) {
         text = "changed this room's pins"
     }
 
-    if (!userId) {return null};
+    if (!userId) {return null}
     return (
         <IconEvent event={event} partial={partial} userId={userId} icon={icon} text={text} />
     )

@@ -18,7 +18,7 @@ function _roomIdsToRoom(roomIds: (string | undefined)[]): Room[] {
 
 export function getSpaceChildren(space: Room) {
     /* Get children of a given space object */
-    const childEvents = space.currentState.getStateEvents('m.space.child');
+    const childEvents = space.currentState.getStateEvents("m.space.child");
     return _roomIdsToRoom(
         childEvents.map((event) => {
             return event.event.state_key;
@@ -135,7 +135,7 @@ const tagPriority = {
 }
 function tagToInt(roomTags: Room["tags"]): [number, number] {
     /* Processes a room's tags and returns an int that can be compared easily */
-    for (let tag in tagPriority) {
+    for (const tag in tagPriority) {
         if (tag in roomTags) {
             // Priority of tag + order of tag (between 0 and 1) (or 2 if no order supplied - to go below those with orders)
             return [tagPriority[tag], ("order" in roomTags[tag] ? roomTags[tag].order : 2)];

@@ -6,10 +6,10 @@ import { ContextMenu, Tooltip } from "./popups";
 import { Avatar } from "./user";
 import { FancyText } from "./wrappers";
 
-import { acronym, classList } from '../utils/utils';
+import { acronym, classList } from "../utils/utils";
 import { isDirect } from "../utils/roomFilters";
 
-import Icon from '@mdi/react';
+import Icon from "@mdi/react";
 import { mdiCheck, mdiChevronDown, mdiChevronRight, mdiLoading, mdiPencil } from "@mdi/js";
 
 import type { MatrixEvent, Room } from "matrix-js-sdk";
@@ -184,7 +184,16 @@ export function A(props: React.HTMLProps<HTMLAnchorElement>) {
     )
 }
 
-export function Button({plain = false, save = false, danger = false, link = false, disabled = false, ...props}) {
+
+type ButtonProps = {
+    plain?: boolean,
+    save?: boolean,
+    danger?: boolean,
+    link?: boolean,
+    disabled?: boolean,
+}
+
+export function Button({plain = false, save = false, danger = false, link = false, disabled = false, ...props}: ButtonProps) {
     const variation = classList(
         {"button--plain": plain},
         {"button--save": save},
@@ -262,13 +271,15 @@ type TextInput = HTMLInputElement & HTMLTextAreaElement;
 
 
 /* A simple styled, controlled text box that defers validation and submission to the parent */
-export const ManualTextBox = forwardRef(({ placeholder, valid = true, multiline = false, value, setValue }: ManualTextBoxProps, ref: React.ForwardedRef<TextInput>) => {
-    return ( multiline ?
-        <textarea className={classList("textbox__input", {"textbox__input--error": !valid})} placeholder={placeholder} value={value} rows={4} onChange={(e) => setValue(e.target.value)} ref={ref} />
-    :
-        <input className={classList("textbox__input", {"textbox__input--error": !valid})} type="text" placeholder={placeholder} value={value} onChange={(e) => setValue(e.target.value)} ref={ref} />
-    )
-});
+export const ManualTextBox = forwardRef(
+    function ManualTextBox({ placeholder, valid = true, multiline = false, value, setValue }: ManualTextBoxProps, ref: React.ForwardedRef<TextInput>) {
+        return ( multiline ?
+            <textarea className={classList("textbox__input", {"textbox__input--error": !valid})} placeholder={placeholder} value={value} rows={4} onChange={(e) => setValue(e.target.value)} ref={ref} />
+        :
+            <input className={classList("textbox__input", {"textbox__input--error": !valid})} type="text" placeholder={placeholder} value={value} onChange={(e) => setValue(e.target.value)} ref={ref} />
+        )
+    }
+);
 
 
 type TextBoxProps = {

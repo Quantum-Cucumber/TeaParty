@@ -6,7 +6,7 @@ import { Loading } from "../../components/elements";
 import { Overlay } from "../../components/popups";
 
 
-function input_valid(target, fieldName) {
+function input_valid(target, _fieldName) {
     const value = target.value;
     if (value === "") {
         target.classList.add("input--error");
@@ -32,7 +32,7 @@ function Login({ type = "Login" }) {
 
         if (type === "Login") {
             const hs = homeserverRef.current.value ? homeserverRef.current.value : homeserverRef.current.placeholder;
-            if (![input_valid(usernameRef.current, "Username"), input_valid(passwordRef.current, "Password")].every(Boolean)) {return};
+            if (![input_valid(usernameRef.current, "Username"), input_valid(passwordRef.current, "Password")].every(Boolean)) {return}
             showOverlay(true);
             attemptLogin(usernameRef.current.value, hs, passwordRef.current.value).then(() => {
                 console.info("Redirecting to app");

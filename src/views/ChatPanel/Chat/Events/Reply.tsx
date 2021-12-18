@@ -21,7 +21,7 @@ type ReplyProps = {
 
 export default function Reply({ roomId, eventId }: ReplyProps) {
     const [event, setEvent] = useState(null as MatrixEvent);
-    const [status, setStatus] = useState('Loading reply...');
+    const [status, setStatus] = useState("Loading reply...");
 
     // Load event object
     useEffect(() => {
@@ -62,7 +62,7 @@ type ReplyBodyProps = {event: MatrixEvent}
 function ReplyBody({event}: ReplyBodyProps) {
     const msgType = event.getContent().msgtype;
 
-    if (event.getType() !== EventType.RoomMessage) {return null};
+    if (event.getType() !== EventType.RoomMessage) {return null}
 
     let content = null;
     switch (msgType) {

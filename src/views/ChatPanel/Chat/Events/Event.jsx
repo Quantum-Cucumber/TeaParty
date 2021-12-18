@@ -31,43 +31,45 @@ function eventIsSame(oldProps, newProps) {
     );
 }
 
-export const TimelineEvent = memo(({ event, partial=false }) => {    
-    let eventEntry = null;
-    if (isMessageEvent(event)) {
-        if (event.getContent().msgtype === MsgType.Emote) {
+export const TimelineEvent = memo(
+    function TimelineEvent({ event, partial=false }) {    
+        let eventEntry = null;
+        if (isMessageEvent(event)) {
+            if (event.getContent().msgtype === MsgType.Emote) {
+                eventEntry = (
+                    <EmoteMsg event={event} partial={partial} />
+                );
+            }
+            else {    
+                eventEntry = (
+                    <Message event={event} partial={partial} />
+                );
+            }
+        } 
+        else if (isJoinEvent(event) || isLeaveEvent(event)) {
             eventEntry = (
-                <EmoteMsg event={event} partial={partial} />
+                <MembershipEvent event={event} partial={partial} />
             );
         }
-        else {    
+        else if (isRoomEditEvent(event)) {
             eventEntry = (
-                <Message event={event} partial={partial} />
+                <RoomEditEvent event={event} partial={partial} />
+            );
+        } 
+        else if (isPinEvent(event)) {
+            eventEntry = (
+                <PinEvent event={event} partial={partial} />
             );
         }
-    } 
-    else if (isJoinEvent(event) || isLeaveEvent(event)) {
-        eventEntry = (
-            <MembershipEvent event={event} partial={partial} />
-        );
-    }
-    else if (isRoomEditEvent(event)) {
-        eventEntry = (
-            <RoomEditEvent event={event} partial={partial} />
-        );
-    } 
-    else if (isPinEvent(event)) {
-        eventEntry = (
-            <PinEvent event={event} partial={partial} />
-        );
-    }
-    else if (isStickerEvent(event)) {
-        eventEntry = (
-            <StickerEvent event={event} partial={partial} />
-        )
-    }
+        else if (isStickerEvent(event)) {
+            eventEntry = (
+                <StickerEvent event={event} partial={partial} />
+            )
+        }
 
-    return eventEntry;
-}, eventIsSame)
+        return eventEntry;
+    }
+, eventIsSame)
 
 export function EventWrapper({ event, partial=false, compact=false, children }) {
     const setPopup = useContext(popupCtx);
@@ -106,7 +108,7 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
             onContextMenu={(e) => {
                 // Don't show the message popup if a link is right clicked
                 // TODO: Add extra options if the A tag is clicked - copy link/open link
-                if (e.target.tagName === "A") {return};
+                if (e.target.tagName === "A") {return}
 
                 e.preventDefault();
                 e.stopPropagation();  // Not totally necessary unless a parent has a listener too

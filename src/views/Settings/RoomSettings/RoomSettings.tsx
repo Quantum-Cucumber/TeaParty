@@ -22,7 +22,7 @@ import type { Visibility } from "matrix-js-sdk/lib/@types/partials";
 import type {pagesType} from "../Settings";
 
 
-export default function RoomSettings({ roomId }) {
+export default function RoomSettings({ roomId }: {roomId: string}) {
     const history = useHistory();
     const room: Room = global.matrix?.getRoom(roomId);
     if (!room) {

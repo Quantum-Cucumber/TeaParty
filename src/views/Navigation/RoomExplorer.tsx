@@ -129,7 +129,6 @@ export function RoomDirectory() {
         const search = stableSearchTerm.current ? {filter: {generic_search_term: stableSearchTerm.current}} : {};
 
         try {
-            console.log("request", paginateToken.current)
             const result = await global.matrix.publicRooms({limit: ROOMPAGESIZE, since: paginateToken.current, ...search});
 
             const newToken = result.next_batch ?? null;
@@ -149,7 +148,7 @@ export function RoomDirectory() {
         finally {
             loading.current = false;
         }
-    }, [])
+    }, [stableSearchTerm])
 
     useOnElementVisible(loadingRef.current, loadMore);
 
@@ -200,7 +199,7 @@ function RoomEntry({room_id, name, avatar_url, topic, canonical_alias = null, nu
         if (isJoined) {
             setJoined(true);
         }
-    }, [])
+    }, [room_id])
 
     const httpUrl: string = global.matrix.mxcUrlToHttp(avatar_url, 96, 96, "crop");
 

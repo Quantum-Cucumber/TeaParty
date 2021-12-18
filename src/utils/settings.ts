@@ -34,7 +34,7 @@ export function isEventVisibility(settingName: string) {
 }
 
 class SettingsManager extends EventEmitter {
-    [x: string]: {};
+    settings: Record<string, any>;
     constructor() {
         super();
         this.settings = {};
@@ -66,7 +66,7 @@ class SettingsManager extends EventEmitter {
 const Settings = new SettingsManager();
 // Perform actions when certain settings update
 Settings.on("settingUpdate", (setting, value) => {
-    const root: HTMLElement = document.querySelector(":root")!;
+    const root: HTMLElement = document.querySelector(":root");
 
     switch (setting) {
         case "theme":

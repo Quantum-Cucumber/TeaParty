@@ -6,7 +6,7 @@ import { IconButton, ManualTextBox } from "../../../components/elements";
 import { Avatar } from "../../../components/user";
 
 import { getMember, userIdRegex } from "../../../utils/matrix-client";
-import { classList, asyncDebounce } from "../../../utils/utils";
+import { asyncDebounce } from "../../../utils/utils";
 import { useCatchState } from "../../../utils/hooks";
 
 import {mdiCheck, mdiClose} from "@mdi/js";

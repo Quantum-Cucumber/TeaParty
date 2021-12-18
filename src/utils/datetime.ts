@@ -61,8 +61,8 @@ export function dateToDateStr(date: Date) {
 export function dayBorder(nextMsg?: MatrixEvent, lastMsg?: MatrixEvent) {
     if (!nextMsg?.getDate() || !lastMsg?.getDate()) {return null}
     // Get local DT from the utc date
-    const nextLocal = _jsDateToLocal(nextMsg.getDate()!);
-    const lastLocal = _jsDateToLocal(lastMsg.getDate()!);
+    const nextLocal = _jsDateToLocal(nextMsg.getDate());
+    const lastLocal = _jsDateToLocal(lastMsg.getDate());
     // Check whether dates are the same
     if (nextLocal.day !== lastLocal.day) {
         return _relativeDate(nextLocal, DateTime.DATE_FULL);
@@ -72,7 +72,7 @@ export function dayBorder(nextMsg?: MatrixEvent, lastMsg?: MatrixEvent) {
 }
 
 export function msToDate(ms: number): string {
-    if (!ms) {return ""};
+    if (!ms) {return ""}
 
     const dt = DateTime.fromMillis(ms, {locale: "UTC"}).toLocal();
     const now = DateTime.local();

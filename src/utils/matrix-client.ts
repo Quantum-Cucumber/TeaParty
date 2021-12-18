@@ -26,15 +26,11 @@ async function discover_base_url(homeserver: string): Promise<string> {
     }
 
     const url = homeserver + "/.well-known/matrix/client";
-    try {
-        const response = await fetch(url);
-        if (!response.ok) { throw response.statusText };
+    const response = await fetch(url);
+    if (!response.ok) { throw response.statusText }
 
-        const data: object = await response.json();
-        return data["m.homeserver"].base_url;
-    } catch (e) {
-        throw e;
-    }
+    const data: object = await response.json();
+    return data["m.homeserver"].base_url;
 }
 
 export async function attemptLogin(username: string, homeserver: string, password: string) {
@@ -81,13 +77,13 @@ export async function buildMatrix() {
     const device_id = localStorage.getItem("device_id");
     if (!token) {throw new Error("No homeserver url was saved")}
 
-    let opts = { indexedDB: window.indexedDB, localStorage: window.localStorage };
-    let store = new matrixsdk.IndexedDBStore(opts);
+    const opts = { indexedDB: window.indexedDB, localStorage: window.localStorage };
+    const store = new matrixsdk.IndexedDBStore(opts);
     await store.startup()
     console.info("Started IndexedDB");
 
     global.matrix = matrixsdk.createClient({
-        accessToken: token, userId: user_id!, baseUrl: base_url!, deviceId: device_id!, 
+        accessToken: token, userId: user_id, baseUrl: base_url, deviceId: device_id, 
         store: store as IStore, unstableClientRelationAggregation: true, timelineSupport: true,
     })
     await global.matrix.startClient();
@@ -108,7 +104,7 @@ export async function logoutMatrix() {
 
 export function tryGetUser(userId: string) {
     /* Sometimes the user mightn't be cached, so make a pretend user object */
-    var user: User = global.matrix.getUser(userId);
+    const user: User = global.matrix.getUser(userId);
     if (!user) {
         return {displayName: userId, userId: userId};
     }
@@ -127,7 +123,7 @@ export function getLocalpart(user: User) {
 }
 export function getHomeserver(userId: string) {
     /* Split user ID at first : to get homeserver portion */
-    return userId.replace(/^.*?:/, '');
+    return userId.replace(/^.*?:/, "");
 }
 
 export function powerLevelText(userId: string, roomId: string) {
@@ -158,8 +154,8 @@ export function getMembersRead(event: MatrixEvent) {
     const roomEvents = [...room.getLiveTimeline().getEvents()];
     roomEvents.reverse();  // Newest event first
 
-    var readUpTo: string[] = [];
-    for (var i=0; i < roomEvents.length; i++) {  // Progress through timeline
+    let readUpTo: string[] = [];
+    for (let i=0; i < roomEvents.length; i++) {  // Progress through timeline
         readUpTo.push(...room.getReceiptsForEvent(roomEvents[i]).map((receipt) => receipt.userId))  // Add each user to array
         // This event's author has likely read the events above it
         // Primarily for events the current user sent
