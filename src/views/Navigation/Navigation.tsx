@@ -12,7 +12,7 @@ import { ExploreIcon } from "./RoomExplorer";
 
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { classList } from "../../utils/utils";
-import Settings from "../../utils/settings";
+import Settings, { isSpaceCollapsed, setSpaceCollapsed } from "../../utils/settings";
 import { getRoomNotifIcon, NotificationOptions } from "../../utils/notifications";
 
 import { Icon } from "@mdi/react";
@@ -32,7 +32,6 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }: NavigationPr
     const history = useHistory();
     // Name will be displayed above the room list and can't (always) be inferred from the key
     const [currentGroup, setGroup] = useState<groupType>({ name: "Home", key: "home" });
-    const [groupRooms, setGroupRooms] = useState(getChildRoomsFromGroup(currentGroup.key))
     const [showRoomSeperate, setShowRoomSeperate] = useState<Room>(null);
     
     const [collapseGroups, setCollapseGroups] = useState<boolean>();
@@ -40,17 +39,12 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }: NavigationPr
         setCollapseGroups(hideRoomListState[0] && Settings.get("collapseGroups"))
     }, [hideRoomListState])
 
-    const [roomStates, invitedRooms] = useRoomStates({currentGroup, setGroupRooms});  // Manages room and invite updating
+    const [roomStates, invitedRooms] = useRoomStates();  // Manages room and invite updating
     useGroupBreadcrumbs({currentGroup, currentRoom, selectRoom});  // Select the relevant room when a group is selected
     
 
     // Get the total length of all the value arrays
     const invLen: number = Object.values(invitedRooms).reduce((x, invs) => {return x + invs.length}, 0);
-
-    // When a group is selected, load its rooms
-    useEffect(() => {
-        setGroupRooms(getChildRoomsFromGroup(currentGroup.key))
-    }, [currentGroup])
 
     // If the current room isn't in the room list, add an entry above the groups list to represent the selected room
     useEffect(() => {
@@ -91,7 +85,7 @@ function Navigation({ currentRoom, selectRoom, hideRoomListState }: NavigationPr
                         </div>
                     </div>
                     <div className="column--rooms__holder scroll--hover">
-                        <RoomList rooms={groupRooms} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} />
+                        <RoomList rooms={getChildRoomsFromGroup(currentGroup.key)} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} spacePath={[currentGroup.key]} />
                     </div>
 
                     <div className="client__user-bar">
@@ -181,8 +175,9 @@ type RoomListProps = {
     roomStates: roomStatesType,
     currentRoom: string,
     selectRoom: React.Dispatch<string>,
+    spacePath?: string[],  // details the path to the parent subspace
 }
-function RoomList({ rooms, roomStates, currentRoom, selectRoom }: RoomListProps) {
+function RoomList({ rooms, roomStates, currentRoom, selectRoom, spacePath = [] }: RoomListProps) {
     const setPopup = useContext(popupCtx);
     const showRoomIcons: boolean = Settings.get("showRoomIcons");
 
@@ -213,6 +208,7 @@ function RoomList({ rooms, roomStates, currentRoom, selectRoom }: RoomListProps)
 
         if (room.isSpaceRoom()) {
             const children = getSpaceChildren(room);
+            const newSpacePath = [...spacePath, room.roomId];
 
             return (
                 <OptionDropDown key={key} icon={icon} text={room.name}
@@ -224,8 +220,10 @@ function RoomList({ rooms, roomStates, currentRoom, selectRoom }: RoomListProps)
                         )
                     }}
                     indicator={indicator}
+                    startOpen={!isSpaceCollapsed(newSpacePath)}
+                    onToggle={(open) => setSpaceCollapsed(newSpacePath, !open)}
                 >
-                    <RoomList rooms={children} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} /> 
+                    <RoomList rooms={children} roomStates={roomStates} currentRoom={currentRoom} selectRoom={selectRoom} spacePath={newSpacePath} /> 
                 </OptionDropDown>
             )
         }

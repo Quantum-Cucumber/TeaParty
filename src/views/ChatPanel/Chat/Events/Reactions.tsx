@@ -64,8 +64,7 @@ function getReacted(relation: Relations) {
 
 /* Reaction detection/processing heavily inspired by matrix-org/matrix-react-sdk */
 export default function Reactions({ event, reactionsRelation }: {event: MatrixEvent, reactionsRelation: Relations}) {
-    // eslint-disable-next-line
-    const [_, forceUpdate] = useReducer((current) => !current, false);
+    const [, forceUpdate] = useReducer((current) => !current, false);
     
     // Listen for changes to the relations object
     useEffect(() => {

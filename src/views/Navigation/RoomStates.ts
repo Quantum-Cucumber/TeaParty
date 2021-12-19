@@ -164,10 +164,6 @@ function _summariseRooms() {
 
 
 export type groupType = {name: string, key: string};
-type useRoomStatesProps = {
-    currentGroup: groupType,
-    setGroupRooms: React.Dispatch<React.SetStateAction<Room[]>>
-}
 type readReceiptEvent = {
     [roomId: string]: {
         "m.read": {
@@ -178,15 +174,11 @@ type readReceiptEvent = {
     },
 }
 
-export default function useRoomStates({ currentGroup, setGroupRooms }: useRoomStatesProps): [roomStatesType, invitedRoomsType] {
+export default function useRoomStates(): [roomStatesType, invitedRoomsType] {
     // Contains information to rerender rooms
+    const [, refreshRooms] = useReducer(current => current++, 0);
     const [roomStates, refreshRoomStates] = useReducer(_summariseRooms, _summariseRooms());
     const [invitedRooms, refreshInvites] = useReducer(_getInvitedRooms, _getInvitedRooms());
-    const stableCurrentGroup = useStableState(currentGroup);
-
-    const refreshRooms = useCallback(() => {
-        setGroupRooms(getChildRoomsFromGroup(stableCurrentGroup.current.key));
-    }, [setGroupRooms, stableCurrentGroup])
 
 
     // Membership in room updated

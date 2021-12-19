@@ -149,14 +149,20 @@ type OptionDropDownProps = {
     icon: React.ReactNode,
     text: string,
     indicator: JSX.Element,
+    startOpen?: boolean,
+    onToggle?: (open: boolean) => void,
     children: React.ReactNode,
     unread?: boolean,
     notifications?: number,
     [key: string]: any,
 }
 
-export function OptionDropDown({ icon, text, indicator, children, ...props }: OptionDropDownProps) {
-    const [open, toggleOpen] = useReducer((current) => !current, false);
+export function OptionDropDown({ icon, text, indicator, startOpen = false, onToggle = () => {}, children, ...props }: OptionDropDownProps) {
+    const [open, toggleOpen] = useReducer((current) => !current, startOpen);
+
+    useEffect(() => {
+        onToggle(open);
+    }, [open, onToggle])
 
     return (
         <div className="option--dropdown-wrapper">
@@ -191,7 +197,7 @@ type ButtonProps = {
     danger?: boolean,
     link?: boolean,
     disabled?: boolean,
-}
+} & React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export function Button({plain = false, save = false, danger = false, link = false, disabled = false, ...props}: ButtonProps) {
     const variation = classList(

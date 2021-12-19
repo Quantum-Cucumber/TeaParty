@@ -127,7 +127,7 @@ export default function RoomPermissions({ room }: {room: Room}) {
             {
                 Object.entries(powerLevelState.events as {[key: string]: number} || {})
                 .filter(([eventType]) => eventType in stateEvents)  // Only list known events
-                .filter(([_, powerLevel]) => powerLevel !== stateEventDefault)  // Only show overrides, i.e. those with different PL to the state default
+                .filter(([, powerLevel]) => powerLevel !== stateEventDefault)  // Only show overrides, i.e. those with different PL to the state default
                 .map(([eventType, powerLevel]) => {
                     const text = stateEvents[eventType]
                     return (

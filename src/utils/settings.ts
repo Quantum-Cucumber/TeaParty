@@ -11,6 +11,7 @@ const default_settings = {
     showRoomIcons: true,
     circularAvatars: false,
     fontSize: 18,  // In px
+    collapsedSpaces: {},
 
     devMode: false,
 
@@ -32,6 +33,41 @@ export function isEventVisibility(settingName: string) {
             return false;
     }
 }
+
+
+type collapsedSpaceType = {
+    collapsed: boolean,
+    [key: string]: collapsedSpaceType | boolean,
+}
+
+function getCollapsedSpaceEntry(obj: collapsedSpaceType, key: string) {
+    if (key in obj) {
+        return obj[key] as collapsedSpaceType;
+    }
+    else {
+        const entry: collapsedSpaceType = {collapsed: true};
+        obj[key] = entry;
+        return entry;
+    }
+}
+
+export function setSpaceCollapsed(path: string[], collapsed: boolean) {
+    const current: collapsedSpaceType = Settings.get("collapsedSpaces");
+
+    const currentEntry = path.reduce((currentObj, pathEntry) => getCollapsedSpaceEntry(currentObj, pathEntry), current);
+    currentEntry.collapsed = collapsed;
+
+    console.log(current, currentEntry, collapsed);
+    Settings.update("collapsedSpaces", current);
+}
+
+export function isSpaceCollapsed(path: string[]) {
+    const current: collapsedSpaceType = Settings.get("collapsedSpaces");
+
+    const currentEntry = path.reduce((currentObj, pathEntry) => getCollapsedSpaceEntry(currentObj, pathEntry), current);
+    return currentEntry.collapsed;
+}
+
 
 class SettingsManager extends EventEmitter {
     settings: Record<string, any>;
