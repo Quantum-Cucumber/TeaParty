@@ -36,11 +36,11 @@ function MemberList({ currentRoom }: {currentRoom: string}) {
                 update();
             }
         }
-        for (const e in memberEvents) {
+        for (const e of memberEvents) {
             global.matrix.on(e, memberUpdated);
         }
 
-        return () => {for (const e in memberEvents) {global.matrix.removeListener(e, memberUpdated)}}
+        return () => {for (const e of memberEvents) {global.matrix.removeListener(e, memberUpdated)}}
     }, [currentRoom]);
 
     // Sort the members to be loaded

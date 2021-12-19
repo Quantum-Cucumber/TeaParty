@@ -2,23 +2,23 @@ import "./Navigation.scss";
 import React, { useContext, useEffect, useState } from "react";
 import { useHistory } from "react-router-dom";
 
-import { IconButton, Option, OptionDropDown, RoomIcon, HoverOption, OptionIcon } from "../../components/elements";
-import { Tooltip, ContextMenu, popupCtx, Confirm } from "../../components/popups";
+import { IconButton, Option, OptionDropDown, RoomIcon } from "../../components/elements";
+import { Tooltip, popupCtx } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
 import { Avatar } from "../../components/user";
 import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup, roomStatesType } from "./RoomStates";
 import { InvitesIcon } from "./Invites";
 import { ExploreIcon } from "./RoomExplorer";
+import RoomOptions from "./RoomOptions";
 
 import { getRootSpaces, getSpaceChildren } from "../../utils/roomFilters";
 import { classList } from "../../utils/utils";
 import Settings, { isSpaceCollapsed, setSpaceCollapsed } from "../../utils/settings";
-import { getRoomNotifIcon, NotificationOptions } from "../../utils/notifications";
 
 import { Icon } from "@mdi/react";
-import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiContentCopy, mdiEye, mdiExitToApp, mdiDotsHorizontal, mdiCheckAll } from "@mdi/js";
+import { mdiCog, mdiHomeVariant, mdiAccountMultiple, mdiDotsHorizontal } from "@mdi/js";
 
-import type { Room } from "matrix-js-sdk";
+import type { Room, User } from "matrix-js-sdk";
 import type { groupType } from "./RoomStates";
 
 
@@ -247,96 +247,36 @@ function RoomList({ rooms, roomStates, currentRoom, selectRoom, spacePath = [] }
     return elements.length !== 0 ? <>{elements}</> : (<div className="room__placeholder">No joined rooms</div>);
 }
 
-type RoomOptionsProps = {
-    roomId: string,
-    read?: boolean,
-} & Omit<React.ComponentProps<typeof ContextMenu>, "x" | "y" | "children">;
 
-function RoomOptions({ roomId, read = true, ...props }: RoomOptionsProps) {
-    const setPopup = useContext(popupCtx);
-    const history = useHistory();
-
-    const room: Room = global.matrix.getRoom(roomId);
-
-    return (
-        <ContextMenu {...props} x="align-mouse-left" y="align-mouse-top">
-            { !room.isSpaceRoom() &&
-                <Option compact text="Mark as read" icon={<OptionIcon path={mdiCheckAll} />} enabled={!read}
-                    select={() => {
-                        setPopup(null);
-                        const events = room.getLiveTimeline().getEvents();
-                        const lastEvent = events[events.length - 1];
-                        if (lastEvent) {
-                            console.log(`Mark ${lastEvent.getId()} as read`)
-                            global.matrix.sendReadReceipt(lastEvent);
-                        }
-                    }}
-                />
-            }
-
-            { !room.isSpaceRoom() &&  // Technically you could set the space room notifications, but you won't likely read the events
-                <HoverOption text="Notifications"
-                        icon={<OptionIcon path={getRoomNotifIcon(room)} />}
-                >
-                    <NotificationOptions room={room} />
-                </HoverOption>
-            }
-
-            {   room.isSpaceRoom() && Settings.get("devMode") &&
-                <Option compact text="View Timeline"
-                    select={() => {
-                        history.push("/room/" + roomId);
-                    }}
-                    icon={<OptionIcon path={mdiEye} />}
-                />
-            }
-
-            <Option compact text="Settings"
-                select={() => {
-                    history.push("/settings/room/" + roomId);
-                    setPopup();
-                }}
-                icon={<OptionIcon path={mdiCog} />}
-            />
-
-            <Option compact danger text="Leave"
-                select={() => {
-                    setPopup(
-                        <Confirm title={`Leave ${room.name}?`} onConfirm={async () => await global.matrix.leave(roomId)} />
-                    );
-                }}
-                icon={<OptionIcon path={mdiExitToApp} colour="error" />}
-            />
-
-            <Option compact text="Copy Room ID"
-                select={() => {
-                    navigator.clipboard.writeText(roomId);
-                    setPopup();
-                }}
-                icon={<OptionIcon path={mdiContentCopy} />}
-            />
-        </ContextMenu>
-    )
-}
-
+const getUser = () => global.matrix.getUser(global.matrix.getUserId()) as User;
 
 function MyUser() {
     const defaultText = "Copy user ID";
     const clickedText = "Copied";
     const [tooltipText, setTooltipText] = useState(defaultText);
 
-    const user = global.matrix.getUser(global.matrix.getUserId());
-
     function click() {
-        navigator.clipboard.writeText(user.userId);
+        navigator.clipboard.writeText(global.matrix.getUserId());
         setTooltipText(clickedText);
         setTimeout(() => setTooltipText(defaultText), 1000);
     }
+
+
+    const [myDisplayName, setMyDisplayName] = useState(getUser().displayName);
+
+    // user.displayName doesn't necessarily hold the right display name apparantly?
+    useEffect(() => {
+        global.matrix.getProfileInfo(global.matrix.getUserId(), "displayname")
+        .then(({ displayname }) => {
+            setMyDisplayName(displayname);
+        })
+    }, [])
+
     return (<>
-            <Avatar subClass="user__avatar" user={user}></Avatar>
-            <Tooltip text={tooltipText} dir="top" x="mouse" delay={0.5}>
+            <Avatar subClass="user__avatar" user={getUser()}></Avatar>
+            <Tooltip text={tooltipText} dir="top" x="mouse" delay={0.2}>
                 <div className="user__text-box" onClick={click}>
-                    <span className="user__text user__username">{user.displayName}</span>
+                    <span className="user__text user__username">{myDisplayName}</span>
                     <span className="user__text user__homeserver">{global.matrix.getDomain()}</span>
                 </div>
             </Tooltip>

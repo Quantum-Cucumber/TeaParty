@@ -127,6 +127,7 @@
         overflow: hidden auto;
         padding: 0 10px;
         @include common.scroll-style();
+        margin-bottom: 0.8rem;
     }
 
     &__buttons {

@@ -1,5 +1,5 @@
 import "./popups.scss";
-import { useState, useEffect, useRef, useCallback, createContext, useContext, useLayoutEffect, cloneElement } from "react";
+import React, { useState, useEffect, useRef, useCallback, createContext, useContext, useLayoutEffect, cloneElement } from "react";
 
 import { A, IconButton, Button, Loading } from "./elements";
 
@@ -295,11 +295,13 @@ export function Modal({title, hide, children, modalClass, bodyClass, ...passThro
 
 type ConfirmProps = {
     title?: string,
-    body?: JSX.Element,
     onConfirm: () => Promise<void>,
+    acceptLabel?: string,
+    acceptStyle?: string,
+    children?: React.ReactNode,
 }
 
-export function Confirm({title = null, body = null, onConfirm}: ConfirmProps) {
+export function Confirm({title = null, acceptLabel = "Accept", acceptStyle = "danger", onConfirm, children}: ConfirmProps) {
     const setPopup = useContext(popupCtx);
     const [loading, setLoading] = useCatchState(false, run);
 
@@ -310,23 +312,27 @@ export function Confirm({title = null, body = null, onConfirm}: ConfirmProps) {
         setPopup(null);
     }
 
+    const style = {
+        [acceptStyle]: true,
+    };
+
     return (
         <Overlay click={() => {setPopup(null)}} modalClass="overlay__modal--bg">
             <div className="overlay__title">
                 {title}
             </div>
             <div className="overlay__body">
-                {body}
+                {children}
             </div>
             <div className="overlay__buttons">
                 { !loading ?
                     <>
                         <Button plain onClick={() => setPopup(null)}>Cancel</Button>
-                        <Button danger
+                        <Button {...style}
                             onClick={async () => {
                                 await setLoading(true)
                             }}
-                        >Accept</Button>
+                        >{acceptLabel}</Button>
                     </>
                 :
                     <Loading size="1.5em" />
