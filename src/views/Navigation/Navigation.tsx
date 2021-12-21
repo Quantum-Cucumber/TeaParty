@@ -5,7 +5,7 @@ import { useHistory } from "react-router-dom";
 import { IconButton, Option, OptionDropDown, RoomIcon } from "../../components/elements";
 import { Tooltip, popupCtx } from "../../components/popups";
 import { Resize } from "../../components/wrappers";
-import { Avatar } from "../../components/user";
+import { UserAvatar } from "../../components/user";
 import useRoomStates, { useGroupBreadcrumbs, getChildRoomsFromGroup, roomInGroup, roomStatesType } from "./RoomStates";
 import { InvitesIcon } from "./Invites";
 import { ExploreIcon } from "./RoomExplorer";
@@ -273,7 +273,9 @@ function MyUser() {
     }, [])
 
     return (<>
-            <Avatar subClass="user__avatar" user={getUser()}></Avatar>
+            <div className="user__avatar">
+                <UserAvatar user={getUser()} />
+            </div>
             <Tooltip text={tooltipText} dir="top" x="mouse" delay={0.2}>
                 <div className="user__text-box" onClick={click}>
                     <span className="user__text user__username">{myDisplayName}</span>

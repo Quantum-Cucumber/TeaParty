@@ -3,10 +3,9 @@ import React, { useState, useReducer, useRef, useEffect, forwardRef } from "reac
 import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import { ContextMenu, Tooltip } from "./popups";
-import { Avatar } from "./user";
 import { FancyText } from "./wrappers";
 
-import { acronym, classList } from "../utils/utils";
+import { acronym, classList, getUserColour } from "../utils/utils";
 import { isDirect } from "../utils/roomFilters";
 
 import Icon from "@mdi/react";
@@ -45,22 +44,42 @@ export function Loading({ size }: {size: string}) {
 }
 
 
-const getRoomUrl = (room: Room) => room.getAvatarUrl(global.matrix.getHomeserverUrl(), 96, 96, "crop");
+type AvatarProps = {
+    mxcUrl?: string,
+    fallback: React.ReactNode,
+    backgroundColor?: string,
+}
+
+export function Avatar({ mxcUrl, fallback, backgroundColor = null }: AvatarProps) {
+    if (mxcUrl) {
+        const httpUrl = global.matrix.mxcUrlToHttp(mxcUrl, 96, 96, "crop")
+        return (
+            <img className="avatar avatar--img" src={httpUrl} alt={typeof fallback === "string" ? fallback : "Avatar"} /> 
+        )
+    }
+    else {
+        return (
+            <div className="avatar" style={{backgroundColor: backgroundColor, color: backgroundColor ? "var(--bg)" : null}}>
+                {fallback}
+            </div>
+        )
+    }
+}
+
 
 export function RoomIcon({ room }: {room: Room}) {
-    const [iconUrl, setIconUrl] = useState(getRoomUrl(room));
+    const [iconUrl, setIconUrl] = useState(room.getMxcAvatarUrl());
     const directRoom = isDirect(room);
 
     // Bind listener for room avatar updates
     useEffect(() => {
         console.log("bind room icon", room.name)
         // When the room changes, update the icon
-        setIconUrl(getRoomUrl(room));
+        setIconUrl(room.getMxcAvatarUrl());
 
         function stateUpdate(event: MatrixEvent) {
             if (event.getRoomId() === room.roomId && event.getType() === EventType.RoomAvatar) {
-                const httpUrl: string = global.matrix.mxcUrlToHttp(event.getContent().url, 96, 96, "crop");
-                setIconUrl(httpUrl);
+                setIconUrl(event.getContent().url);
             }
         }
 
@@ -72,12 +91,14 @@ export function RoomIcon({ room }: {room: Room}) {
     }, [room])
 
     if (!iconUrl && directRoom) {
-        const user = global.matrix.getUser(room.guessDMUserId());
-        return <Avatar subClass="avatar" user={user} />
+        const member = room.getAvatarFallbackMember();
+        return (
+            <Avatar mxcUrl={member.getMxcAvatarUrl()} fallback={acronym(member.name, 1)} backgroundColor={getUserColour(member.userId)} />
+        )
     } else {
-        return iconUrl ?
-               <img className="avatar" src={iconUrl} alt={acronym(room.name)} /> :
-               <div className="avatar">{acronym(room.name)}</div>;
+        return (
+            <Avatar mxcUrl={iconUrl} fallback={acronym(room.name)} />
+        )
     }
 }
 

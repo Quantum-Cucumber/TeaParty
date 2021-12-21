@@ -7,40 +7,25 @@ import { getLocalpart, powerLevelText } from "../utils/matrix-client";
 
 import { ContextMenu, ImagePopup, popupCtx, positionFloating } from "./popups";
 import { TextCopy } from "./wrappers";
-import { Option, OptionIcon } from "./elements";
+import { Option, OptionIcon, Avatar } from "./elements";
 
 import { mdiContentCopy } from "@mdi/js";
 
 
-export function Avatar({ user, subClass = null, ...props }) {
-    // Get mxc:// url 
-    const mxc = user.avatarUrl;
-    // Convert mxc url to https if it exists
-    const url = mxc !== null ? global.matrix.mxcUrlToHttp(mxc, 96, 96, "crop") : null;
-
-    // Use a placeholder if need be
-    var icon;
-    if (url) {
-        icon = <img alt={acronym(user.displayName, 1)} className="avatar avatar--img" src={url} />;
-    } else {
-        icon = (
-            <div className="avatar" style={{"backgroundColor": getUserColour(user.userId)}}>
-                {acronym(user.displayName, 1)}
-            </div>
-        );
-    }
-
+export function UserAvatar({ user }) {
     return (
-        <div className={subClass} {...props}>
-            {icon}
-        </div>
+        <Avatar mxcUrl={user.avatarUrl} fallback={acronym(user.displayName, 1)} backgroundColor={getUserColour(user.userId)} />
+    );
+}
+export function MemberAvatar({ member }) {
+    return (
+            <Avatar mxcUrl={member?.getMxcAvatarUrl()} fallback={acronym(member?.name, 1)} backgroundColor={getUserColour(member?.userId) ?? null} />
     );
 }
 
 export function Member({ member, subClass = null, clickFunc }) {
     /* A component containing the user avatar, user localpart/displayname */
     const setPopup = useContext(popupCtx);
-    const user = global.matrix.getUser(member.userId);
 
     return (
         <div className={classList("user", subClass)} onClick={clickFunc} onContextMenu={(e) => {
@@ -51,7 +36,9 @@ export function Member({ member, subClass = null, clickFunc }) {
                 )
             }}
         >
-            <Avatar subClass="user__avatar" user={user} />
+            <div className="user__avatar">
+                <MemberAvatar member={member} />
+            </div>
             <div className="user__text-box">
                 <span className="user__text user__username">{member.name}</span>
             </div>
@@ -108,7 +95,9 @@ export function UserPopup({ user, room, parent, setPopup }) {
 
     return (
         <div className="user-popup" ref={popupRef}>
-            <Avatar user={user} subClass="user-popup__avatar" onClick={user.avatarUrl ? () => {setShowFullImage(true)} : null} />
+            <div className="user-popup__avatar" onClick={user.avatarUrl ? () => {setShowFullImage(true)} : null}>
+                <UserAvatar user={user} />
+            </div>
             { user.avatarUrl &&
                 <ImagePopup sourceUrl={global.matrix.mxcUrlToHttp(user.avatarUrl)} render={showFullImage} setRender={setShowFullImage} name="avatar" />
             }

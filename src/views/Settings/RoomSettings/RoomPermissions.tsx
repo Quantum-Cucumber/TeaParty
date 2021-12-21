@@ -3,7 +3,7 @@ import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import { DropDown, Section, DropDownRow } from "../components";
 import { IconButton, ManualTextBox } from "../../../components/elements";
-import { Avatar } from "../../../components/user";
+import { MemberAvatar } from "../../../components/user";
 
 import { getMember, userIdRegex } from "../../../utils/matrix-client";
 import { asyncDebounce } from "../../../utils/utils";
@@ -206,12 +206,13 @@ function MemberPowerLevels({ room, maxPowerLevel, powerLevelOptions }: MemberPow
             .sort((a, b) => b[1] - a[1])  // Sort by power level
             .map(([userId, powerLevel]) => {
                 const member = getMember(room.roomId, userId);
-                const user = global.matrix.getUser(userId);
 
                 return (
                     <div className="settings__row" key={userId}>
-                        { user &&
-                            <Avatar user={user} subClass="room-settings__members__avatar" />
+                        { member &&
+                            <div className="room-settings__members__avatar">
+                                <MemberAvatar member={member} />
+                            </div>
                         }
                         <div className="settings__row__label">
                             {member ? member.name : userId}

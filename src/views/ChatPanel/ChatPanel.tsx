@@ -1,5 +1,5 @@
 import "./ChatPanel.scss";
-import { useEffect, useState, useRef, useContext, useCallback, useReducer } from "react";
+import React, { useEffect, useState, useRef, useContext, useCallback, useReducer } from "react";
 import { useHistory } from "react-router-dom";
 import { EventType } from "matrix-js-sdk/lib/@types/event";
 
@@ -9,7 +9,7 @@ import { getEventById } from "../../utils/matrix-client";
 
 import Chat from "./Chat/Chat";
 import { IconButton, Loading, RoomIcon } from "../../components/elements";
-import { ContextMenu, popupCtx, Tooltip } from "../../components/popups";
+import { ContextMenu, ImagePopup, popupCtx, Tooltip } from "../../components/popups";
 import { TimelineEvent } from "./Chat/Events/Event";
 
 import Icon from "@mdi/react";
@@ -18,16 +18,33 @@ import { FancyText } from "../../components/wrappers";
 
 import type { SyntheticEvent } from "react";
 import type { MatrixEvent, Room, RoomMember } from "matrix-js-sdk";
+import { isDirect } from "../../utils/roomFilters";
+
+
+function getRoomAvatar(room: Room) {
+    if (isDirect(room)) {
+        const member = room.getAvatarFallbackMember();
+        return member?.getMxcAvatarUrl() ?? null;
+    }
+    else {
+        return room.getMxcAvatarUrl();
+    }
+}
 
 
 type ChatPanelTypes = {
     currentRoom: string,
-    hideMemberListState: [boolean, React.Dispatch<boolean>],
-    hideRoomListState: [boolean, React.Dispatch<boolean>], 
+    hideMemberListState: [boolean, React.Dispatch<React.SetStateAction<boolean>>],
+    hideRoomListState: [boolean, React.Dispatch<React.SetStateAction<boolean>>], 
 }
 
 export default function ChatPanel({currentRoom, hideMemberListState, hideRoomListState}: ChatPanelTypes) {
     const setPopup = useContext(popupCtx);
+
+    const [avatarPopup, showAvatarPopup] = useState(false);
+    useEffect(() => {
+        showAvatarPopup(false);
+    }, [currentRoom])
 
     // Restore panel states on render
     const [hideRoomList, setHideRoomList] = hideRoomListState;
@@ -46,7 +63,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
     }, [hideMemberList])
 
     // Store the room as an object to be reused rather than needing getRoom for everything
-    const room = useRef(currentRoom ? global.matrix.getRoom(currentRoom) : null);
+    const room = useRef<Room>(currentRoom ? global.matrix.getRoom(currentRoom) : null);
     // Store whether the room is encrypted
     const [isRoomEncrypted, setIsRoomEncrypted] = useState(global.matrix.isRoomEncrypted(currentRoom) as boolean);
     useEffect(() => {
@@ -61,9 +78,13 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
             <IconButton path={mdiMenu} size="25px" tipDir="right" tipText={`${hideRoomList ? "Show" : "Hide"} Rooms`} clickFunc={() => {setHideRoomList((current) => !current)}} />
 
             {room.current && <>
-                <div className="chat-header__icon">
+                <div className="chat-header__icon" onClick={() => showAvatarPopup(true)}>
                     <RoomIcon room={room.current} />
                 </div>
+                { getRoomAvatar(room.current) &&
+                    <ImagePopup sourceUrl={global.matrix.mxcUrlToHttp(getRoomAvatar(room.current))} render={avatarPopup} setRender={showAvatarPopup} name={room.current.name} />
+                }
+
                 <div className="chat-header__name">
                     {room.current.name}
                 </div>

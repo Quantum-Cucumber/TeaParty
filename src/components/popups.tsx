@@ -356,7 +356,7 @@ export function ImagePopup({ sourceUrl, render, setRender, name }: ImagePopupPro
     useOnKeypress("Escape", setRender, false, render);
 
     return (
-        <Overlay click={() => {setRender(false)}} render={render} fade={0.15}
+        <Overlay click={() => setRender(false)} render={render} fade={0.15}
                 mountAnimation="image__zoom-in 0.15s ease-out" unmountAnimation="image__zoom-out 0.15s ease-in">
             <img src={sourceUrl} alt={name} className="image-popup" />
             <div className="image-popup__buttons">

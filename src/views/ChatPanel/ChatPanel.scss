@@ -19,10 +19,19 @@
         margin-right: 10px;
         position: relative;
 
-        .avatar:not(.avatar--img) {
-            font-size: 0.85em;
-            color: var(--text);
-            background-color: var(--bg-focus);
+        .avatar {
+            &.avatar--img {
+                cursor: pointer;
+                &:hover {
+                    opacity: 0.7;
+                }
+            }
+
+            &:not(.avatar--img) {
+                font-size: 0.8em;
+                color: var(--text);
+                background-color: var(--bg-focus);
+            }
         }
     }
     &__name {

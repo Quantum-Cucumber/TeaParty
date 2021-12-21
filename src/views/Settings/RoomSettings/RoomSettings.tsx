@@ -7,7 +7,7 @@ import SettingsPage from "../Settings"
 import RoomPermissions, { getPowerLevels } from "./RoomPermissions";
 import { Section, Toggle, DropDownRow, ImageUpload } from "../components";
 import { Button, IconButton, EditableText, AsyncButton } from "../../../components/elements";
-import { Avatar } from "../../../components/user";
+import { MemberAvatar } from "../../../components/user";
 import Settings from "../../../utils/settings";
 
 import { classList, stringSize } from "../../../utils/utils";
@@ -286,17 +286,18 @@ function Bans({room}: {room: Room}) {
     const [loadingRef, setLoadingRef] = useState<HTMLDivElement>();
     const loaded = useScrollPaginate(loadingRef, 30)
 
+
+    const member = getMember(room.roomId, global.matrix.getUserId());
     // Calculate whether the user has the power level needed to ban users
     const powerLevelEvent = getPowerLevels(room);
     const minBanPowerLevel = powerLevelEvent.ban || 50;
-    const myPowerLevel = getMember(room.roomId, global.matrix.getUserId()).powerLevel;
+    const myPowerLevel = member.powerLevel;
     const canEditBans = myPowerLevel >= minBanPowerLevel;
 
     return (
         <Section name={`Banned Users (${bannedMembers.length})`}>
             {
                 bannedMembers.slice(0, loaded).map((member) => {
-                    const user = global.matrix.getUser(member.userId);
                     const banEvent = member.events.member.getContent();
 
                     const senderId = member.events.member.getSender();
@@ -304,8 +305,10 @@ function Bans({room}: {room: Room}) {
 
                     return (
                         <div className="settings__row" key={member.userId}>
-                            { user &&
-                                <Avatar user={user} subClass="room-settings__members__avatar" />
+                            { member &&
+                                <div className="room-settings__members__avatar">
+                                    <MemberAvatar member={member} />
+                                </div>
                             }
                             <div className="settings__row__label">
                                 {member.name}

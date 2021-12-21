@@ -1,7 +1,7 @@
 import "./components.scss";
 import { useCallback, useState, useRef, useEffect, useContext } from "react";
 
-import { Loading, Option, Button, TextBox } from "../../components/elements";
+import { Loading, Option, Button, TextBox, Avatar } from "../../components/elements";
 import { ContextMenu, popupCtx } from "../../components/popups";
 
 import Settings from "../../utils/settings";
@@ -280,8 +280,6 @@ export function DropDownRow({ label, ...dropdownProps }: DropDownRowProps) {
 }
 
 
-const mxcToHttp = (mxcUrl: string) => global.matrix.mxcUrlToHttp(mxcUrl, 96, 96, "crop") as string
-
 type ImageUploadProps = {
     mxcUrl: string,
     onSelect: (mxcUrl: string) => Promise<void>,
@@ -289,12 +287,12 @@ type ImageUploadProps = {
 }
 
 export function ImageUpload({ mxcUrl, onSelect, canEdit = true }: ImageUploadProps) {
-    const [currentMxcUrl, setMxcUrl] = useCatchState(mxcToHttp(mxcUrl), onSelect);
+    const [currentMxcUrl, setMxcUrl] = useCatchState(mxcUrl, onSelect);
     const [state, setState] = useState<"loading" | "edit" | "static">(canEdit ? "edit" : "static");
     const inputRef = useRef<HTMLInputElement>();
 
     useEffect(() => {
-        setMxcUrl(mxcUrl, null, true);
+        setMxcUrl(mxcUrl, undefined, true);
     }, [mxcUrl, setMxcUrl])
 
     async function onChange(e: ChangeEvent<HTMLInputElement>) {
@@ -336,13 +334,11 @@ export function ImageUpload({ mxcUrl, onSelect, canEdit = true }: ImageUploadPro
     return (
         <div className={classList("image-upload", {"image-upload--disabled": !canEdit})}>
             <div className="image-upload__body" onClick={state === "edit" ? () => inputRef.current?.click() : null}>
-                { currentMxcUrl ?
-                    <img className="avatar" src={mxcToHttp(currentMxcUrl)} alt="Room Avatar" />
-                :
-                <div className="avatar">
+                <Avatar mxcUrl={currentMxcUrl} 
+                    fallback={
                         <Icon path={mdiImageFilterHdr} size="2em" color="var(--toggle-indicator)" />
-                    </div>
-                }
+                    }
+                />
                 {statusElement}
             </div>
             { (state === "edit" && currentMxcUrl) &&

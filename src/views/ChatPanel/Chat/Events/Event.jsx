@@ -2,7 +2,7 @@ import "./Event.scss";
 import { useContext, memo, useState, useEffect, useRef } from "react";
 import { EventType, MsgType } from "matrix-js-sdk/lib/@types/event";
 
-import { Avatar, Member, UserOptions, UserPopup } from "../../../../components/user";
+import { MemberAvatar, Member, UserOptions, UserPopup } from "../../../../components/user";
 import { IconButton, Option, OptionIcon } from "../../../../components/elements";
 import { Tooltip, ContextMenu, Modal, popupCtx, modalCtx } from "../../../../components/popups";
 import { Code, TextCopy } from "../../../../components/wrappers";
@@ -13,7 +13,7 @@ import Reply from "./Reply";
 import { classList } from "../../../../utils/utils";
 import { dateToTime, messageTimestampFull } from "../../../../utils/datetime";
 import Settings from "../../../../utils/settings";
-import { getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
+import { getMember, getMembersRead, tryGetUser } from "../../../../utils/matrix-client";
 import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent, isStickerEvent, getReplyId } from "../../../../utils/event";
 import { useScrollPaginate } from "../../../../utils/hooks";
 import { MatrixtoPermalink } from "../../../../utils/linking";
@@ -81,6 +81,7 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
             <UserPopup parent={e.target} user={author} room={event.getRoomId()} setPopup={setPopup} />
         )
     }
+    const member = getMember(event.getRoomId(), event.getSender());
 
     // Reactions
     const [reactionsRelation, setReactionsRelation] = useState(getEventReactions(event));
@@ -128,7 +129,7 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
                             </Tooltip>
                         </div>
                     :
-                    <Avatar user={author} subClass={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} 
+                    <div className={classList("event__avatar", {"event__avatar--compact": compact}, "data__user-popup")} 
                             onClick={userPopup} onContextMenu={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
@@ -136,7 +137,9 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
                                     <UserOptions parent={e.target} userId={author.userId} x="align-mouse-left" y="align-mouse-top" mouseEvent={e} />
                                 )
                             }}
-                    />
+                    >
+                        <MemberAvatar member={member} />
+                    </div>
                 }
                 </div>
                 <div className="event__body">
