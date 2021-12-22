@@ -2,19 +2,20 @@ import "./ClientSettings.scss";
 import { useEffect, useState } from "react";
 
 import SettingsPage from "./Settings";
-import { A, IconButton, Loading, Option, EditableText } from "../../components/elements";
-import { Section, Slider, ToggleSetting } from "./components";
+import { A, IconButton, Loading, Option, EditableText, ManualTextBox, Button } from "../../components/elements";
+import { ImageUpload, Section, Slider, ToggleSetting } from "./components";
 
 import Settings from "../../utils/settings";
 import { msToDate } from "../../utils/datetime";
 import { classList } from "../../utils/utils";
 import { logoutMatrix } from "../../utils/matrix-client";
+import { useCatchState } from "../../utils/hooks";
 
 import { Icon } from "@mdi/react" ;
-import { mdiBrush, mdiLock, mdiHammerWrench, mdiTune, mdiGithub, mdiEye, mdiEyeOff } from "@mdi/js";
+import { mdiBrush, mdiLock, mdiHammerWrench, mdiTune, mdiGithub, mdiEye, mdiEyeOff, mdiAccount } from "@mdi/js";
 import MatrixLogo from "./matrix-logo.svg";
-import { IMyDevice } from "matrix-js-sdk";
-import { useCatchState } from "../../utils/hooks";
+
+import type { IMyDevice, User } from "matrix-js-sdk";
 
 
 export default function ClientSettings() {
@@ -31,6 +32,15 @@ export default function ClientSettings() {
 }
 
 const clientPages = [
+    {
+        title: "Profile",
+        icon: mdiAccount,
+        render: () => {
+            return (
+                <Profile />
+            )
+        },
+    },
     {
         title: "Appearance",
         icon: mdiBrush,
@@ -93,6 +103,47 @@ const clientPages = [
         }
     },
 ];
+
+
+
+function Profile() {
+    const myUser: User = global.matrix.getUser(global.matrix.getUserId());
+
+    const [oldDisplayName, setOldDisplayName] = useState(myUser.displayName);
+    const [displayName, setDisplayName] = useState(myUser.displayName);
+
+    async function saveAvatar(mxcUrl: string) {
+        await global.matrix.setAvatarUrl(mxcUrl);
+    }
+    async function saveDisplayName() {
+        try {
+            await global.matrix.setDisplayName(displayName.trim());
+            setOldDisplayName(displayName.trim());
+        }
+        catch {
+            setDisplayName(oldDisplayName);
+        }
+    }
+
+    const nameHasChanged = displayName.trim() !== oldDisplayName;
+    const displayNameStyle = {
+        [nameHasChanged ? "save" : "disabled"]: true,
+    }
+
+    return (
+        <Section name="Profile">
+            <div className="profile-settings">
+                <div className="profile-settings__avatar">
+                    <ImageUpload mxcUrl={myUser.avatarUrl} onSelect={saveAvatar} />
+                </div>
+                <div className="profile-settings__name">
+                    <ManualTextBox placeholder="Display name" value={displayName} setValue={setDisplayName} />
+                    <Button {...displayNameStyle} onClick={nameHasChanged ? saveDisplayName : null}>Save</Button>
+                </div>
+            </div>
+        </Section>
+    )
+}
 
 
 type ThemeSelectProps = {
