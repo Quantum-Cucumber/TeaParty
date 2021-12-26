@@ -1,29 +1,38 @@
 import "./user.scss";
-import { useState, useEffect, useRef, useLayoutEffect, useContext } from "react";
+import React, { useState, useEffect, useRef, useLayoutEffect, useContext } from "react";
 
 import { getUserColour, acronym, classList } from "../utils/utils";
 import { useOnKeypress } from "../utils/hooks";
-import { getLocalpart, powerLevelText } from "../utils/matrix-client";
+import { canBanMember, canKickMember, getLocalpart, powerLevelText } from "../utils/matrix-client";
 
 import { ContextMenu, ImagePopup, popupCtx, positionFloating } from "./popups";
 import { TextCopy } from "./wrappers";
 import { Option, OptionIcon, Avatar } from "./elements";
 
-import { mdiContentCopy } from "@mdi/js";
+import { mdiContentCopy, mdiGavel, mdiShoeSneaker } from "@mdi/js";
+
+import type {  Room, RoomMember, User } from "matrix-js-sdk";
 
 
-export function UserAvatar({ user }) {
+export function UserAvatar({ user }: {user: User}) {
     return (
         <Avatar mxcUrl={user.avatarUrl} fallback={acronym(user.displayName, 1)} backgroundColor={getUserColour(user.userId)} />
     );
 }
-export function MemberAvatar({ member }) {
+export function MemberAvatar({ member }: {member: RoomMember}) {
     return (
             <Avatar mxcUrl={member?.getMxcAvatarUrl()} fallback={acronym(member?.name, 1)} backgroundColor={getUserColour(member?.userId) ?? null} />
     );
 }
 
-export function Member({ member, subClass = null, clickFunc }) {
+
+type MemberProps = {
+    member: RoomMember,
+    subClass?: string,
+    clickFunc: () => void,
+}
+
+export function Member({ member, subClass = null, clickFunc }: MemberProps) {
     /* A component containing the user avatar, user localpart/displayname */
     const setPopup = useContext(popupCtx);
 
@@ -32,7 +41,7 @@ export function Member({ member, subClass = null, clickFunc }) {
                 e.preventDefault();
                 e.stopPropagation();
                 setPopup(
-                    <UserOptions parent={e.target} userId={member.userId} x="align-mouse-left" y="align-mouse-top" mouseEvent={e} />
+                    <UserOptions parent={e.target as HTMLElement} userId={member.userId} roomId={member.roomId} x="align-mouse-left" y="align-mouse-top" mouseEvent={e} />
                 )
             }}
         >
@@ -47,8 +56,15 @@ export function Member({ member, subClass = null, clickFunc }) {
 }
 
 
-export function UserPopup({ user, room, parent, setPopup }) {
-    const popupRef = useRef();
+type UserPopupProps = {
+    user: User,
+    room: string,
+    parent: HTMLElement,
+    setPopup: (value: boolean) => void,
+}
+
+export function UserPopup({ user, room, parent, setPopup }: UserPopupProps) {
+    const popupRef = useRef<HTMLDivElement>();
     const [showFullImage, setShowFullImage] = useState(false);
 
     useOnKeypress("Escape", setPopup, null, !!(user && parent));
@@ -113,12 +129,40 @@ export function UserPopup({ user, room, parent, setPopup }) {
 }
 
 
-export function UserOptions({ userId, ...props }) {
+type UserOptionsProp = {
+    userId: string,
+    roomId: string,
+} & Omit<React.ComponentProps<typeof ContextMenu>, "children">
+
+export function UserOptions({ userId, roomId, ...props }: UserOptionsProp) {
     /* Context menu for when a user is right clicked */
     const setPopup = useContext(popupCtx);
 
+    const room: Room = global.matrix.getRoom(roomId);
+    const member = room?.getMember(userId);
+
     return (
         <ContextMenu {...props}>
+            { (member && canBanMember(room, member)) &&
+                <Option compact danger text="Ban"
+                    select={() => {
+                        global.matrix.ban(roomId, userId)
+                        setPopup(null);
+                    }}
+                    icon={<OptionIcon path={mdiGavel} colour="error" />}
+                />
+            }
+
+            { (member && canKickMember(room, member)) &&
+                <Option compact danger text="Kick"
+                    select={() => {
+                        global.matrix.kick(roomId, userId)
+                        setPopup(null);
+                    }}
+                    icon={<OptionIcon path={mdiShoeSneaker} colour="error" />}
+                />
+            }
+
             <Option compact text="Copy user ID" 
                 select={() => {
                     navigator.clipboard.writeText(userId);

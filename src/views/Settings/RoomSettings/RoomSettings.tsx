@@ -4,7 +4,7 @@ import { useHistory } from "react-router-dom";
 import { EventType } from "matrix-js-sdk/lib/@types/event";
 
 import SettingsPage from "../Settings"
-import RoomPermissions, { getPowerLevels } from "./RoomPermissions";
+import RoomPermissions from "./RoomPermissions";
 import { Section, Toggle, DropDownRow, ImageUpload } from "../components";
 import { Button, IconButton, EditableText, AsyncButton } from "../../../components/elements";
 import { MemberAvatar } from "../../../components/user";
@@ -12,7 +12,7 @@ import Settings from "../../../utils/settings";
 
 import { classList, stringSize } from "../../../utils/utils";
 import { useCatchState, useScrollPaginate } from "../../../utils/hooks";
-import { aliasRegex, getMember } from "../../../utils/matrix-client";
+import { aliasRegex, canEditBans, getMember } from "../../../utils/matrix-client";
 
 import { mdiChatQuestion, mdiCheck, mdiClose, mdiEarth, mdiEmail, mdiGavel, mdiHammerWrench, mdiShield, mdiText } from "@mdi/js"
 
@@ -286,13 +286,7 @@ function Bans({room}: {room: Room}) {
     const [loadingRef, setLoadingRef] = useState<HTMLDivElement>();
     const loaded = useScrollPaginate(loadingRef, 30)
 
-
-    const member = getMember(room.roomId, global.matrix.getUserId());
-    // Calculate whether the user has the power level needed to ban users
-    const powerLevelEvent = getPowerLevels(room);
-    const minBanPowerLevel = powerLevelEvent.ban || 50;
-    const myPowerLevel = member.powerLevel;
-    const canEditBans = myPowerLevel >= minBanPowerLevel;
+    const canUnban = canEditBans(room);
 
     return (
         <Section name={`Banned Users (${bannedMembers.length})`}>
@@ -318,11 +312,11 @@ function Bans({room}: {room: Room}) {
                                     {` - ${sender?.name || senderId}`}
                                 </div>
                             </div>
-                            { canEditBans &&
+                            { canUnban &&
                                 <AsyncButton activeText="Unban" successText="Success"
                                     func={async () => {
                                         const newBanList = bannedMembers.filter((m) => m.userId !== member.userId);
-                                        await global.matrix.ban(room.roomId, member.userId);
+                                        await global.matrix.unban(room.roomId, member.userId);
                                         setBannedMembers(newBanList);
                                     }}
                                 />

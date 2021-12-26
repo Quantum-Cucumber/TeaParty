@@ -134,7 +134,7 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
                                 e.preventDefault();
                                 e.stopPropagation();
                                 setPopup(
-                                    <UserOptions parent={e.target} userId={author.userId} x="align-mouse-left" y="align-mouse-top" mouseEvent={e} />
+                                    <UserOptions parent={e.target} roomId={event.getRoomId()} userId={author.userId} x="align-mouse-left" y="align-mouse-top" mouseEvent={e} />
                                 )
                             }}
                     >

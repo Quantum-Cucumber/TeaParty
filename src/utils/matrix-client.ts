@@ -224,3 +224,28 @@ function aclGlobToRegex(rule: string) {
     // Conver to regex & strip beginning and trailing /
     return new RegExp(regexStr.substring(1, regexStr.length - 1));
 }
+
+
+export function canEditBans(room: Room) {
+    const powerLevels = room.currentState.getStateEvents(EventType.RoomPowerLevels)[0]?.getContent();
+    const banLevel = powerLevels.ban ?? 50;
+    
+    const myPowerLevel = room.getMember(global.matrix.getUserId()).powerLevel;
+
+    return myPowerLevel >= banLevel;
+}
+
+export function canBanMember(room: Room, member: RoomMember) {
+    const myPowerLevel = room.getMember(global.matrix.getUserId()).powerLevel;
+
+    return canEditBans(room) && myPowerLevel > member.powerLevel;
+}
+
+export function canKickMember(room: Room, member: RoomMember) {
+    const powerLevels = room.currentState.getStateEvents(EventType.RoomPowerLevels)[0]?.getContent();
+    const kickLevel = powerLevels.kick ?? 50;
+
+    const myPowerLevel = room.getMember(global.matrix.getUserId()).powerLevel;
+
+    return myPowerLevel >= kickLevel && myPowerLevel > member.powerLevel;
+}
