@@ -289,7 +289,7 @@ function Bans({room}: {room: Room}) {
     const canUnban = canEditBans(room);
 
     return (
-        <Section name={`Banned Users (${bannedMembers.length})`}>
+        <Section name={`Banned Users (${bannedMembers.length.toLocaleString()})`}>
             {
                 bannedMembers.slice(0, loaded).map((member) => {
                     const banEvent = member.events.member.getContent();

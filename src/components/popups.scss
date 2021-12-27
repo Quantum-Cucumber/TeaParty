@@ -163,6 +163,13 @@
 }
 
 
+
+.prompt {
+    display: flex;
+    flex-direction: column;
+}
+
+
 .image-popup {
     max-height: 70vh;
     max-width: 70vw;

@@ -5,7 +5,7 @@ import { getUserColour, acronym, classList } from "../utils/utils";
 import { useOnKeypress } from "../utils/hooks";
 import { canBanMember, canKickMember, getLocalpart, powerLevelText } from "../utils/matrix-client";
 
-import { ContextMenu, ImagePopup, popupCtx, positionFloating } from "./popups";
+import { ContextMenu, ImagePopup, modalCtx, popupCtx, positionFloating, Prompt } from "./popups";
 import { TextCopy } from "./wrappers";
 import { Option, OptionIcon, Avatar } from "./elements";
 
@@ -137,6 +137,7 @@ type UserOptionsProp = {
 export function UserOptions({ userId, roomId, ...props }: UserOptionsProp) {
     /* Context menu for when a user is right clicked */
     const setPopup = useContext(popupCtx);
+    const setModal = useContext(modalCtx);
 
     const room: Room = global.matrix.getRoom(roomId);
     const member = room?.getMember(userId);
@@ -146,8 +147,14 @@ export function UserOptions({ userId, roomId, ...props }: UserOptionsProp) {
             { (member && canBanMember(room, member)) &&
                 <Option compact danger text="Ban"
                     select={() => {
-                        global.matrix.ban(roomId, userId)
                         setPopup(null);
+                        setModal(
+                            <Prompt title={`Ban ${member.name}`} placeholder="Reason" acceptLabel="Ban"
+                                onConfirm={(reason) => {
+                                    global.matrix.ban(roomId, userId, reason || undefined)
+                                }}
+                            />
+                        );
                     }}
                     icon={<OptionIcon path={mdiGavel} colour="error" />}
                 />
@@ -156,8 +163,14 @@ export function UserOptions({ userId, roomId, ...props }: UserOptionsProp) {
             { (member && canKickMember(room, member)) &&
                 <Option compact danger text="Kick"
                     select={() => {
-                        global.matrix.kick(roomId, userId)
                         setPopup(null);
+                        setModal(
+                            <Prompt title={`Kick ${member.name}`} placeholder="Reason" acceptLabel="Kick"
+                                onConfirm={(reason) => {
+                                    global.matrix.kick(roomId, userId, reason || undefined)
+                                }}
+                            />
+                        );
                     }}
                     icon={<OptionIcon path={mdiShoeSneaker} colour="error" />}
                 />

@@ -1,7 +1,7 @@
 import "./popups.scss";
 import React, { useState, useEffect, useRef, useCallback, createContext, useContext, useLayoutEffect, cloneElement } from "react";
 
-import { A, IconButton, Button, Loading } from "./elements";
+import { A, IconButton, Button, Loading, ManualTextBox } from "./elements";
 
 import { classList } from "../utils/utils";
 import { useOnKeypress, useDownloadUrl, useCatchState } from "../utils/hooks";
@@ -295,21 +295,21 @@ export function Modal({title, hide, children, modalClass, bodyClass, ...passThro
 
 type ConfirmProps = {
     title?: string,
-    onConfirm: () => Promise<void>,
+    onConfirm: () => Promise<void> | void,
     acceptLabel?: string,
     acceptStyle?: string,
     children?: React.ReactNode,
 }
 
 export function Confirm({title = null, acceptLabel = "Accept", acceptStyle = "danger", onConfirm, children}: ConfirmProps) {
-    const setPopup = useContext(popupCtx);
+    const setModal = useContext(modalCtx);
     const [loading, setLoading] = useCatchState(false, run);
 
-    useOnKeypress("Escape", setPopup);
+    useOnKeypress("Escape", setModal);
 
     async function run() {
         await onConfirm();
-        setPopup(null);
+        setModal(null);
     }
 
     const style = {
@@ -317,7 +317,7 @@ export function Confirm({title = null, acceptLabel = "Accept", acceptStyle = "da
     };
 
     return (
-        <Overlay click={() => {setPopup(null)}} modalClass="overlay__modal--bg">
+        <Overlay click={() => {setModal(null)}} modalClass="overlay__modal--bg">
             <div className="overlay__title">
                 {title}
             </div>
@@ -327,7 +327,7 @@ export function Confirm({title = null, acceptLabel = "Accept", acceptStyle = "da
             <div className="overlay__buttons">
                 { !loading ?
                     <>
-                        <Button plain onClick={() => setPopup(null)}>Cancel</Button>
+                        <Button plain onClick={() => setModal(null)}>Cancel</Button>
                         <Button {...style}
                             onClick={async () => {
                                 await setLoading(true)
@@ -341,6 +341,33 @@ export function Confirm({title = null, acceptLabel = "Accept", acceptStyle = "da
         </Overlay>
     )
 }
+
+
+type PromptProps = {
+    title: string,
+    placeholder: string,
+    initial?: string,
+    acceptLabel: string,
+    onConfirm: (text: string) => void,
+}
+
+export function Prompt({title, placeholder, initial = "", acceptLabel, onConfirm}: PromptProps) {
+    const [text, setText] = useState(initial);
+    const textboxRef = useRef<HTMLInputElement>();
+
+    useEffect(() => {
+        textboxRef.current.focus();
+    }, [])
+
+    return (
+        <Confirm title={title} acceptLabel={acceptLabel} onConfirm={() => onConfirm(text)}>
+            <div className="prompt">
+                <ManualTextBox placeholder={placeholder} value={text} setValue={setText} ref={textboxRef} />
+            </div>
+        </Confirm>
+    )
+}
+
 
 
 type ImagePopupProps = {

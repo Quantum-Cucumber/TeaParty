@@ -111,7 +111,12 @@ export function MembershipEvent({ event, partial }: SpecificIconEventProps) {
             break;
         case "ban":
             icon = mdiAccountCancel;
-            membershipText = "was banned from the room";
+            if (content.reason) {
+                membershipText = "was banned for " + content.reason;
+            }
+            else {
+                membershipText = "was banned";
+            }
             break;
         case "leave":
             if (userId === event.getSender()) {  // User left
@@ -119,7 +124,12 @@ export function MembershipEvent({ event, partial }: SpecificIconEventProps) {
                 membershipText = "left the room";
             } else {  // User kicked
                 icon = mdiAccountRemove;
-                membershipText = "was kicked";
+                if (content.reason) {
+                    membershipText = "was kicked for " + content.reason;
+                }
+                else {
+                    membershipText = "was kicked";
+                }
             }
             break;
         default: 

@@ -4,7 +4,7 @@ import { useContext, useEffect, useRef, useState } from "react";
 import { useHistory } from "react-router-dom";
 
 import { Option, HoverOption, OptionIcon, ManualTextBox, IconButton } from "../../components/elements";
-import { ContextMenu, popupCtx, Confirm } from "../../components/popups";
+import { ContextMenu, popupCtx, Confirm, modalCtx } from "../../components/popups";
 
 import Settings from "../../utils/settings";
 import { getRoomNotifIcon, NotificationOptions } from "../../utils/notifications";
@@ -21,6 +21,7 @@ type RoomOptionsProps = {
 
 export default function RoomOptions({ roomId, read = true, ...props }: RoomOptionsProps) {
     const setPopup = useContext(popupCtx);
+    const setModal = useContext(modalCtx);
     const history = useHistory();
 
     const room: Room = global.matrix.getRoom(roomId);
@@ -52,7 +53,8 @@ export default function RoomOptions({ roomId, read = true, ...props }: RoomOptio
             { !room.isSpaceRoom() &&
                 <Option compact text="Display name"
                     select={() => {
-                        setPopup(
+                        setPopup(null);
+                        setModal(
                             <RoomDisplayNameModal roomId={roomId} />
                         );
                     }}
@@ -79,7 +81,8 @@ export default function RoomOptions({ roomId, read = true, ...props }: RoomOptio
 
             <Option compact danger text="Leave"
                 select={() => {
-                    setPopup(
+                    setPopup(null);
+                    setModal(
                         <Confirm title={`Leave ${room.name}?`} acceptLabel="Leave" onConfirm={async () => await global.matrix.leave(roomId)} />
                     );
                 }}

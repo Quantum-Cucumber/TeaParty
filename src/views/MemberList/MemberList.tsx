@@ -23,7 +23,7 @@ function MemberList({ currentRoom }: {currentRoom: string}) {
     const setPopup = useContext(popupCtx);
     const [memberList, setMembers] = useState<RoomMember[]>([]);
 
-    const [updateVal, update] = useReducer((current: boolean) => !current, false);
+    const [updateVal, update] = useReducer((current: number) => current + 1, 0);
     const [loadingRef, setLoadingRef] = useState<HTMLDivElement>();
     const loadedMembers = useScrollPaginate(loadingRef, membersPerPage);
 
@@ -78,6 +78,9 @@ function MemberList({ currentRoom }: {currentRoom: string}) {
 
     return (
         <div className="member-list scroll--hover">
+            <div className="member-list__header">
+                Members - {memberList.length.toLocaleString()}
+            </div>
             {members}
 
             { memberList.length > loadedMembers &&
