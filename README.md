@@ -6,13 +6,10 @@ A matrix client focused on familiarity and ease of use.
 ### Development:
 **Installing Dependencies:**
 ```
-npm install
+yarn install
 ```
 
-**Running The App:**
+**Starting the dev server:**
 ```
-npm start
+yarn dev
 ```
-
-### Acknowledgements:
-Huge credit to the [Cinny](https://github.com/ajbura/cinny) developers for lots of inspiration.
