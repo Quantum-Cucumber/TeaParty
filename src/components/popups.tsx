@@ -348,10 +348,12 @@ type PromptProps = {
     placeholder: string,
     initial?: string,
     acceptLabel: string,
-    onConfirm: (text: string) => void,
+    acceptStyle: string,
+    onConfirm: (text: string) => Promise<void> | void,
+    clearable?: boolean,
 }
 
-export function Prompt({title, placeholder, initial = "", acceptLabel, onConfirm}: PromptProps) {
+export function Prompt({title, placeholder, initial = "", acceptLabel, acceptStyle, onConfirm, clearable = false}: PromptProps) {
     const [text, setText] = useState(initial);
     const textboxRef = useRef<HTMLInputElement>();
 
@@ -360,9 +362,12 @@ export function Prompt({title, placeholder, initial = "", acceptLabel, onConfirm
     }, [])
 
     return (
-        <Confirm title={title} acceptLabel={acceptLabel} onConfirm={() => onConfirm(text)}>
+        <Confirm title={title} acceptLabel={acceptLabel} acceptStyle={acceptStyle} onConfirm={async () => await onConfirm(text)}>
             <div className="prompt">
                 <ManualTextBox placeholder={placeholder} value={text} setValue={setText} ref={textboxRef} />
+                { clearable &&
+                    <IconButton path={mdiClose} clickFunc={() => setText("")} />
+                }
             </div>
         </Confirm>
     )

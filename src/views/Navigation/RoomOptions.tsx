@@ -1,15 +1,15 @@
 
 import "./RoomOptions.scss";
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext } from "react";
 import { useHistory } from "react-router-dom";
 
-import { Option, HoverOption, OptionIcon, ManualTextBox, IconButton } from "../../components/elements";
-import { ContextMenu, popupCtx, Confirm, modalCtx } from "../../components/popups";
+import { Option, HoverOption, OptionIcon } from "../../components/elements";
+import { ContextMenu, popupCtx, Confirm, modalCtx, Prompt } from "../../components/popups";
 
 import Settings from "../../utils/settings";
 import { getRoomNotifIcon, NotificationOptions } from "../../utils/notifications";
 
-import { mdiCog, mdiContentCopy, mdiEye, mdiExitToApp, mdiCheckAll, mdiPencil, mdiClose } from "@mdi/js";
+import { mdiCog, mdiContentCopy, mdiEye, mdiExitToApp, mdiCheckAll, mdiPencil } from "@mdi/js";
 
 import type { Room } from "matrix-js-sdk";
 
@@ -105,25 +105,14 @@ function RoomDisplayNameModal({ roomId }: {roomId: string}) {
     const room: Room = global.matrix.getRoom(roomId);
     const myMember = room.getMember(global.matrix.getUserId());
 
-    const [displayName, setDisplayName] = useState(myMember.name);
-    const textboxRef = useRef<HTMLInputElement>();
-
-    useEffect(() => {
-        textboxRef.current?.focus();
-    }, [])
-
-    async function save() {
-        const event = room.currentState.getStateEvents("m.room.member", global.matrix.getUserId());
-        const newEvent = {...event.getContent(), displayname: displayName ? displayName : myMember.user.displayName};
-        await global.matrix.sendStateEvent(roomId, "m.room.member", newEvent, global.matrix.getUserId());
-    }
-    
     return (
-        <Confirm title={`${room.name} Display Name`} acceptLabel="Save" acceptStyle="save" onConfirm={save}>
-            <div className="display-name">
-                <ManualTextBox placeholder={myMember.user.displayName ?? "Display name"} value={displayName} setValue={setDisplayName} ref={textboxRef} />
-                <IconButton path={mdiClose} size="1em" clickFunc={() => setDisplayName("")} />
-            </div>
-        </Confirm>
+        <Prompt title={`${room.name} Display Name`} acceptLabel="Save" acceptStyle="save"
+            initial={myMember.name} placeholder={myMember.user.displayName ?? "Display name"} clearable
+            onConfirm={async (displayName) => {
+                const event = room.currentState.getStateEvents("m.room.member", global.matrix.getUserId());
+                const newEvent = {...event.getContent(), displayname: displayName ? displayName : myMember.user.displayName};
+                await global.matrix.sendStateEvent(roomId, "m.room.member", newEvent, global.matrix.getUserId());
+            }}
+        />
     )
 }
