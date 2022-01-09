@@ -404,44 +404,54 @@ export function ImagePopup({ sourceUrl, render, setRender, name }: ImagePopupPro
 }
 
 
-type ContextMenuProps = {
+type PopupProps = {
     parent: HTMLElement,
     x: xPos,
     y: yPos,
+    padding?: number,
     mouseEvent?: React.MouseEvent<HTMLElement>,
     subClass?: string,
-    padding?: number,
     children: React.ReactNode,
 }
 
-export function ContextMenu({ parent, x, y, mouseEvent = null, subClass = null, padding = 10, children }: ContextMenuProps) {
-    const setVisible = useContext(popupCtx);
-    const menuRef = useRef<HTMLDivElement>();
+export function Popup({ parent, x, y, padding = 0, mouseEvent = null, subClass = null, children}: PopupProps) {
+    const setPopup = useContext(popupCtx);
 
-    useOnKeypress("Escape", setVisible);
+    const popupRef = useRef<HTMLDivElement>();
+
 
     useLayoutEffect(() => {  // Layout effect reduces visual bugs
-        if (!menuRef.current) {return}
-        positionFloating(menuRef.current, parent, x, y, padding, mouseEvent, true);
+        if (!popupRef.current) {return}
+        positionFloating(popupRef.current, parent, x, y, padding, mouseEvent, true);
     }, [x, y, parent, padding, mouseEvent])
+
+
+    useOnKeypress("Escape", setPopup);
 
     useEffect(() => {
         function hide(this: Document, e: MouseEvent) {
-            if (e.target instanceof HTMLElement && !e.target.closest(".context-menu")) {
-                setVisible(null);
+            if (e.target instanceof HTMLElement && !e.target.closest(".popup")) {
+                setPopup(null);
             }
         }
 
         document.addEventListener("click", hide);
         return () => {
             document.removeEventListener("click", hide)
-        };
-    }, [setVisible])
+        }
+    }, [setPopup])
 
     return (
-        <div className={classList("context-menu", subClass)} ref={menuRef}>
+        <div className={classList("popup", subClass)} ref={popupRef}>
             {children}
         </div>
+    )
+}
+
+// Really this is just <Popup /> but the name is friendlier and it adds a class to it :sshrug:
+export function ContextMenu({subClass, ...props}: PopupProps) {
+    return (
+        <Popup subClass={classList("context-menu", subClass)} {...props} />
     )
 }
 

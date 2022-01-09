@@ -5,6 +5,7 @@ import { EventType, MsgType } from "matrix-js-sdk/lib/@types/event";
 import { MemberAvatar, Member, UserOptions, UserPopup } from "../../../../components/user";
 import { IconButton, Option, OptionIcon } from "../../../../components/elements";
 import { Tooltip, ContextMenu, Modal, popupCtx, modalCtx } from "../../../../components/popups";
+import EmojiPicker from "../../../../components/EmojiPicker";
 import { Code, TextCopy } from "../../../../components/wrappers";
 import Reactions, { getEventReactions, ReactionViewer } from "./Reactions";
 import { Message, EmoteMsg, MembershipEvent, RoomEditEvent, PinEvent, StickerEvent } from "./eventTypes";
@@ -18,8 +19,8 @@ import { isMessageEvent, isJoinEvent, isLeaveEvent, isRoomEditEvent, isPinEvent,
 import { useScrollPaginate } from "../../../../utils/hooks";
 import { MatrixtoPermalink } from "../../../../utils/linking";
 
-import { mdiCheckAll, mdiDotsHorizontal, /*mdiEmoticonOutline, mdiReply,*/ mdiXml, mdiEmoticon, mdiShareVariant, mdiDelete, mdiPinOff, mdiPin } from "@mdi/js";
-import { updatePins } from "../../../../utils/eventSending";
+import { mdiCheckAll, mdiDotsHorizontal, mdiEmoticonOutline, mdiXml, mdiEmoticon, mdiShareVariant, mdiDelete, mdiPinOff, mdiPin } from "@mdi/js";
+import { addReaction, updatePins } from "../../../../utils/eventSending";
 
 function eventIsSame(oldProps, newProps) {
     const oldEvent = oldProps.event;
@@ -158,8 +159,17 @@ function EventButtons(props) {
 
     return (
         <div className="event__buttons">
-            {/*<IconButton subClass="message__buttons__entry" path={mdiReply} size="100%" tipDir="top" tipText="Reply" />
-            <IconButton subClass="message__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction" />*/}
+            <IconButton subClass="event__buttons__entry" path={mdiEmoticonOutline} size="95%" tipDir="top" tipText="Add reaction"
+                clickFunc={(e) => {
+                    setPopup(
+                        <EmojiPicker parent={e.target.closest(".event__buttons__entry")} {...props} x="align-right" y="align-top"
+                            onSelect={(emote) => {
+                                addReaction(props.event, emote);
+                            }}
+                        />
+                    );
+                }}
+            />
             <IconButton subClass="event__buttons__entry" path={mdiDotsHorizontal} size="100%" tipDir="top" tipText="More"
                 clickFunc={(e) => {
                     setPopup(
@@ -201,6 +211,19 @@ function EventOptions({ event, setHover, reactions, ...contextMenuProps }) {
 
     return (
         <ContextMenu {...contextMenuProps}>
+            <Option compact text="Add reaction"
+                select={() => {
+                    setPopup(
+                        <EmojiPicker setHover={setHover} {...contextMenuProps}
+                            onSelect={(emote) => {
+                                addReaction(event, emote);
+                            }}
+                        />
+                    )
+                }}
+                icon={<OptionIcon path={mdiEmoticon} />}
+            />
+
             { reactions && 
                 <Option compact text="Reactions"
                     select={() => {
