@@ -1,5 +1,5 @@
 import "./wrappers.scss";
-import { useEffect, useState, useCallback, useRef } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import Twemoji from "twemoji";
 import linkifyElement from "linkify-element";
 import hljs from "highlight.js";
@@ -13,9 +13,14 @@ import { linkifyOptions } from "../utils/linking";
 import { mdiContentCopy } from "@mdi/js";
 
 
-export function TextCopy({ text, children }) {
+type TextCopyProps = {
+    text: string,
+    children: React.ReactNode,
+}
+
+export function TextCopy({ text, children }: TextCopyProps) {
     const [tooltip, setTooltip] = useState("Copy");
-    const timerId = useRef();
+    const timerId = useRef<NodeJS.Timeout>();
 
     function copyText() {
         navigator.clipboard.writeText(text);
@@ -37,21 +42,31 @@ export function TextCopy({ text, children }) {
     )
 }
 
-export function Resize({ children, initialSize, side, minSize = "0px", collapseSize = 0, collapseState }) {
+
+type ResizeProps = {
+    children: React.ReactNode,
+    initialSize: number,
+    side: "top" | "right" | "bottom" | "left",
+    minSize?: string,
+    collapseSize?: number,
+    collapseState: [boolean, React.Dispatch<React.SetStateAction<boolean>>],
+}
+
+export function Resize({ children, initialSize, side, minSize = "0px", collapseSize = 0, collapseState }: ResizeProps) {
     const [size, setSize] = useState(initialSize);
-    const container = useRef();
+    const container = useRef<HTMLDivElement>();
     const stableCollapseSize = useStableState(collapseSize);
 
     // If collapseState isn't passed, use our own state
     const backupCollapseState = useState(false);
-    const [collapse, setCollapse] = collapseState ? collapseState : backupCollapseState;
+    const [collapse, setCollapse] = collapseState ?? backupCollapseState;
 
-    const mouseMove = useCallback((e) => {
+    const mouseMove = useCallback((e: MouseEvent) => {
         if (!container.current) {return}
 
         // Distance between the container's offset and the mouse as the width
         const bounding = container.current.getBoundingClientRect();
-        let newSize;
+        let newSize: number;
         switch (side) {
             case "top":
                 newSize = bounding.bottom - e.clientY;
@@ -85,7 +100,7 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
     // Whether to change the width or height of the container
     const dimension = side === "left" || side === "right" ? "width" : "height"
     // Override size completely if collapse is set
-    const style = {[dimension]: collapse ? minSize : size , [`min${dimension}`]: minSize};
+    const style = {[dimension]: collapse ? minSize : size , [`min${dimension}`]: minSize} as React.CSSProperties;
     return (
         <div className={classList("resizable", "resizable--"+side, {"resizable--collapsed": collapse})} style={style} ref={container}>
             {children}
@@ -94,9 +109,16 @@ export function Resize({ children, initialSize, side, minSize = "0px", collapseS
     )
 }
 
-export function FancyText(props) {
+
+type FancyTextProps = {
+    children: React.ReactNode,
+    twemoji?: boolean,
+    links?: boolean,
+};
+
+export function FancyText(props: FancyTextProps) {
     /* Appplies twemoji and links */
-    const parentRef = useRef();
+    const parentRef = useRef<HTMLSpanElement>();
 
     const {children, twemoji = true, links = true, ...spanProps} = props;
 
@@ -119,7 +141,13 @@ export function FancyText(props) {
     )
 }
 
-export function Code(props) {
+
+type CodeProps = {
+    children: string,
+    className?: string,
+}
+
+export function Code(props: CodeProps) {
     const parentRef = useRef();
 
     // After each render, re-parse the styling

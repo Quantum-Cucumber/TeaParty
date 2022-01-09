@@ -1,0 +1,64 @@
+@use "../utils/common";
+
+.emoji-picker {
+    position: fixed;
+    z-index: common.z-index("popup");
+    top: 0;
+
+    display: flex;
+    flex-direction: row;
+    height: 300px;
+    width: 400px;
+    background-color: var(--bg-focus);
+    border-radius: 0.5em;
+    box-shadow: 0 0 6px var(--border);
+
+    &__categories {
+        background-color: var(--bg-dark);
+        padding: 5px 0;
+
+        &__category {
+            margin: 0.2em;
+            border-radius: 0.2em;
+
+            $size: 1.75em + 0.1em; /* Icon size + padding */
+            height: $size;
+            width: $size;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover, &--selected {
+                background-color: var(--primary);
+            }
+        }
+    }
+
+    &__palette {
+        overflow: auto;
+        @include common.scroll-style();
+
+        &__title {
+            font-size: 0.9em;
+            margin: 0.4em;
+            user-select: none;
+        }
+    }
+
+    &__emoji {
+        display: inline-block;
+        font-size: 1.5em;
+        margin: 0.1em;
+        padding: 0.1em;
+        height: 1.2em;
+        width: 1.2em;
+
+        border-radius: 0.2em;
+        user-select: none;
+        cursor: pointer;
+
+        &:hover {
+            background-color: var(--text-greyed);
+        }
+    }
+}
