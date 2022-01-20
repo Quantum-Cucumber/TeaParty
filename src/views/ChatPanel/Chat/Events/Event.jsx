@@ -106,7 +106,7 @@ export function EventWrapper({ event, partial=false, compact=false, children }) 
 
     if (!author) {return}
     return (
-        <div className={classList("event-container", {"event-container--hover": hover}, {"event-container--partial": partial})}
+        <div className={classList("event-container", {"event-container--hover": hover}, {"event-container--partial": partial}, {"event-container--sending": event.isSending()})}
             onContextMenu={(e) => {
                 // Don't show the message popup if a link is right clicked
                 // TODO: Add extra options if the A tag is clicked - copy link/open link

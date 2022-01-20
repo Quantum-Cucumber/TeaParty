@@ -15,6 +15,10 @@ $event-offset: 2.75rem;
 
     flex: none;
     position: relative;
+
+    &--sending {
+        opacity: 0.6;
+    }
 }
 .event-container:hover, .event-container--hover{
     background-color: var(--bg-hover);

@@ -89,6 +89,14 @@ function Chat({ currentRoom }: {currentRoom: string}) {
         global.matrix.on("Room.timeline", onEvent);
         global.matrix.on("Room.redaction", onEvent);
 
+        function localEcho(event: MatrixEvent, room: Room) {
+            if (room.roomId == currentRoom) {
+                console.log("Echo")
+                updateEventList();
+            }
+        }
+        global.matrix.on("Room.localEchoUpdated", localEcho);
+
         const timelineReset = () => setEventList([]);
         global.matrix.on("Room.timelineReset", timelineReset)
 
@@ -100,6 +108,7 @@ function Chat({ currentRoom }: {currentRoom: string}) {
             global.matrix.removeListener("Room.timeline", onEvent);
             global.matrix.removeListener("Room.redaction", onEvent);
             global.matrix.removeListener("Room.timelineReset", timelineReset)
+            global.matrix.removeListener("Room.localEchoUpdated", localEcho);
         };
     }, [currentRoom, setEventList, updateEventList, updateUnread]);
     // Settings listener
