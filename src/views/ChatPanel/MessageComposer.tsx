@@ -24,11 +24,13 @@ export default function MessageComposer({ roomId }: MessageInputProps) {
     const [disabled, setDisabled] = useState(false);
 
     const setPopup = useContext(popupCtx);
+    const inputRef = useRef<HTMLTextAreaElement>();
     const fileRef = useRef<HTMLInputElement>();
 
     useEffect(() => {
         setValue("");
         setFile(null);
+        setUploadProgress(null);
 
         const maySendMessage = global.matrix.getRoom(roomId)?.maySendMessage();
         console.log(maySendMessage)
@@ -54,8 +56,8 @@ export default function MessageComposer({ roomId }: MessageInputProps) {
         setValue("");
         setFile(null);
 
-        if (value) {
-            await sendMessage(roomId, value);
+        if (value.trimEnd()) {
+            await sendMessage(roomId, value.trimEnd());
         }
         if (mxcUrl) {
 
@@ -68,6 +70,7 @@ export default function MessageComposer({ roomId }: MessageInputProps) {
                     break;
             }
         }
+        inputRef.current.focus();
     }
 
     const height = Math.min(value.split("\n").length, 4);
@@ -88,18 +91,26 @@ export default function MessageComposer({ roomId }: MessageInputProps) {
                         <Icon path={mdiPlusCircle} color="var(--text)" size="100%" />
                     </div>
 
-                    <input style={{display: "none"}} type="file" ref={fileRef} onChange={(e) => setFile(e.target.files[0])} />
+                    <input style={{display: "none"}} type="file" ref={fileRef}
+                        onChange={(e) => {
+                            setFile(e.target.files[0]);
+                            inputRef.current.focus();
+                        }}
+                    />
                 </div>
 
                 <textarea className="message-composer__editor" placeholder="Send a message..." rows={height}
-                    value={value} onChange={(e) => setValue(e.target.value)} onKeyPress={keyPress}
+                    value={value} onChange={(e) => setValue(e.target.value)} onKeyPress={keyPress} ref={inputRef}
                 />
 
                 <div className="message-composer__buttons">
                     <div className="message-composer__button" onClick={(e) => {
                         setPopup(
                             <EmojiPicker parent={e.currentTarget} mouseEvent={e} x="align-right" y="top" padding={5}
-                                onSelect={(emoji) => setValue(current => `${current}${emoji} `)}
+                                onSelect={(emoji) => {
+                                    setValue(current => `${current}${emoji} `);
+                                    inputRef.current.focus();
+                                }}
                             />
                         )
                     }}>
