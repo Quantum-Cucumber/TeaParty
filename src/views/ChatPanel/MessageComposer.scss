@@ -6,14 +6,16 @@
     &--disabled {
         opacity: 0.5;
 
-        &::after {
-            padding: 0.8em;
-            content: "You don't have permission to talk here.";
-            color: var(--text-greyed);
-        }
-
-        & > * {
-            display: none;
+        .message-composer__row:last-child {
+            &::after {
+                padding: 0.8em;
+                content: "You don't have permission to talk here.";
+                color: var(--text-greyed);
+            }
+            
+            > * {
+                display: none !important;
+            }
         }
     }
 
