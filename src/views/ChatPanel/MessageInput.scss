@@ -13,8 +13,14 @@
 
     &--disabled {
         opacity: 0.5;
+
+        &::after {
+            padding: 0.8em;
+            content: "You don't have permission to talk here.";
+            color: var(--text-greyed);
+        }
     }
-    &--disabled &__button {
+    &--disabled > * {
         display: none;
     }
 
@@ -36,6 +42,7 @@
 
         &::placeholder {
             color: var(--text-greyed);
+            opacity: 1;
         }
 
         @include common.scroll-style(var(--text-greyed));

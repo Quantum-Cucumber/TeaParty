@@ -1,5 +1,5 @@
 import "./EmojiPicker.scss";
-import { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { emojiCategories, getEmojiCategories } from "../utils/emojis";
 import { classList } from "../utils/utils";
@@ -42,6 +42,13 @@ export default function EmojiPicker({ onSelect, setHover = () => {}, ...popupPro
         paletteRef.current?.scrollTo(0, 0)
     }, [selectedGroup])
 
+    function selectEmoji(mouseEvent: React.MouseEvent, emoji: string) {
+        onSelect(emoji);
+        if (!mouseEvent.shiftKey) {
+            setPopup(null)
+        }
+    }
+
     const emojis = getEmojiCategories();
 
     return (
@@ -66,7 +73,7 @@ export default function EmojiPicker({ onSelect, setHover = () => {}, ...popupPro
                 <div className="emoji-picker__palette__title">{selectedGroup}</div>
                 {
                     emojis[selectedGroup].map((emoji) =>
-                        <div className="emoji-picker__emoji" key={emoji.hexcode} onClick={() => {onSelect(emoji.emoji); setPopup(null)}}>
+                        <div className="emoji-picker__emoji" key={emoji.hexcode} onClick={(e) => selectEmoji(e, emoji.emoji)}>
                             <FancyText links={false}>
                                 {emoji.emoji}
                             </FancyText>

@@ -28,7 +28,8 @@ function eventIsSame(oldProps, newProps) {
 
     return (
         // Edits
-        oldEvent.replacingEventId() === newEvent.replacingEventId()
+        oldEvent.replacingEventId() === newEvent.replacingEventId() &&
+        oldEvent.status === newEvent.status
     );
 }
 
