@@ -151,7 +151,7 @@ function MessageImage({ eventContent }) {
     const [thumbnail, setThumbnail] = useState();
 
     useEffect(() => {
-        setThumbnail(genThumbnailUrl(eventContent.url, eventContent.info.w, eventContent.info.h));
+        setThumbnail(genThumbnailUrl(eventContent.url, eventContent.info?.w, eventContent.info?.h));
     }, [eventContent])
 
     const sourceUrl = global.matrix.mxcUrlToHttp(eventContent.url) || eventContent.url;

@@ -26,7 +26,7 @@ const tabIcons = {
 type EmojiPickerProps = {
     onSelect: (emoji: string) => void,
     setHover?: (hover: boolean) => void,
-} & Omit<React.ComponentProps<typeof Popup>, "subClass">;
+} & Omit<React.ComponentProps<typeof Popup>, "subClass" | "children">;
 
 export default function EmojiPicker({ onSelect, setHover = () => {}, ...popupProps }: EmojiPickerProps) {
     const setPopup = useContext(popupCtx);

@@ -19,7 +19,7 @@ import { FancyText } from "../../components/wrappers";
 import type { SyntheticEvent } from "react";
 import type { MatrixEvent, Room, RoomMember } from "matrix-js-sdk";
 import { isDirect } from "../../utils/roomFilters";
-import { MessageInput } from "./MessageInput";
+import MessageComposer from "./MessageComposer";
 
 
 function getRoomAvatar(room: Room) {
@@ -117,7 +117,7 @@ export default function ChatPanel({currentRoom, hideMemberListState, hideRoomLis
             <Chat currentRoom={currentRoom} />
         </div>
         <Status room={room.current} />
-        <MessageInput roomId={currentRoom} />
+        <MessageComposer roomId={currentRoom} />
         <TypingIndicator currentRoom={currentRoom} />
     </>);
 }
