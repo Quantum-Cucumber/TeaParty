@@ -50,7 +50,7 @@ const config: Configuration = {
                     {
                         loader: "react-svg-loader",
                         options: {
-                            jsx: true, // true owutputs JSX tags
+                            jsx: true, // true outputs JSX tags
                             svgo: {
                                 plugins: [
                                     {removeViewBox: false},  // Necessary for scaling
@@ -64,7 +64,7 @@ const config: Configuration = {
     },
     plugins: [
         new SourceMapDevToolPlugin({}),
-        new HtmlWebpackPlugin({template: '/public/index.html'}),
+        new HtmlWebpackPlugin({template: './public/index.html'}),
         new ReactRefreshWebpackPlugin(),
         new EslintPlugin(eslintOptions),
     ]
