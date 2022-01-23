@@ -63,7 +63,7 @@ export function getDirects() {
        Assumes structure of - {userId: [roomId]}
     */
 
-    const directInfo: {string: string[]} = global.matrix.getAccountData(EventType.Direct).getContent();
+    const directInfo: {string: string[]} = global.matrix.getAccountData(EventType.Direct)?.getContent() || {};
     const directs: Set<string> = new Set();
 
     Object.values(directInfo).forEach((roomIds) => {

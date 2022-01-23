@@ -11,7 +11,7 @@ export const userIdRegex = /^@\S+:\S+$/;
 export const roomIdRegex = /^!\S+:\S+$/;
 export const aliasRegex = /^#\S+:\S+$/;
 
-async function discover_base_url(homeserver: string): Promise<string> {
+export async function discoverBaseUrl(homeserver: string): Promise<string> {
     /* Query the selected homeserver to get the base_url */
 
     // Format homeserver url
@@ -22,7 +22,7 @@ async function discover_base_url(homeserver: string): Promise<string> {
     }
     // Remove trailing slash
     if (homeserver.endsWith("/")) {
-        homeserver = homeserver.substr(0, homeserver.length - 1);
+        homeserver = homeserver.substring(0, homeserver.length - 1);
     }
 
     const url = homeserver + "/.well-known/matrix/client";
@@ -33,32 +33,50 @@ async function discover_base_url(homeserver: string): Promise<string> {
     return data["m.homeserver"].base_url;
 }
 
-export async function attemptLogin(username: string, homeserver: string, password: string) {
+export async function attemptPasswordLogin(username: string, homeserver: string, password: string) {
     /* Connect to the homeserver base_url and login with username/password*/
 
     console.info("Attempting log in...")
-    const base_url = await discover_base_url(homeserver);
-    console.info("Found base url: " + base_url);
+    const baseUrl = await discoverBaseUrl(homeserver);
+    console.info("Found base url: " + baseUrl);
 
     const client = matrixsdk.createClient({
-        baseUrl: base_url,
+        baseUrl: baseUrl,
         unstableClientRelationAggregation: true,
     })
     const response = await client.login("m.login.password", {
         identifier: {
             type: "m.id.user",
-            user: username
+            user: username,
         },
         password: password,
         initial_device_display_name: "TeaParty Web",
     });
 
+    saveLoginResponse(response, baseUrl);
+}
+
+export async function attemptTokenLogin(baseUrl: string, token: string) {
+    const client = matrixsdk.createClient({
+        baseUrl: baseUrl,
+        unstableClientRelationAggregation: true,
+    })
+    const response = await client.login("m.login.token", {
+        token: token,
+        initial_device_display_name: "TeaParty Web",
+    });
+
+    saveLoginResponse(response, baseUrl);
+}
+
+function saveLoginResponse(response, baseUrl: string = null) {
     localStorage.setItem("token", response.access_token);
     localStorage.setItem("device_id", response.device_id);
     if ("well_known" in response) {
         localStorage.setItem("base_url", response.well_known["m.homeserver"].base_url);
-    } else {
-        localStorage.setItem("base_url", base_url);
+    }
+    else if (baseUrl) {
+        localStorage.setItem("base_url", baseUrl);
     }
     localStorage.setItem("user_id", response.user_id);
 
@@ -70,12 +88,10 @@ export async function buildMatrix() {
 
     const token = localStorage.getItem("token");
     if (!token) {throw new Error("No token was saved")}
-    const user_id = localStorage.getItem("user_id");
-    if (!token) {throw new Error("No user ID was saved")}
+    const user_id = localStorage.getItem("user_id") || undefined;
     const base_url = localStorage.getItem("base_url");
     if (!token) {throw new Error("No homeserver url was saved")}
-    const device_id = localStorage.getItem("device_id");
-    if (!token) {throw new Error("No homeserver url was saved")}
+    const device_id = localStorage.getItem("device_id") || undefined;
 
     const opts = { indexedDB: window.indexedDB, localStorage: window.localStorage };
     const store = new matrixsdk.IndexedDBStore(opts);

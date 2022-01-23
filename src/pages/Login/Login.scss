@@ -1,3 +1,5 @@
+@use "../../utils/common";
+
 @media only screen and (orientation: portrait) {
     .login__modal {
         width: 90% !important;
@@ -8,39 +10,28 @@
     }
 }
 
-.login__error {
+.login__error-box {
     background-color: var(--error);
     padding: 0.4em 0.5em;
     border-radius: 0.5em;
     font-size: 0.9rem;
 }
 
-.login__split {
-    display: flex;
-    gap: 0.2em;
-
-    & > :first-child {
-        border-radius: 8px 0 0 8px;
-    }
-    & > :last-child {
-        border-radius: 0 8px 8px 0;
-    }
-}
-
 .login__input {
     border-radius: 0.5em;
     font-size: 1rem;
-    padding: 0.4em 0.5em;
+    padding: 0.6em;
     border: none;
     color: inherit;
     font-family: inherit;
     background-color: var(--bg);
     margin-bottom: 10px;
     box-sizing: border-box;
+    width: 100%;
     
     &::placeholder {
         color: var(--text-greyed);
-        opacity: 1; /* Firefox :] */
+        opacity: 1;
     }
 
     &:focus {
@@ -48,48 +39,28 @@
         box-shadow: inset 0 0 0 2px var(--primary);
     }
 
-
-    &--username {
-        @extend .login__input;
-        width: 100%;
-        flex: 1 1 auto;
+    &--error {
+        box-shadow: inset 0 0 0 3px var(--error);
     }
+}
 
-    &--homeserver {
-        @extend .login__input;
-        flex: 1 0 auto;
-        width: 33%;
-        transition: 0.15s;
+
+.login__sso {
+    &__container {
+        overflow: auto visible;
+        white-space: nowrap;
+
+        @include common.scroll-style();
+    }
+    &__button {
+        display: inline-block;
+        margin-right: 0.2em;
         
-        &:focus {
-            width: 66%;
-
-            &::placeholder {
-                color: var(--text-greyed)
-            }
-        }
-
-        &::placeholder {
-            color: inherit;
+        &__icon {
+            width: 2.5em;
+            height: 2.5em;
+            object-fit: cover;
+            border-radius: 50%;
         }
     }
-
-    &--password {
-        @extend .login__input;
-        width: 100%;
-    }
-}
-
-.input--error {
-    box-shadow: inset 0 0 0 3px var(--error);
-}
-
-.modal__error {
-    width: 85%;
-    padding: 15px 15px;
-    /*box-shadow: inset 0 0 0 2px var(--error);*/
-    background-color: var(--error);
-    margin-bottom: 15px;
-    box-sizing: border-box;    
-    border-radius: 10px;
 }
