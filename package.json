@@ -22,7 +22,7 @@
     "matrix-js-sdk": "^15.2.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
-    "react-router-dom": "5.2.1",
+    "react-router-dom": "6.3.0",
     "sanitize-html": "^2.6.1",
     "twemoji": "^13.1.0"
   },
